@@ -20,6 +20,11 @@ from transformers import (
 # Añadimos la carpeta padre al path para poder importar models.py
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from models import MisogynyClassifier
+from utils import set_seed, DEFAULT_SEED
+
+# --- REPRODUCIBILIDAD ---
+SEED = DEFAULT_SEED
+set_seed(SEED)
 
 # --- CONFIGURACIÓN ---
 DATA_PATH = "../../data/task1/train.csv"
@@ -47,7 +52,7 @@ df = pd.read_csv(DATA_PATH)
 
 # Split simple 80/20 solo para esta tabla comparativa
 train_df, val_df = train_test_split(
-    df, test_size=0.2, random_state=42, stratify=df["label"]
+    df, test_size=0.2, random_state=SEED, stratify=df["label"]
 )
 train_ds = Dataset.from_pandas(train_df, preserve_index=False)
 val_ds = Dataset.from_pandas(val_df, preserve_index=False)

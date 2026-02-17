@@ -18,6 +18,11 @@ from pysentimiento.preprocessing import preprocess_tweet
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from models import MisogynyClassifier
 from augmentation import create_augmented_dataset
+from utils import set_seed, DEFAULT_SEED
+
+# --- REPRODUCIBILIDAD ---
+SEED = DEFAULT_SEED
+set_seed(SEED)
 
 # --- CONFIGURACIÓN ---
 TRAIN_FILE = "../../data/task1/train.csv"
@@ -106,7 +111,7 @@ print(f"Desbalance detectado -> Neg: {n_neg}, Pos: {n_pos}")
 print(f"Pesos aplicados al Loss: {weights_tensor}")
 
 # --- BUCLE K-FOLD ---
-skf = StratifiedKFold(n_splits=N_FOLDS, shuffle=True, random_state=42)
+skf = StratifiedKFold(n_splits=N_FOLDS, shuffle=True, random_state=SEED)
 
 for model_name, model_id in MODELS_TO_TRAIN.items():
     print(f"\n>>> Entrenando Arquitectura: {model_name}")

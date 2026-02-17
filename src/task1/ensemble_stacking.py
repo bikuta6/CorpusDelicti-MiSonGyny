@@ -23,6 +23,11 @@ import joblib
 # Añadimos path para importar models.py
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from models import MisogynyClassifier
+from utils import set_seed, DEFAULT_SEED
+
+# --- REPRODUCIBILIDAD ---
+SEED = DEFAULT_SEED
+set_seed(SEED)
 
 # --- CONFIGURACIÓN ---
 MODELS_DIR = "../../models/task1/ensemble"
@@ -230,7 +235,7 @@ def train_stacker(use_train_subset=False):
         class_weight="balanced",  # Compensar desbalance
         max_iter=1000,
         solver="lbfgs",
-        random_state=42
+        random_state=SEED
     )
     
     print("  Ajustando Logistic Regression...")

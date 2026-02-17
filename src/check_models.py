@@ -7,6 +7,10 @@ from transformers import AutoTokenizer
 # --- CONFIGURACIÓN DE RUTAS ---
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from models import MisogynyClassifier
+from utils import set_seed, DEFAULT_SEED
+
+# --- REPRODUCIBILIDAD ---
+set_seed(DEFAULT_SEED)
 
 # --- MODELOS A PROBAR ---
 MODELS_TO_CHECK = {

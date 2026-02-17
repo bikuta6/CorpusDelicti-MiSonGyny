@@ -11,7 +11,20 @@ Uso:
 import random
 import re
 import pandas as pd
+import sys
+import os
 from collections import Counter
+
+# Importar utils para reproducibilidad
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+try:
+    from utils import DEFAULT_SEED
+    # Establecer seed para funciones de augmentation
+    random.seed(DEFAULT_SEED)
+except ImportError:
+    # Fallback si utils.py no está disponible
+    DEFAULT_SEED = 42
+    random.seed(42)
 
 
 def detect_chorus_lines(text):
