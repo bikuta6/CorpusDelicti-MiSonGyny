@@ -16,13 +16,14 @@ MODELS_TO_CHECK = {
     "XLM-R": "xlm-roberta-base",  # Clásico multilingual
     "mDeBERTa": "microsoft/mdeberta-v3-base",  # SOTA multilingual
     "Robertuito": "pysentimiento/robertuito-base-uncased",  # Especializado en slang en español
+    "LongFormer": "PlanTL-GOB-ES/longformer-base-4096-bne-es",  # Para textos largos (canciones)
 }
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 print(f"--- INICIANDO DIAGNÓSTICO EN: {torch.cuda.get_device_name(0) if DEVICE == 'cuda' else 'CPU'} ---\n")
 
 def test_model(name, model_id):
-    print(f"🔍 Probando: {name} ({model_id})...")
+    print(f" Probando: {name} ({model_id})...")
     
     try:
         # 1. CARGA DE TOKENIZER (Con fallback a versión lenta si falla)
@@ -32,7 +33,7 @@ def test_model(name, model_id):
         else:
             tokenizer = AutoTokenizer.from_pretrained(model_id)
 
-        print("✅ OK")
+        print(" OK")
 
         # 2. CARGA DEL MODELO
         print("   [2/4] Cargando Modelo...", end=" ")
@@ -46,7 +47,7 @@ def test_model(name, model_id):
             is_multilabel=False
         ).to(DEVICE)
         model.train()
-        print("✅ OK")
+        print(" OK")
 
         # 3. DATOS DUMMY
         texts = ["Esto es una prueba", "Otra prueba de texto"]
@@ -65,7 +66,7 @@ def test_model(name, model_id):
             print(f"Logits: {logits.detach().cpu().numpy()}")
         
         if loss is None: raise ValueError("Loss is None")
-        print(f"✅ OK (Loss: {loss.item():.4f})")
+        print(f" OK (Loss: {loss.item():.4f})")
 
         # 5. BACKWARD PASS
         print("   [4/4] Verificando Gradientes...", end=" ")
@@ -90,16 +91,16 @@ def test_model(name, model_id):
         if grad_step_2 <= grad_step_1:
              raise ValueError(f"No acumula (G1={grad_step_1} -> G2={grad_step_2})")
              
-        print(f"✅ OK (Acumula: {grad_step_1:.2f} -> {grad_step_2:.2f})")
+        print(f" OK (Acumula: {grad_step_1:.2f} -> {grad_step_2:.2f})")
         
         # Limpieza
         del model, tokenizer, inputs, labels, outputs
         torch.cuda.empty_cache()
-        print(f"✨ {name}: LISTO\n")
+        print(f" {name}: LISTO\n")
         return True
 
     except Exception as e:
-        print(f"\n❌ ERROR EN {name}: {str(e)}\n")
+        print(f"\n ERROR EN {name}: {str(e)}\n")
         return False
 
 # --- EJECUCIÓN ---

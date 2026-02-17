@@ -25,7 +25,11 @@ from models import MisogynyClassifier
 DATA_PATH = "../../data/task1/train.csv"
 OUTPUT_DIR = "../../models/task1/comparativa"
 RESULTS_FILE = "../../results/task1/tabla_paper.csv"
-MAX_LEN = 256  # Optimizado para 12GB VRAM
+
+# Estadísticas del dataset:
+# - Mediana: 392 tokens, Percentil 90: 970 tokens
+# - Clase positiva más larga: mediana 683 tokens
+MAX_LEN = 512  # Captura ~60% del contenido vs 30% con 256
 
 # Modelos a comparar para el Paper
 MODELS = {
@@ -111,12 +115,12 @@ for name, model_id in MODELS.items():
         tokenizer = AutoTokenizer.from_pretrained(model_id)
         is_robertuito = name == "Robertuito"
         
-        # 2. Función de tokenización con smart truncate
+        # 2. Función de tokenización con truncación estándar
         def tokenize_fn(batch):
             texts = batch["text"]
             if is_robertuito:
                 texts = [preprocess_tweet(t, lang="es") for t in texts]
-            texts = [smart_truncate(t, tokenizer, MAX_LEN) for t in texts]
+            # Truncación estándar (más efectiva para textos largos con mean pooling)
             return tokenizer(texts, padding="max_length", truncation=True, max_length=MAX_LEN)
         
         # 3. Tokenizar datasets
@@ -127,24 +131,24 @@ for name, model_id in MODELS.items():
         train_tok.set_format("torch")
         val_tok.set_format("torch")
         
-        # 4. Crear modelo con factory method
-        model = MisogynyClassifier.from_pretrained_base(
-            model_id,
+        # 4. Crear modelo
+        model = MisogynyClassifier(
+            model_name_or_path=model_id,
             num_labels=2,
-            dropout_rate=0.2,
+            dropout_rate=0.3,
             class_weights=weights_tensor.to(device),
-            use_focal_loss=True,  # Focal Loss para desbalance
+            use_focal_loss=True,
             focal_gamma=2.0,
-        )
-        model.to(device)
+            pooling_strategy="mean",  # Mean pooling para canciones largas
+        ).to(device)
         
-        # 5. Configurar entrenamiento
+        # 5. Configurar entrenamiento (optimizado para MAX_LEN=512)
         args = TrainingArguments(
             output_dir=f"{OUTPUT_DIR}/{name}",
             num_train_epochs=3,
-            per_device_train_batch_size=8,  # Reducido para 12GB
-            per_device_eval_batch_size=8,
-            gradient_accumulation_steps=4,  # Batch efectivo = 32
+            per_device_train_batch_size=2,  # Reducido para MAX_LEN=512
+            per_device_eval_batch_size=2,
+            gradient_accumulation_steps=16,  # Batch efectivo = 32
             eval_strategy="epoch",
             save_strategy="epoch",
             load_best_model_at_end=True,
@@ -154,6 +158,7 @@ for name, model_id in MODELS.items():
             fp16=True,
             report_to="none",
             save_total_limit=1,
+            gradient_checkpointing=True,  # Ahorra VRAM
         )
         
         trainer = Trainer(
@@ -176,14 +181,14 @@ for name, model_id in MODELS.items():
             "Recall": metrics["eval_recall"],
         })
         
-        print(f"✅ {name}: F1={metrics['eval_f1_macro']:.4f}")
+        print(f" {name}: F1={metrics['eval_f1_macro']:.4f}")
         
         # Limpiar memoria
         del model, trainer
         torch.cuda.empty_cache()
         
     except Exception as e:
-        print(f"❌ Error con {name}: {e}")
+        print(f" Error con {name}: {e}")
         results_list.append({
             "Modelo": name,
             "F1-Macro": None,
@@ -203,4 +208,4 @@ print(f"\n{'='*60}")
 print("RESULTADOS COMPARATIVA")
 print(f"{'='*60}")
 print(df_res.to_markdown(index=False))
-print(f"\n📄 Guardado en: {RESULTS_FILE}")
+print(f"\n Guardado en: {RESULTS_FILE}")

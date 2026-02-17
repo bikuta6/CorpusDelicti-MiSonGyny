@@ -9,6 +9,7 @@ from sklearn.metrics import f1_score
 from transformers import AutoTokenizer, AutoConfig
 from pysentimiento.preprocessing import preprocess_tweet
 from tqdm import tqdm
+import joblib
 
 # Añadimos path para importar models.py
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -19,10 +20,12 @@ TEST_FILE = "../../data/task1/test.csv"
 VAL_FILE = "../../data/task1/validation.csv"
 MODELS_DIR = "../../models/task1/ensemble"
 OUTPUT_FILE = "../../results/task1/submission.csv"
+STACKER_PATH = "../../models/task1/ensemble/stacker.pkl"  # Meta-modelo
 
-# Parámetros de Ventana Deslizante (optimizado para canciones)
-WINDOW_LEN = 256   # Mantener 256 para GPU de 12GB
-STRIDE = 128       # 50% overlap entre ventanas
+# Parámetros de Ventana Deslizante (optimizado para canciones largas)
+# Estadísticas: Mediana 392, P90: 970, Max: 4513 tokens
+WINDOW_LEN = 512   # Aumentado de 256 para capturar más contenido
+STRIDE = 256       # 50% overlap entre ventanas
 MIN_CHUNK_TOKENS = 30  # Mínimo de tokens por ventana
 
 # Estrategia de agregación para canciones
@@ -161,6 +164,24 @@ print("Cargando datasets...")
 df_test = pd.read_csv(TEST_FILE)
 df_val = pd.read_csv(VAL_FILE)
 
+# --- CARGAR META-MODELO (STACKING) SI EXISTE ---
+USE_STACKING = os.path.exists(STACKER_PATH)
+stacker_data = None
+
+if USE_STACKING:
+    print(f"\n Meta-modelo de stacking encontrado: {STACKER_PATH}")
+    stacker_data = joblib.load(STACKER_PATH)
+    stacker = stacker_data["model"]
+    models_used = stacker_data["models_used"]
+    val_f1_stacker = stacker_data["val_f1"]
+    print(f"   Modelos usados: {', '.join(models_used)}")
+    print(f"   F1 en validación (entrenamiento): {val_f1_stacker:.4f}")
+    print(f"   → Usando STACKING para ensemble\n")
+else:
+    print(f"\n No se encontró meta-modelo de stacking")
+    print(f"   → Usando PROMEDIO SIMPLE para ensemble")
+    print(f"   → Ejecuta 'python ensemble_stacking.py' para entrenar el meta-modelo\n")
+
 # Matrices para guardar resultados: [N_Modelos, N_Samples]
 val_preds_matrix = []
 test_preds_matrix = []
@@ -195,12 +216,12 @@ for folder in model_folders:
         continue
 
     # 2. Inicializar la arquitectura VACÍA (con pesos base de HF)
-    # Importante: is_multilabel=False porque entrenamos con softmax/crossentropy
     model = MisogynyClassifier(
         model_name_or_path=base_model_id,
         num_labels=2,
-        dropout_rate=0.2, # Debe coincidir con entrenamiento
-        is_multilabel=False 
+        dropout_rate=0.3,  # Debe coincidir con entrenamiento
+        is_multilabel=False,
+        pooling_strategy="mean"  # CRÍTICO: Mismo pooling que en entrenamiento
     )
     
     # 3. Cargar los pesos ENTRENADOS (Sobrescribe backbone y custom head)
@@ -237,9 +258,43 @@ if not val_preds_matrix:
     sys.exit()
 
 print("\n--- CALCULANDO ENSEMBLE ---")
-# Promedio de probabilidades (Soft Voting)
-avg_val_probs = np.mean(val_preds_matrix, axis=0)
-avg_test_probs = np.mean(test_preds_matrix, axis=0)
+
+if USE_STACKING:
+    # STACKING: Usar meta-modelo entrenado
+    print("Método: STACKING (Logistic Regression)")
+    
+    # Convertir lista de arrays a formato correcto
+    # val_preds_matrix: [N_models, N_samples, 2] -> [N_samples, N_models*2]
+    val_preds_array = np.array(val_preds_matrix)  # (N_models, N_samples, 2)
+    test_preds_array = np.array(test_preds_matrix)
+    
+    # Reorganizar a (N_samples, N_models, 2)
+    val_preds_array = np.transpose(val_preds_array, (1, 0, 2))
+    test_preds_array = np.transpose(test_preds_array, (1, 0, 2))
+    
+    # Aplanar a (N_samples, N_models*2)
+    X_val_meta = val_preds_array.reshape(val_preds_array.shape[0], -1)
+    X_test_meta = test_preds_array.reshape(test_preds_array.shape[0], -1)
+    
+    # Predecir con meta-modelo
+    avg_val_probs = stacker.predict_proba(X_val_meta)[:, 1]  # Solo prob clase positiva
+    avg_test_probs = stacker.predict_proba(X_test_meta)[:, 1]
+    
+    print(f" Ensemble calculado con meta-modelo")
+    
+else:
+    # PROMEDIO SIMPLE: Fallback si no hay stacker
+    print("Método: PROMEDIO SIMPLE (Soft Voting)")
+    
+    # Convertir a array y promediar
+    val_preds_array = np.array(val_preds_matrix)  # (N_models, N_samples, 2)
+    test_preds_array = np.array(test_preds_matrix)
+    
+    # Promedio de probabilidades: solo clase positiva (columna 1)
+    avg_val_probs = np.mean(val_preds_array[:, :, 1], axis=0)
+    avg_test_probs = np.mean(test_preds_array[:, :, 1], axis=0)
+    
+    print(f" Ensemble calculado con promedio simple")
 
 # Buscar mejor umbral
 print("Optimizando umbral en Validación...")
@@ -257,6 +312,7 @@ for th in np.arange(0.15, 0.85, 0.01):
 
 print(f" MEJOR UMBRAL: {best_th:.2f}")
 print(f" F1-Macro Validación (Ensemble): {best_f1:.4f}")
+print(f"   Método usado: {'STACKING' if USE_STACKING else 'PROMEDIO SIMPLE'}")
 
 # --- GENERAR CSV FINAL ---
 final_preds = (avg_test_probs >= best_th).astype(int)

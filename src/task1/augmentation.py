@@ -98,6 +98,61 @@ def normalize_whitespace(text):
     return text.strip()
 
 
+def aeda_punctuation(text, insertion_rate=0.3):
+    """
+    AEDA (An Easier Data Augmentation): Inserta signos de puntuación aleatorios.
+    
+    Esta técnica preserva el significado semántico del texto mientras añade
+    variabilidad estilística, ideal para canciones con estructura irregular.
+    
+    Args:
+        text: Letra de la canción
+        insertion_rate: Frecuencia de inserción relativa al número de tokens (default: 0.3)
+    
+    Returns:
+        str: Texto con puntuación insertada aleatoriamente
+    
+    Reference:
+        Karimi et al. (2021) - "AEDA: An Easier Data Augmentation Technique for Text Classification"
+    """
+    PUNCTUATION_MARKS = [".", "?", "!", ",", "'"]
+    
+    # Dividir en palabras preservando saltos de línea
+    lines = text.split('\n')
+    augmented_lines = []
+    
+    for line in lines:
+        if not line.strip():
+            augmented_lines.append(line)
+            continue
+            
+        words = line.split()
+        if len(words) == 0:
+            augmented_lines.append(line)
+            continue
+        
+        # Calcular número de inserciones basado en número de tokens
+        n_insertions = max(1, int(len(words) * insertion_rate))
+        
+        # Elegir posiciones aleatorias (después de qué palabra insertar)
+        insert_positions = sorted(random.sample(range(len(words)), 
+                                               min(n_insertions, len(words))))
+        
+        # Construir texto augmentado pegando puntuación a la palabra anterior
+        augmented_words = []
+        for i, word in enumerate(words):
+            if i in insert_positions:
+                # Pegar puntuación aleatoria a la palabra (sin espacio)
+                punct = random.choice(PUNCTUATION_MARKS)
+                augmented_words.append(word + punct)
+            else:
+                augmented_words.append(word)
+        
+        augmented_lines.append(' '.join(augmented_words))
+    
+    return '\n'.join(augmented_lines)
+
+
 def augment_song(text, augmentation_type=None, p=0.5):
     """
     Aplica una augmentación aleatoria a la letra de una canción.
@@ -109,6 +164,7 @@ def augment_song(text, augmentation_type=None, p=0.5):
             - 'line_drop': Eliminar líneas
             - 'word_drop': Eliminar palabras
             - 'normalize': Normalizar espacios
+            - 'aeda': AEDA - Inserción aleatoria de puntuación
         p: Probabilidad de aplicar augmentación (default 0.5)
     
     Returns:
@@ -122,6 +178,7 @@ def augment_song(text, augmentation_type=None, p=0.5):
         'line_drop': line_dropout,
         'word_drop': word_dropout,
         'normalize': normalize_whitespace,
+        'aeda': aeda_punctuation,  # AEDA agregado
     }
     
     if augmentation_type is None:
@@ -153,8 +210,8 @@ def create_augmented_dataset(df, augment_positive_only=True, n_augments=2, p=1.0
         if augment_positive_only and row['label'] == 0:
             continue
         
-        # Generar n_augments variaciones
-        aug_types = ['shuffle', 'line_drop', 'word_drop', 'normalize']
+        # Generar n_augments variaciones con técnicas complementarias
+        aug_types = ['shuffle', 'line_drop', 'word_drop', 'normalize', 'aeda']
         for i in range(n_augments):
             new_row = row.to_dict()
             aug_type = aug_types[i % len(aug_types)]
@@ -193,3 +250,5 @@ Este es el estribillo"""
     print(augment_song(sample, 'line_drop', p=1.0))
     print("\n=== WORD DROP ===")
     print(augment_song(sample, 'word_drop', p=1.0))
+    print("\n=== AEDA (Punctuation Insertion) ===")
+    print(augment_song(sample, 'aeda', p=1.0))
