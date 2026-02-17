@@ -1,6 +1,10 @@
-import os
-import time
+"""
+Comparativa de modelos para Task 1: Clasificación Binaria de Misoginia en Canciones.
+Genera una tabla para el paper con métricas de cada modelo.
+"""
 
+import os
+import sys
 import pandas as pd
 import torch
 from datasets import Dataset
@@ -8,115 +12,195 @@ from pysentimiento.preprocessing import preprocess_tweet
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 from sklearn.model_selection import train_test_split
 from transformers import (
-    AutoModelForSequenceClassification,
     AutoTokenizer,
     Trainer,
     TrainingArguments,
 )
 
+# Añadimos la carpeta padre al path para poder importar models.py
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from models import MisogynyClassifier
+
 # --- CONFIGURACIÓN ---
 DATA_PATH = "../../data/task1/train.csv"
 OUTPUT_DIR = "../../models/task1/comparativa"
 RESULTS_FILE = "../../results/task1/tabla_paper.csv"
+MAX_LEN = 256  # Optimizado para 12GB VRAM
 
 # Modelos a comparar para el Paper
 MODELS = {
-    "DistilBETO": "dccuchile/distilbert-base-spanish-uncased",  # Español eficiente
-    "BETO": "dccuchile/bert-base-spanish-wwm-cased",  # Español clásico
-    "MarIA": "PlanTL-GOB-ES/roberta-base-bne",  # SOTA en español
-    "XLM-R": "xlm-roberta-base",  # Clásico multilingual
-    "mDeBERTa": "microsoft/mdeberta-v3-base",  # SOTA multilingual
-    "Robertuito": "pysentimiento/robertuito-base-uncased",  # Especializado en slang en español
+    "DistilBETO": "dccuchile/distilbert-base-spanish-uncased",
+    "BETO": "dccuchile/bert-base-spanish-wwm-cased",
+    "MarIA": "IsGarrido/roberta-base-bne",
+    "XLM-R": "xlm-roberta-base",
+    "mDeBERTa": "microsoft/mdeberta-v3-base",
+    "Robertuito": "pysentimiento/robertuito-base-uncased",
 }
 
 # --- CARGA DE DATOS ---
 print(f"Cargando datos desde {DATA_PATH}...")
 df = pd.read_csv(DATA_PATH)
+
 # Split simple 80/20 solo para esta tabla comparativa
 train_df, val_df = train_test_split(
     df, test_size=0.2, random_state=42, stratify=df["label"]
 )
-train_ds = Dataset.from_pandas(train_df)
-val_ds = Dataset.from_pandas(val_df)
+train_ds = Dataset.from_pandas(train_df, preserve_index=False)
+val_ds = Dataset.from_pandas(val_df, preserve_index=False)
+
+# Calcular pesos para clase desbalanceada
+n_pos = sum(df["label"] == 1)
+n_neg = sum(df["label"] == 0)
+ratio = n_neg / (n_pos + 1e-5)
+weights_tensor = torch.tensor([1.0, ratio]).float()
+print(f"Desbalance: Neg={n_neg}, Pos={n_pos} -> Peso clase 1: {ratio:.2f}")
+
+
+# --- SMART TRUNCATE PARA CANCIONES ---
+def smart_truncate(text, tokenizer, max_len=256):
+    """
+    Truncado inteligente: mantiene inicio y final de la canción.
+    Preserva contexto de intro y conclusión.
+    """
+    tokens = tokenizer(text, add_special_tokens=False).input_ids
+    
+    if len(tokens) <= max_len - 2:  # -2 para [CLS] y [SEP]
+        return text
+    
+    keep_tokens = max_len - 2
+    head_len = int(keep_tokens * 0.45)
+    tail_len = int(keep_tokens * 0.45)
+    
+    head_tokens = tokens[:head_len]
+    tail_tokens = tokens[-tail_len:]
+    
+    head_text = tokenizer.decode(head_tokens, skip_special_tokens=True)
+    tail_text = tokenizer.decode(tail_tokens, skip_special_tokens=True)
+    
+    return head_text + " [...] " + tail_text
 
 
 def compute_metrics(pred):
+    """Calcula métricas para evaluación"""
     labels = pred.label_ids
     preds = pred.predictions.argmax(-1)
     precision, recall, f1, _ = precision_recall_fscore_support(
         labels, preds, average="macro"
     )
     acc = accuracy_score(labels, preds)
-    return {"accuracy": acc, "f1_macro": f1}
+    return {
+        "accuracy": round(acc, 4),
+        "f1_macro": round(f1, 4),
+        "precision": round(precision, 4),
+        "recall": round(recall, 4),
+    }
 
 
 results_list = []
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-print(f"--- INICIANDO COMPARATIVA EN {torch.cuda.get_device_name(0)} ---")
+print(f"--- INICIANDO COMPARATIVA EN {torch.cuda.get_device_name(0) if device.type == 'cuda' else 'CPU'} ---")
 
 for name, model_id in MODELS.items():
-    print(f"\n>>> Evaluando: {name}...")
-
-    tokenizer = AutoTokenizer.from_pretrained(model_id)
-
-    def tokenize(batch):
-        texts = batch["text"]
-        # Pre-procesamiento especial SOLO para Robertuito
-        if name == "Robertuito":
-            texts = [preprocess_tweet(t, lang="es") for t in texts]
-        return tokenizer(texts, padding="max_length", truncation=True, max_length=128)
-
-    tokenized_train = train_ds.map(tokenize, batched=True)
-    tokenized_val = val_ds.map(tokenize, batched=True)
-
-    model = AutoModelForSequenceClassification.from_pretrained(
-        model_id, num_labels=2
-    ).to("cuda")
-
-    args = TrainingArguments(
-        output_dir=f"{OUTPUT_DIR}/{name}",
-        learning_rate=2e-5,
-        per_device_train_batch_size=16,
-        num_train_epochs=3,  # Pocas épocas para la comparativa
-        fp16=True,  # RTX 4070 Ti optimization
-        evaluation_strategy="epoch",
-        logging_steps=10,
-        report_to="none",
-    )
-
-    trainer = Trainer(
-        model=model,
-        args=args,
-        train_dataset=tokenized_train,
-        eval_dataset=tokenized_val,
-        compute_metrics=compute_metrics,
-    )
-
-    # Medir Tiempos y Memoria
-    torch.cuda.reset_peak_memory_stats()
-    start_time = time.time()
-    trainer.train()
-    end_time = time.time()
-    peak_mem = torch.cuda.max_memory_allocated() / (1024**3)
-
-    metrics = trainer.evaluate()
-
-    results_list.append(
-        {
+    print(f"\n{'='*50}")
+    print(f">>> Evaluando: {name}")
+    print(f"{'='*50}")
+    
+    try:
+        # 1. Tokenizador
+        tokenizer = AutoTokenizer.from_pretrained(model_id)
+        is_robertuito = name == "Robertuito"
+        
+        # 2. Función de tokenización con smart truncate
+        def tokenize_fn(batch):
+            texts = batch["text"]
+            if is_robertuito:
+                texts = [preprocess_tweet(t, lang="es") for t in texts]
+            texts = [smart_truncate(t, tokenizer, MAX_LEN) for t in texts]
+            return tokenizer(texts, padding="max_length", truncation=True, max_length=MAX_LEN)
+        
+        # 3. Tokenizar datasets
+        train_tok = train_ds.map(tokenize_fn, batched=True, remove_columns=["text"])
+        val_tok = val_ds.map(tokenize_fn, batched=True, remove_columns=["text"])
+        train_tok = train_tok.rename_column("label", "labels")
+        val_tok = val_tok.rename_column("labels" if "labels" in val_tok.column_names else "label", "labels")
+        train_tok.set_format("torch")
+        val_tok.set_format("torch")
+        
+        # 4. Crear modelo con factory method
+        model = MisogynyClassifier.from_pretrained_base(
+            model_id,
+            num_labels=2,
+            dropout_rate=0.2,
+            class_weights=weights_tensor.to(device),
+            use_focal_loss=True,  # Focal Loss para desbalance
+            focal_gamma=2.0,
+        )
+        model.to(device)
+        
+        # 5. Configurar entrenamiento
+        args = TrainingArguments(
+            output_dir=f"{OUTPUT_DIR}/{name}",
+            num_train_epochs=3,
+            per_device_train_batch_size=8,  # Reducido para 12GB
+            per_device_eval_batch_size=8,
+            gradient_accumulation_steps=4,  # Batch efectivo = 32
+            eval_strategy="epoch",
+            save_strategy="epoch",
+            load_best_model_at_end=True,
+            metric_for_best_model="f1_macro",
+            greater_is_better=True,
+            logging_steps=50,
+            fp16=True,
+            report_to="none",
+            save_total_limit=1,
+        )
+        
+        trainer = Trainer(
+            model=model,
+            args=args,
+            train_dataset=train_tok,
+            eval_dataset=val_tok,
+            compute_metrics=compute_metrics,
+        )
+        
+        # 6. Entrenar y evaluar
+        trainer.train()
+        metrics = trainer.evaluate()
+        
+        results_list.append({
             "Modelo": name,
-            "F1-Macro": round(metrics["eval_f1_macro"], 4),
-            "Tiempo (s)": round(end_time - start_time, 2),
-            "VRAM Max (GB)": round(peak_mem, 2),
-            "Params (M)": round(sum(p.numel() for p in model.parameters()) / 1e6, 1),
-        }
-    )
+            "F1-Macro": metrics["eval_f1_macro"],
+            "Accuracy": metrics["eval_accuracy"],
+            "Precision": metrics["eval_precision"],
+            "Recall": metrics["eval_recall"],
+        })
+        
+        print(f"✅ {name}: F1={metrics['eval_f1_macro']:.4f}")
+        
+        # Limpiar memoria
+        del model, trainer
+        torch.cuda.empty_cache()
+        
+    except Exception as e:
+        print(f"❌ Error con {name}: {e}")
+        results_list.append({
+            "Modelo": name,
+            "F1-Macro": None,
+            "Accuracy": None,
+            "Precision": None,
+            "Recall": None,
+        })
 
-    del model, trainer, tokenizer
-    torch.cuda.empty_cache()
-
-# Guardar Resultados
+# --- GUARDAR RESULTADOS ---
 df_res = pd.DataFrame(results_list)
-os.makedirs("../../task1/results", exist_ok=True)
+df_res = df_res.sort_values("F1-Macro", ascending=False)
+
+os.makedirs(os.path.dirname(RESULTS_FILE), exist_ok=True)
 df_res.to_csv(RESULTS_FILE, index=False)
-print(f"\nTabla guardada en {RESULTS_FILE}")
-print(df_res)
+
+print(f"\n{'='*60}")
+print("RESULTADOS COMPARATIVA")
+print(f"{'='*60}")
+print(df_res.to_markdown(index=False))
+print(f"\n📄 Guardado en: {RESULTS_FILE}")

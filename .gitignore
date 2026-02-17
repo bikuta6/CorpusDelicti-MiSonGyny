@@ -11,3 +11,6 @@ wheels/
 
 # Lock for different os compatibility
 uv.lock
+# Vscode settings
+.vscode/
+.history/
