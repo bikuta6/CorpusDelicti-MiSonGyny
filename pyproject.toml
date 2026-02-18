@@ -5,23 +5,23 @@ description = "Detección de misoginia en canciones"
 readme = "README.md"
 requires-python = "==3.11.*"
 dependencies = [
-    "accelerate>=0.26.0", # Ajustado a una versión estable
+    "accelerate>=0.26.0",
     "datasets>=2.14.0",
     "joblib>=1.5.3",
-    "numpy>=1.24.0", # Versión compatible amplia
-    "pandas>=2.0.0", # Necesario para MarIA
+    "numpy>=1.24.0",
+    "pandas>=2.0.0",
     "protobuf>=6.33.5",
     "pysentimiento>=0.7.3",
     "scikit-learn>=1.2.0",
-    "scipy>=1.10.0", # Necesario para mDeBERTa/MarIA
+    "scipy>=1.10.0",
     "sentencepiece>=0.2.1",
-    "tiktoken", # Necesario a veces para RoBERTa
+    "tiktoken",
     "tokenizers>=0.22.2",
-    "torch>=2.4.0", # <--- CAMBIO CRÍTICO: Versión real
+    "torch>=2.4.0",
     "torchaudio>=2.4.0",
     "torchvision>=0.19.0",
     "tqdm>=4.66.0",
-    "transformers>=4.36.0", # Versión moderna
+    "transformers>=4.36.0",
 ]
 
 [[tool.uv.index]]
@@ -30,6 +30,13 @@ url = "https://download.pytorch.org/whl/cu124"
 explicit = true
 
 [tool.uv.sources]
-torch = { index = "pytorch" }
-torchvision = { index = "pytorch" }
-torchaudio = { index = "pytorch" }
+# Solo usa el índice de CUDA si el sistema operativo NO es macOS (darwin)
+torch = [
+  { index = "pytorch", marker = "sys_platform != 'darwin'" },
+]
+torchvision = [
+  { index = "pytorch", marker = "sys_platform != 'darwin'" },
+]
+torchaudio = [
+  { index = "pytorch", marker = "sys_platform != 'darwin'" },
+]
