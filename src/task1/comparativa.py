@@ -15,12 +15,14 @@ from transformers import (
     AutoTokenizer,
     Trainer,
     TrainingArguments,
+    AutoModelForSequenceClassification,
+    EarlyStoppingCallback
 )
 
 # Añadimos la carpeta padre al path para poder importar models.py
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from models import MisogynyClassifier
 from utils import set_seed, DEFAULT_SEED
+from trainer import WeightedTrainer  # Importamos el trainer personalizado con pesos de clase
 
 # --- REPRODUCIBILIDAD ---
 SEED = DEFAULT_SEED
@@ -137,41 +139,40 @@ for name, model_id in MODELS.items():
         val_tok.set_format("torch")
         
         # 4. Crear modelo
-        model = MisogynyClassifier(
-            model_name_or_path=model_id,
+        model = AutoModelForSequenceClassification.from_pretrained(
+            model_id,
             num_labels=2,
-            dropout_rate=0.3,
-            class_weights=weights_tensor.to(device),
-            use_focal_loss=True,
-            focal_gamma=2.0,
-            pooling_strategy="mean",  # Mean pooling para canciones largas
+            problem_type="single_label_classification"
         ).to(device)
         
         # 5. Configurar entrenamiento (optimizado para MAX_LEN=512)
         args = TrainingArguments(
-            output_dir=f"{OUTPUT_DIR}/{name}",
-            num_train_epochs=3,
-            per_device_train_batch_size=2,  # Reducido para MAX_LEN=512
-            per_device_eval_batch_size=2,
-            gradient_accumulation_steps=16,  # Batch efectivo = 32
-            eval_strategy="epoch",
-            save_strategy="epoch",
-            load_best_model_at_end=True,
-            metric_for_best_model="f1_macro",
-            greater_is_better=True,
-            logging_steps=50,
+            output_dir=f"{SAVE_DIR}/temp_checkpoints", # Carpeta temporal
+            learning_rate=2e-5,
+            per_device_train_batch_size=2,
+            gradient_accumulation_steps=16,
+            num_train_epochs=10,              # Aumentamos épocas porque Early Stopping parará antes
             fp16=True,
+            warmup_ratio=0.1,
+            evaluation_strategy="epoch",      # Evaluar cada época
+            save_strategy="epoch",            # Guardar cada época (necesario para Early Stopping)
+            load_best_model_at_end=True,      # Cargar el mejor modelo al terminar
+            metric_for_best_model="f1",
+            greater_is_better=True,
+            save_total_limit=1,               # Mantiene SOLO el mejor checkpoint, borra el resto
             report_to="none",
-            save_total_limit=1,
-            gradient_checkpointing=True,  # Ahorra VRAM
+            gradient_checkpointing=True,
         )
+
         
-        trainer = Trainer(
+        trainer = WeightedTrainer(
             model=model,
             args=args,
             train_dataset=train_tok,
             eval_dataset=val_tok,
             compute_metrics=compute_metrics,
+            class_weights=weights_tensor,  # Pasamos los pesos al trainer personalizado
+            callbacks=[EarlyStoppingCallback(early_stopping_patience=2)],  # Early stopping
         )
         
         # 6. Entrenar y evaluar

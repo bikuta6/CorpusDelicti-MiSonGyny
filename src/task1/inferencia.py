@@ -6,7 +6,7 @@ import numpy as np
 from collections import Counter
 from torch.nn.functional import softmax
 from sklearn.metrics import f1_score
-from transformers import AutoTokenizer, AutoConfig
+from transformers import AutoTokenizer, AutoConfig, AutoModelForSequenceClassification,
 from pysentimiento.preprocessing import preprocess_tweet
 from tqdm import tqdm
 import joblib
@@ -215,22 +215,11 @@ for folder in model_folders:
         print(f" No se reconoció la arquitectura en {folder_name}, saltando...")
         continue
 
-    # 2. Inicializar la arquitectura VACÍA (con pesos base de HF)
-    model = MisogynyClassifier(
-        model_name_or_path=base_model_id,
-        num_labels=2,
-        dropout_rate=0.3,  # Debe coincidir con entrenamiento
-        is_multilabel=False,
-        pooling_strategy="mean"  # CRÍTICO: Mismo pooling que en entrenamiento
-    )
-    
-    # 3. Cargar los pesos ENTRENADOS (Sobrescribe backbone y custom head)
-    print(f"  > Cargando pesos desde: {ckpt_dirs[0]}")
-    model.load_state_dict(torch.load(weights_path, map_location=device))
-    model.to(device)
-    model.eval()
-    
+    # 2. carga el modelo con los pesos del checkpoint
+    print(f"  > Cargando modelo desde: {weights_path}")
+    model = AutoModelForSequenceClassification.from_pretrained(ckpt_path).to(device)
     tokenizer = AutoTokenizer.from_pretrained(ckpt_path) # El tokenizer sí se carga del checkpoint
+    model.eval()
     is_robertuito = "Robertuito" in folder_name
 
     # 4. Predecir Validación

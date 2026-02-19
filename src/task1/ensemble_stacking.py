@@ -11,18 +11,19 @@ Uso:
 import os
 import sys
 import torch
+import gc
 import pandas as pd
 import numpy as np
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import f1_score, accuracy_score, classification_report
-from transformers import AutoTokenizer
+from transformers import AutoTokenizer, AutoModelForSequenceClassification
 from pysentimiento.preprocessing import preprocess_tweet
 from tqdm import tqdm
 import joblib
+from sklearn.model_selection import StratifiedKFold
 
 # Añadimos path para importar models.py
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from models import MisogynyClassifier
 from utils import set_seed, DEFAULT_SEED
 
 # --- REPRODUCIBILIDAD ---
@@ -47,60 +48,28 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 def load_trained_model(model_name, fold=0):
-    """
-    Carga un modelo entrenado desde el directorio de ensemble.
+    # La ruta debe coincidir exactamente con como guardaste en entrenamiento.py
+    ckpt_path = os.path.join(MODELS_DIR, model_name, f"fold_{fold}")
     
-    Args:
-        model_name: Nombre del modelo (mDeBERTa, BETO, etc.)
-        fold: Número de fold a cargar (default: 0 = mejor)
+    if not os.path.exists(ckpt_path):
+        # Backup por si la estructura es diferente
+        ckpt_path = os.path.join(MODELS_DIR, f"{model_name}_fold_{fold}")
     
-    Returns:
-        model, tokenizer
-    """
-    model_folder = os.path.join(MODELS_DIR, f"{model_name}_fold_{fold}")
+    if not os.path.exists(ckpt_path):
+         raise FileNotFoundError(f"No se encontró el fold en: {ckpt_path}")
+
+    # Cargar configuración para asegurar que problem_type sea correcto
+    model = AutoModelForSequenceClassification.from_pretrained(ckpt_path)
     
-    if not os.path.exists(model_folder):
-        # Intentar con fold/checkpoint
-        model_folder = os.path.join(MODELS_DIR, model_name, f"fold_{fold}")
-    
-    if not os.path.exists(model_folder):
-        raise FileNotFoundError(f"No se encontró modelo en: {model_folder}")
-    
-    # Buscar checkpoint dentro del folder
-    ckpt_dirs = [d for d in os.listdir(model_folder) if "checkpoint" in d or d == "fold_0"]
-    
-    if ckpt_dirs:
-        ckpt_path = os.path.join(model_folder, ckpt_dirs[0])
-    else:
-        ckpt_path = model_folder
-    
-    print(f"  Cargando desde: {ckpt_path}")
-    
-    # Cargar tokenizer
-    tokenizer = AutoTokenizer.from_pretrained(ckpt_path)
-    
-    # Cargar modelo
-    base_model_id = MODEL_MAP[model_name]
-    model = MisogynyClassifier(
-        model_name_or_path=base_model_id,
-        num_labels=2,
-        dropout_rate=0.3,
-        is_multilabel=False,
-        pooling_strategy="mean"
-    )
-    
-    # Cargar pesos entrenados
-    weights_path = os.path.join(ckpt_path, "pytorch_model.bin")
-    if os.path.exists(weights_path):
-        model.load_state_dict(torch.load(weights_path, map_location=device))
-    else:
-        # Intentar cargar del safetensors o completo
-        from transformers import AutoModel
-        model = MisogynyClassifier.from_pretrained(ckpt_path)
+    # Si el tokenizer no está en la carpeta del fold, intenta cargarlo del ID original
+    try:
+        tokenizer = AutoTokenizer.from_pretrained(ckpt_path)
+    except:
+        print(f"  Aviso: Tokenizer no encontrado en local, cargando de {MODEL_MAP[model_name]}")
+        tokenizer = AutoTokenizer.from_pretrained(MODEL_MAP[model_name])
     
     model.to(device)
     model.eval()
-    
     return model, tokenizer
 
 
@@ -148,8 +117,11 @@ def get_model_predictions(df, model_name, fold=0):
             probs = torch.softmax(outputs.logits, dim=-1)[0].cpu().numpy()
             predictions.append(probs)
     
-    del model, tokenizer
-    torch.cuda.empty_cache()
+    del model
+    del tokenizer
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+    gc.collect() # Forzar recolección de basura de Python
     
     return np.array(predictions)
 
@@ -187,132 +159,105 @@ def create_meta_features(df, fold=0):
     return meta_features, model_names_used
 
 
-def train_stacker(use_train_subset=False):
+def train_stacker():
     """
-    Entrena el meta-modelo de stacking.
-    
-    Args:
-        use_train_subset: Si True, usa solo subset de train para velocidad
+    Entrena el meta-modelo de stacking usando predicciones Out-of-Fold (OOF)
+    para evitar el sobreajuste y el leakage.
     """
     print("="*60)
-    print("ENTRENAMIENTO DE META-MODELO (STACKING)")
+    print("ENTRENAMIENTO DE META-MODELO (STACKING OOF)")
     print("="*60)
     
-    # Cargar datos
-    print(f"\nCargando datos...")
+    # 1. Cargar el dataset de entrenamiento original
+    # Usaremos el mismo orden que en el K-Fold de entrenamiento.py
     train_df = pd.read_csv(TRAIN_FILE)
-    val_df = pd.read_csv(VAL_FILE)
-    
-    # Usar subset si se especifica (para pruebas rápidas)
-    if use_train_subset and len(train_df) > 500:
-        print(f" Usando subset de train ({500} muestras) para velocidad")
-        train_df = train_df.sample(n=500, random_state=42)
-    
-    print(f"  Train: {len(train_df)} muestras")
-    print(f"  Val:   {len(val_df)} muestras")
-    
-    # Crear meta-features (probabilidades de modelos base)
-    print("\n" + "="*60)
-    print("PASO 1: EXTRAER PREDICCIONES DE MODELOS BASE EN TRAIN")
-    print("="*60)
-    X_train, models_used = create_meta_features(train_df, fold=0)
     y_train = train_df["label"].values
     
-    print("\n" + "="*60)
-    print("PASO 2: EXTRAER PREDICCIONES DE MODELOS BASE EN VALIDATION")
-    print("="*60)
-    X_val, _ = create_meta_features(val_df, fold=0)
+    # 2. Generar Meta-Features OOF (Entrenamiento)
+    # Necesitamos reconstruir las predicciones de CADA fold para CADA modelo
+    
+    skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=SEED)
+    
+    # Matriz para guardar las predicciones OOF: (N_samples, N_modelos * 2)
+    X_train_oof = np.zeros((len(train_df), len(MODEL_MAP) * 2))
+    
+    print(f"\nGenerando predicciones Out-of-Fold para {len(MODEL_MAP)} modelos...")
+    
+    for m_idx, (model_name, _) in enumerate(MODEL_MAP.items()):
+        print(f" > Procesando modelo: {model_name}")
+        
+        # Recorremos los mismos folds que en entrenamiento.py
+        for fold, (_, val_idx) in enumerate(skf.split(train_df, y_train)):
+            # Cargar el modelo específico de ese fold
+            try:
+                model, tokenizer = load_trained_model(model_name, fold)
+                
+                # Predecir SOLO el fragmento que fue validación en ese fold
+                fold_val_df = train_df.iloc[val_idx]
+                
+                # Reutilizamos (o adaptamos) get_model_predictions para este subset
+                # Nota: Es más eficiente pasarle el subset directamente aquí
+                fold_probs = []
+                is_robertuito = "Robertuito" in model_name
+                
+                with torch.no_grad():
+                    for text in fold_val_df["text"]:
+                        if is_robertuito: text = preprocess_tweet(text, lang="es")
+                        inputs = tokenizer(text, return_tensors="pt", padding="max_length", 
+                                         truncation=True, max_length=MAX_LEN).to(device)
+                        outputs = model(**inputs)
+                        probs = torch.softmax(outputs.logits, dim=-1)[0].cpu().numpy()
+                        fold_probs.append(probs)
+                
+                # Guardar en la posición correcta de la matriz global
+                # m_idx*2 es prob_neg, m_idx*2 + 1 es prob_pos
+                X_train_oof[val_idx, m_idx*2 : m_idx*2 + 2] = np.array(fold_probs)
+                
+                del model, tokenizer
+                torch.cuda.empty_cache()
+                
+            except FileNotFoundError:
+                print(f"   [!] Error: No se encontró el checkpoint del Fold {fold}")
+                return
+
+    # 3. Generar Meta-Features para Validación (Promedio de Folds)
+    # Para el set de validación externo o test, promediamos las predicciones de los 5 folds
+    print("\nGenerando predicciones para el set de Validación externo (Promedio de Folds)...")
+    val_df = pd.read_csv(VAL_FILE)
     y_val = val_df["label"].values
+    X_val_meta = np.zeros((len(val_df), len(MODEL_MAP) * 2))
+
+    for m_idx, (model_name, _) in enumerate(MODEL_MAP.items()):
+        model_val_probs = []
+        for fold in range(5):
+            # En una implementación real, aquí promediarías los 5 modelos. 
+            # Para simplificar, usaremos el fold 0 o el promedio si lo prefieres:
+            fold_probs = get_model_predictions(val_df, model_name, fold)
+            model_val_probs.append(fold_probs)
+        
+        # Promedio de los 5 folds para este modelo
+        X_val_meta[:, m_idx*2 : m_idx*2 + 2] = np.mean(model_val_probs, axis=0)
+
+    # 4. Entrenar Meta-Modelo
+    stacker = LogisticRegression(class_weight="balanced", random_state=SEED, max_iter=1000)
+    stacker.fit(X_train_oof, y_train)
     
-    # Entrenar meta-modelo
-    print("\n" + "="*60)
-    print("PASO 3: ENTRENAR META-MODELO (LOGISTIC REGRESSION)")
-    print("="*60)
-    
-    stacker = LogisticRegression(
-        penalty="l2",
-        C=1.0,                    # Regularización moderada
-        class_weight="balanced",  # Compensar desbalance
-        max_iter=1000,
-        solver="lbfgs",
-        random_state=SEED
-    )
-    
-    print("  Ajustando Logistic Regression...")
-    stacker.fit(X_train, y_train)
-    
-    # Evaluar
-    print("\n" + "="*60)
-    print("PASO 4: EVALUACIÓN DEL META-MODELO")
-    print("="*60)
-    
-    # Predicciones
-    train_preds = stacker.predict(X_train)
-    val_preds = stacker.predict(X_val)
-    
-    # Métricas
-    train_acc = accuracy_score(y_train, train_preds)
-    train_f1 = f1_score(y_train, train_preds, average="macro")
-    
-    val_acc = accuracy_score(y_val, val_preds)
+    # 5. Evaluación y Guardado
+    val_preds = stacker.predict(X_val_meta)
     val_f1 = f1_score(y_val, val_preds, average="macro")
     
-    print(f"\n Resultados en TRAIN:")
-    print(f"   Accuracy: {train_acc:.4f}")
-    print(f"   F1-Macro: {train_f1:.4f}")
-    
-    print(f"\n Resultados en VALIDATION:")
-    print(f"   Accuracy: {val_acc:.4f}")
-    print(f"   F1-Macro: {val_f1:.4f}")
-    
-    # Mostrar pesos aprendidos
-    print("\n" + "="*60)
-    print("PESOS APRENDIDOS POR EL META-MODELO")
-    print("="*60)
-    
-    feature_names = []
-    for model_name in models_used:
-        feature_names.extend([f"{model_name}_prob_neg", f"{model_name}_prob_pos"])
-    
-    weights = stacker.coef_[0]
-    intercept = stacker.intercept_[0]
-    
-    print(f"\n{'Feature':<35} {'Peso':>10}")
-    print("-" * 45)
-    for name, weight in zip(feature_names, weights):
-        sign = "" if abs(weight) > 0.1 else "  "
-        print(f"{sign} {name:<33} {weight:+10.4f}")
-    print("-" * 45)
-    print(f"   {'Intercept':<33} {intercept:+10.4f}")
-    
-    # Calcular importancia por modelo
-    print("\n IMPORTANCIA POR MODELO (suma abs de pesos):")
-    for model_name in models_used:
-        idx_neg = feature_names.index(f"{model_name}_prob_neg")
-        idx_pos = feature_names.index(f"{model_name}_prob_pos")
-        importance = abs(weights[idx_neg]) + abs(weights[idx_pos])
-        print(f"   {model_name:<15}: {importance:.4f}")
-    
-    # Guardar meta-modelo
-    print(f"\n Guardando meta-modelo en: {STACKER_OUTPUT}")
-    os.makedirs(os.path.dirname(STACKER_OUTPUT), exist_ok=True)
-    
-    # Guardar modelo y metadatos
+    print(f"\n{'='*60}")
+    print(f"RESULTADO FINAL STACKING OOF")
+    print(f"F1-Macro Validación: {val_f1:.4f}")
+    print(f"{'='*60}")
+
+    # Guardar igual que antes
     stacker_data = {
         "model": stacker,
-        "models_used": models_used,
-        "feature_names": feature_names,
-        "val_f1": val_f1,
-        "val_accuracy": val_acc
+        "models_used": list(MODEL_MAP.keys()),
+        "val_f1": val_f1
     }
-    
     joblib.dump(stacker_data, STACKER_OUTPUT)
-    print(" Meta-modelo guardado exitosamente")
-    
-    # Reporte detallado de validación
-    print("\n CLASSIFICATION REPORT (Validation):")
-    print(classification_report(y_val, val_preds, target_names=["No Misógino", "Misógino"]))
-    
     return stacker, val_f1
 
 
