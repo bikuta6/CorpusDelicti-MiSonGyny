@@ -132,12 +132,13 @@ for model_name, model_id in MODELS_TO_TRAIN.items():
             per_device_train_batch_size=2,
             gradient_accumulation_steps=16,
             num_train_epochs=10,              # Aumentamos épocas porque Early Stopping parará antes
-            fp16=True,
+            bf16=torch.cuda.is_bf16_supported(),
+            fp16=False,
             warmup_ratio=0.1,
-            evaluation_strategy="epoch",      # Evaluar cada época
+            eval_strategy="epoch",      # Evaluar cada época
             save_strategy="epoch",            # Guardar cada época (necesario para Early Stopping)
             load_best_model_at_end=True,      # Cargar el mejor modelo al terminar
-            metric_for_best_model="f1",
+            metric_for_best_model="eval_f1_macro",
             greater_is_better=True,
             save_total_limit=1,               # Mantiene SOLO el mejor checkpoint, borra el resto
             report_to="none",

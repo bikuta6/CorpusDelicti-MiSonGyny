@@ -6,7 +6,7 @@ import numpy as np
 from collections import Counter
 from torch.nn.functional import softmax
 from sklearn.metrics import f1_score
-from transformers import AutoTokenizer, AutoConfig, AutoModelForSequenceClassification,
+from transformers import AutoTokenizer, AutoConfig, AutoModelForSequenceClassification
 from pysentimiento.preprocessing import preprocess_tweet
 from tqdm import tqdm
 import joblib

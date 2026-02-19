@@ -32,6 +32,7 @@ set_seed(SEED)
 DATA_PATH = "../../data/task1/train.csv"
 OUTPUT_DIR = "../../models/task1/comparativa"
 RESULTS_FILE = "../../results/task1/tabla_paper.csv"
+SAVE_DIR = "../../models/task1/comparison"
 
 # Estadísticas del dataset:
 # - Mediana: 392 tokens, Percentil 90: 970 tokens
@@ -96,12 +97,12 @@ def compute_metrics(pred):
     labels = pred.label_ids
     preds = pred.predictions.argmax(-1)
     precision, recall, f1, _ = precision_recall_fscore_support(
-        labels, preds, average="macro"
-    )
+            labels, preds, average="macro", zero_division=0.0
+        )
     acc = accuracy_score(labels, preds)
     return {
         "accuracy": round(acc, 4),
-        "f1_macro": round(f1, 4),
+        "eval_f1_macro": round(f1, 4),
         "precision": round(precision, 4),
         "recall": round(recall, 4),
     }
@@ -127,12 +128,13 @@ for name, model_id in MODELS.items():
             texts = batch["text"]
             if is_robertuito:
                 texts = [preprocess_tweet(t, lang="es") for t in texts]
+                return tokenizer(texts, padding="max_length", truncation=True, max_length=128)
             # Truncación estándar (más efectiva para textos largos con mean pooling)
             return tokenizer(texts, padding="max_length", truncation=True, max_length=MAX_LEN)
         
         # 3. Tokenizar datasets
-        train_tok = train_ds.map(tokenize_fn, batched=True, remove_columns=["text"])
-        val_tok = val_ds.map(tokenize_fn, batched=True, remove_columns=["text"])
+        train_tok = train_ds.map(tokenize_fn, batched=True, remove_columns=["text"], load_from_cache_file=False)
+        val_tok = val_ds.map(tokenize_fn, batched=True, remove_columns=["text"], load_from_cache_file=False)
         train_tok = train_tok.rename_column("label", "labels")
         val_tok = val_tok.rename_column("labels" if "labels" in val_tok.column_names else "label", "labels")
         train_tok.set_format("torch")
@@ -144,20 +146,23 @@ for name, model_id in MODELS.items():
             num_labels=2,
             problem_type="single_label_classification"
         ).to(device)
-        
+        is_deberta = name == "mDeBERTa"
+        current_lr = 2e-6 if is_deberta else 2e-5  # DeBERTa necesita un LR mucho más bajo
+        print(f'{torch.cuda.is_bf16_supported()} -> Usando bf16: {torch.cuda.is_bf16_supported()} (ajustando configuración de entrenamiento)')
         # 5. Configurar entrenamiento (optimizado para MAX_LEN=512)
         args = TrainingArguments(
-            output_dir=f"{SAVE_DIR}/temp_checkpoints", # Carpeta temporal
-            learning_rate=2e-5,
+            #output_dir=f"{SAVE_DIR}/{name}/temp_checkpoints", # Carpeta temporal
+            learning_rate=current_lr,
             per_device_train_batch_size=2,
             gradient_accumulation_steps=16,
             num_train_epochs=10,              # Aumentamos épocas porque Early Stopping parará antes
-            fp16=True,
+            bf16=torch.cuda.is_bf16_supported(),
+            fp16=False,
             warmup_ratio=0.1,
-            evaluation_strategy="epoch",      # Evaluar cada época
+            eval_strategy="epoch",      # Evaluar cada época
             save_strategy="epoch",            # Guardar cada época (necesario para Early Stopping)
             load_best_model_at_end=True,      # Cargar el mejor modelo al terminar
-            metric_for_best_model="f1",
+            metric_for_best_model="eval_f1_macro",
             greater_is_better=True,
             save_total_limit=1,               # Mantiene SOLO el mejor checkpoint, borra el resto
             report_to="none",

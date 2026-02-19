@@ -16,12 +16,12 @@ class WeightedTrainer(Trainer):
         # Determinar si es Multilabel o Binario por la forma de las etiquetas
         # Multilabel: labels shape (batch, num_labels)
         # Binario: labels shape (batch,)
-        
+        current_weights = self.class_weights.to(logits.device, dtype=logits.dtype)
         if self.model.config.problem_type == "multi_label_classification":
-            loss_fct = nn.BCEWithLogitsLoss(pos_weight=self.class_weights)
+            loss_fct = nn.BCEWithLogitsLoss(pos_weight=current_weights)
             loss = loss_fct(logits, labels.float())
         else:
-            loss_fct = nn.CrossEntropyLoss(weight=self.class_weights)
+            loss_fct = nn.CrossEntropyLoss(weight=current_weights)
             loss = loss_fct(logits.view(-1, self.model.config.num_labels), labels.view(-1))
 
         return (loss, outputs) if return_outputs else loss
