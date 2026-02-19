@@ -135,6 +135,8 @@ for model_name, model_id in MODELS_TO_TRAIN.items():
             bf16=torch.cuda.is_bf16_supported(),
             fp16=False,
             warmup_ratio=0.1,
+            weight_decay=0.01,
+            lr_scheduler_type="cosine",
             eval_strategy="epoch",      # Evaluar cada época
             save_strategy="epoch",            # Guardar cada época (necesario para Early Stopping)
             load_best_model_at_end=True,      # Cargar el mejor modelo al terminar

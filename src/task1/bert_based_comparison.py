@@ -46,7 +46,7 @@ MODELS = {
     "MarIA": "IsGarrido/roberta-base-bne",
     "XLM-R": "xlm-roberta-base",
     "mDeBERTa": "microsoft/mdeberta-v3-base",
-    "Robertuito": "pysentimiento/robertuito-base-uncased",
+    "XLM-Longformer": "xlm-roberta-base-longformer-4096",
 }
 
 # --- CARGA DE DATOS ---
@@ -63,9 +63,12 @@ val_ds = Dataset.from_pandas(val_df, preserve_index=False)
 # Calcular pesos para clase desbalanceada
 n_pos = sum(df["label"] == 1)
 n_neg = sum(df["label"] == 0)
-ratio = n_neg / (n_pos + 1e-5)
-weights_tensor = torch.tensor([1.0, ratio]).float()
-print(f"Desbalance: Neg={n_neg}, Pos={n_pos} -> Peso clase 1: {ratio:.2f}")
+total = n_neg + n_pos
+w0 = total / (2 * n_neg)
+w1 = total / (2 * n_pos)
+
+weights_tensor = torch.tensor([w0, w1]).float()
+print(f"Desbalance: Neg={n_neg}, Pos={n_pos} -> Peso clase 1: {w1:.2f}")
 
 
 # --- SMART TRUNCATE PARA CANCIONES ---
@@ -159,6 +162,8 @@ for name, model_id in MODELS.items():
             bf16=torch.cuda.is_bf16_supported(),
             fp16=False,
             warmup_ratio=0.1,
+            weight_decay=0.01,
+            lr_scheduler_type="cosine",
             eval_strategy="epoch",      # Evaluar cada época
             save_strategy="epoch",            # Guardar cada época (necesario para Early Stopping)
             load_best_model_at_end=True,      # Cargar el mejor modelo al terminar
