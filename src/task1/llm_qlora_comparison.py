@@ -143,7 +143,7 @@ for name, model_id in MODELS.items():
         lora_config = LoraConfig(
             r=16,
             lora_alpha=32,
-            target_modules=["q_proj", "k_proj", "v_proj", "o_proj"], 
+            target_modules="all-linear", # Aplica LoRA a todas las capas lineales, crítico para modelos grandes
             lora_dropout=0.05,
             bias="none",
             task_type="SEQ_CLS" # Crítico para Sequence Classification
