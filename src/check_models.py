@@ -2,11 +2,10 @@ import os
 import sys
 import torch
 import numpy as np
-from transformers import AutoTokenizer
+from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
 # --- CONFIGURACIÓN DE RUTAS ---
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from models import MisogynyClassifier
 from utils import set_seed, DEFAULT_SEED
 
 # --- REPRODUCIBILIDAD ---
@@ -20,10 +19,12 @@ MODELS_TO_CHECK = {
     "XLM-R": "xlm-roberta-base",  # Clásico multilingual
     "mDeBERTa": "microsoft/mdeberta-v3-base",  # SOTA multilingual
     "Robertuito": "pysentimiento/robertuito-base-uncased",  # Especializado en slang en español
-    "LongFormer": "PlanTL-GOB-ES/longformer-base-4096-bne-es",  # Para textos largos (canciones)
+    "LongFormer": "markussagen/xlm-roberta-longformer-base-4096",  # Para textos largos (canciones)
+    # "Qwen-2.5-7B": "Qwen/Qwen2.5-7B",
+    # "Llama-3-8B": "meta-llama/Meta-Llama-3-8B",
 }
 
-DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+DEVICE = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
 print(f"--- INICIANDO DIAGNÓSTICO EN: {torch.cuda.get_device_name(0) if DEVICE == 'cuda' else 'CPU'} ---\n")
 
 def test_model(name, model_id):
@@ -43,12 +44,9 @@ def test_model(name, model_id):
         print("   [2/4] Cargando Modelo...", end=" ")
         dummy_weights = torch.tensor([1.0, 5.0]).to(DEVICE)
         
-        model = MisogynyClassifier(
-            model_name_or_path=model_id,
+        model = AutoModelForSequenceClassification.from_pretrained(
+            model_id,
             num_labels=2,
-            class_weights=dummy_weights,
-            dropout_rate=0.1,
-            is_multilabel=False
         ).to(DEVICE)
         model.train()
         print(" OK")
@@ -79,22 +77,33 @@ def test_model(name, model_id):
         # basta con llamarlo directo, ya que no estamos optimizando pesos reales.
         loss.backward()
         
-        param_check = model.classifier_head[0].weight
-        if param_check.grad is None: raise ValueError("Gradientes None")
+
+        # Determine the correct classifier weight for gradient checking
+        if hasattr(model.classifier, "out_proj"):  # RoBERTa / XLM-R / Robertuito
+            param_check = model.classifier.out_proj.weight
+        elif isinstance(model.classifier, torch.nn.Linear):  # DistilBERT / BERT / DeBERTa
+            param_check = model.classifier.weight
+        else:
+            raise ValueError(f"Unknown classifier type: {type(model.classifier)}")
+
+        # Check gradients
+        if param_check.grad is None:
+            raise ValueError("Gradientes None")
         grad_step_1 = param_check.grad.abs().sum().item()
-        if grad_step_1 == 0: raise ValueError("Gradientes CERO")
-            
-        # Simular Acumulación
+        if grad_step_1 == 0:
+            raise ValueError("Gradientes CERO")
+
+        # Simular Acumulación (Autocast)
         with torch.autocast(device_type=DEVICE, dtype=torch.float16):
             outputs_2 = model(**inputs)
             loss_2 = outputs_2.loss
         loss_2.backward()
-        
+
+        # Check accumulation
         grad_step_2 = param_check.grad.abs().sum().item()
-        
         if grad_step_2 <= grad_step_1:
-             raise ValueError(f"No acumula (G1={grad_step_1} -> G2={grad_step_2})")
-             
+            raise ValueError(f"No acumula (G1={grad_step_1} -> G2={grad_step_2})")
+
         print(f" OK (Acumula: {grad_step_1:.2f} -> {grad_step_2:.2f})")
         
         # Limpieza
