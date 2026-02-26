@@ -1,7 +1,9 @@
+import re
 from sentence_transformers import SentenceTransformer, util
 import torch
+import pandas as pd
 
-def remove_redundant_lyrics(text: str, threshold: float = 0.85, model_name: str = 'paraphrase-multilingual-mpnet-base-v2') -> str:
+def remove_redundant_lyrics(model: SentenceTransformer, text: str, threshold: float = 0.85) -> str:
     """
     Optimized for Spanglish lyrics and nuanced semantic redundancy.
     """
@@ -9,10 +11,13 @@ def remove_redundant_lyrics(text: str, threshold: float = 0.85, model_name: str 
         return ""
 
     # In a production pipeline, load this model globally/once outside the function
-    model = SentenceTransformer(model_name)
     
     # Clean and split lines
-    lines = [line.strip() for line in text.split('\n') if line.strip()]
+    lines = text.split("\n")
+    # Remove text between brackets (e.g., [Chorus], (Verse 1))
+    lines = [re.sub(r'[\[\(].*?[\]\)]', '', line).strip() for line in lines]
+    lines = [line for line in lines if line != ""]  # Remove empty lines
+    lines = [line for line in lines if len(line.split()) > 2]  # Keep lines with more than 2 words
     if not lines:
         return ""
 
@@ -30,20 +35,20 @@ def remove_redundant_lyrics(text: str, threshold: float = 0.85, model_name: str 
         if torch.max(similarities).item() < threshold:
             kept_indices.append(i)
 
-    return "\n".join([lines[idx] for idx in kept_indices])
+    return ". ".join([lines[idx] for idx in kept_indices])
 
 if __name__ == "__main__":
     # Test with Spanglish and similar meanings (nuance check)
-    sample_lyrics = """
-    Ella no quiere a nadie, she just wants to dance.
-    Solo quiere bailar y no le importa nada.
-    She just wants to dance.                  
-    Today is a beautiful day.
-    Hoy es un día hermoso.                 
-    """
+    sample_lyrics = pd.read_csv("../data/task1/train.csv")["lyrics"]
+    # Find the longest lyrics to test the function on a complex case
+    longest_idx = sample_lyrics.apply(lambda x: len(x.split())).idxmax()
+    sample_lyrics = sample_lyrics.iloc[longest_idx:longest_idx+1].tolist()  # Get the longest lyrics as a list
     print("--- Original Lyrics ---")
-    print(sample_lyrics)
+    print(sample_lyrics[0])
+    print("Number of words:", len(sample_lyrics[0].split()))
+    model = SentenceTransformer('paraphrase-multilingual-mpnet-base-v2')
     # 0.80 is usually the "sweet spot" for multilingual deduplication
-    cleaned_text = remove_redundant_lyrics(sample_lyrics, threshold=0.80)
+    cleaned_text = [remove_redundant_lyrics(model, lyrics, threshold=0.80) for lyrics in sample_lyrics]
     print("--- Cleaned Lyrics ---")
-    print(cleaned_text)
+    print(cleaned_text[0])
+    print("Number of words after cleaning:", len(cleaned_text[0].split()))

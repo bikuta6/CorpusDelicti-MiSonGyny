@@ -51,12 +51,14 @@ MODELS = {
 # --- CARGA DE DATOS ---
 print(f"Cargando datos desde {DATA_PATH}...")
 df = pd.read_csv(DATA_PATH)
+df["label"] = df["label"].map({"NM": 0, "M": 1})
 
 train_df, val_df = train_test_split(
     df, test_size=0.2, random_state=SEED, stratify=df["label"]
 )
-train_ds = Dataset.from_pandas(train_df, preserve_index=False)
-val_ds = Dataset.from_pandas(val_df, preserve_index=False)
+# column lyrics -> text, label -> label
+train_ds = Dataset.from_pandas(train_df.rename(columns={"lyrics": "text", "label": "label"}), preserve_index=False)
+val_ds = Dataset.from_pandas(val_df.rename(columns={"lyrics": "text", "label": "label"}), preserve_index=False)
 
 # Calcular pesos para clase desbalanceada
 n_pos = sum(df["label"] == 1)

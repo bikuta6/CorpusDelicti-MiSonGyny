@@ -46,19 +46,24 @@ MODELS = {
     "MarIA": "IsGarrido/roberta-base-bne",
     "XLM-R": "xlm-roberta-base",
     "mDeBERTa": "microsoft/mdeberta-v3-base",
-    "XLM-Longformer": "xlm-roberta-base-longformer-4096",
+    "XLM-Longformer": "markussagen/xlm-roberta-longformer-base-4096",
 }
 
 # --- CARGA DE DATOS ---
 print(f"Cargando datos desde {DATA_PATH}...")
 df = pd.read_csv(DATA_PATH)
-
+df["label"] = df["label"].map({"NM": 0, "M": 1})
+print(f"Dataset cargado: {len(df)} canciones")
+print(f"Distribución original:\n{df['label'].value_counts()}")
 # Split simple 80/20 solo para esta tabla comparativa
 train_df, val_df = train_test_split(
     df, test_size=0.2, random_state=SEED, stratify=df["label"]
 )
-train_ds = Dataset.from_pandas(train_df, preserve_index=False)
-val_ds = Dataset.from_pandas(val_df, preserve_index=False)
+
+# column lyrics -> text, label -> label
+train_ds = Dataset.from_pandas(train_df.rename(columns={"lyrics": "text", "label": "label"}), preserve_index=False)
+val_ds = Dataset.from_pandas(val_df.rename(columns={"lyrics": "text", "label": "label"}), preserve_index=False)
+
 
 # Calcular pesos para clase desbalanceada
 n_pos = sum(df["label"] == 1)
@@ -70,29 +75,6 @@ w1 = total / (2 * n_pos)
 weights_tensor = torch.tensor([w0, w1]).float()
 print(f"Desbalance: Neg={n_neg}, Pos={n_pos} -> Peso clase 1: {w1:.2f}")
 
-
-# --- SMART TRUNCATE PARA CANCIONES ---
-def smart_truncate(text, tokenizer, max_len=256):
-    """
-    Truncado inteligente: mantiene inicio y final de la canción.
-    Preserva contexto de intro y conclusión.
-    """
-    tokens = tokenizer(text, add_special_tokens=False).input_ids
-    
-    if len(tokens) <= max_len - 2:  # -2 para [CLS] y [SEP]
-        return text
-    
-    keep_tokens = max_len - 2
-    head_len = int(keep_tokens * 0.45)
-    tail_len = int(keep_tokens * 0.45)
-    
-    head_tokens = tokens[:head_len]
-    tail_tokens = tokens[-tail_len:]
-    
-    head_text = tokenizer.decode(head_tokens, skip_special_tokens=True)
-    tail_text = tokenizer.decode(tail_tokens, skip_special_tokens=True)
-    
-    return head_text + " [...] " + tail_text
 
 
 def compute_metrics(pred):
@@ -159,9 +141,11 @@ for name, model_id in MODELS.items():
             per_device_train_batch_size=2,
             gradient_accumulation_steps=16,
             num_train_epochs=10,              # Aumentamos épocas porque Early Stopping parará antes
-            bf16=torch.cuda.is_bf16_supported(),
+            #bf16=torch.cuda.is_bf16_supported(),
+            bf16=False,  # Desactivamos bf16 para evitar problemas con mDeBERTa, aunque sacrifiquemos algo de velocidad
             fp16=False,
             warmup_ratio=0.1,
+            max_grad_norm=1.0,
             weight_decay=0.01,
             lr_scheduler_type="cosine",
             eval_strategy="epoch",      # Evaluar cada época
@@ -171,7 +155,7 @@ for name, model_id in MODELS.items():
             greater_is_better=True,
             save_total_limit=1,               # Mantiene SOLO el mejor checkpoint, borra el resto
             report_to="none",
-            gradient_checkpointing=True,
+            gradient_checkpointing=False,
         )
 
         
@@ -182,7 +166,7 @@ for name, model_id in MODELS.items():
             eval_dataset=val_tok,
             compute_metrics=compute_metrics,
             class_weights=weights_tensor,  # Pasamos los pesos al trainer personalizado
-            callbacks=[EarlyStoppingCallback(early_stopping_patience=2)],  # Early stopping
+            callbacks=[EarlyStoppingCallback(early_stopping_patience=3)],  # Early stopping
         )
         
         # 6. Entrenar y evaluar
