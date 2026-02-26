@@ -47,6 +47,7 @@ MODELS = {
     "XLM-R": "xlm-roberta-base",
     "mDeBERTa": "microsoft/mdeberta-v3-base",
     "XLM-Longformer": "markussagen/xlm-roberta-longformer-base-4096",
+    "Robertuito": "pysentimiento/robertuito-hate-speech"  # Modelo optimizado para tweets, con preprocesamiento específico
 }
 
 # --- CARGA DE DATOS ---
@@ -107,6 +108,7 @@ for name, model_id in MODELS.items():
         # 1. Tokenizador
         tokenizer = AutoTokenizer.from_pretrained(model_id)
         is_robertuito = name == "Robertuito"
+        is_mdeberta = name == "mDeBERTa"
         
         # 2. Función de tokenización con truncación estándar
         def tokenize_fn(batch):
@@ -115,6 +117,9 @@ for name, model_id in MODELS.items():
                 texts = [preprocess_tweet(t, lang="es") for t in texts]
                 return tokenizer(texts, padding="max_length", truncation=True, max_length=128)
             # Truncación estándar (más efectiva para textos largos con mean pooling)
+            if is_mdeberta:
+                return tokenizer(texts, padding="max_length", truncation=True, max_length=256)
+            
             return tokenizer(texts, padding="max_length", truncation=True, max_length=MAX_LEN)
         
         # 3. Tokenizar datasets
@@ -131,23 +136,21 @@ for name, model_id in MODELS.items():
             num_labels=2,
             problem_type="single_label_classification"
         ).to(device)
-        is_deberta = name == "mDeBERTa"
-        current_lr = 2e-6 if is_deberta else 2e-5  # DeBERTa necesita un LR mucho más bajo
+        current_lr = 2e-5  
         print(f'{torch.cuda.is_bf16_supported()} -> Usando bf16: {torch.cuda.is_bf16_supported()} (ajustando configuración de entrenamiento)')
         # 5. Configurar entrenamiento (optimizado para MAX_LEN=512)
         args = TrainingArguments(
             #output_dir=f"{SAVE_DIR}/{name}/temp_checkpoints", # Carpeta temporal
             learning_rate=current_lr,
-            per_device_train_batch_size=2,
-            gradient_accumulation_steps=16,
+            per_device_train_batch_size=32,
+            #gradient_accumulation_steps=16,
             num_train_epochs=10,              # Aumentamos épocas porque Early Stopping parará antes
-            #bf16=torch.cuda.is_bf16_supported(),
-            bf16=False,  # Desactivamos bf16 para evitar problemas con mDeBERTa, aunque sacrifiquemos algo de velocidad
+            bf16=torch.cuda.is_bf16_supported(),
             fp16=False,
             warmup_ratio=0.1,
             max_grad_norm=1.0,
             weight_decay=0.01,
-            lr_scheduler_type="cosine",
+            lr_scheduler_type="linear",
             eval_strategy="epoch",      # Evaluar cada época
             save_strategy="epoch",            # Guardar cada época (necesario para Early Stopping)
             load_best_model_at_end=True,      # Cargar el mejor modelo al terminar

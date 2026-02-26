@@ -42,7 +42,7 @@ if __name__ == "__main__":
     sample_lyrics = pd.read_csv("../data/task1/train.csv")["lyrics"]
     # Find the longest lyrics to test the function on a complex case
     longest_idx = sample_lyrics.apply(lambda x: len(x.split())).idxmax()
-    sample_lyrics = sample_lyrics.iloc[longest_idx:longest_idx+1].tolist()  # Get the longest lyrics as a list
+    sample_lyrics = sample_lyrics.iloc[412:413].tolist()  # Get the longest lyrics as a list
     print("--- Original Lyrics ---")
     print(sample_lyrics[0])
     print("Number of words:", len(sample_lyrics[0].split()))
