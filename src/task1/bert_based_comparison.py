@@ -29,7 +29,7 @@ SEED = DEFAULT_SEED
 set_seed(SEED)
 
 # --- CONFIGURACIÓN ---
-DATA_PATH = "../../data/task1/train.csv"
+DATA_PATH = "../../data/task1/processed_train.csv"
 OUTPUT_DIR = "../../models/task1/comparativa"
 RESULTS_FILE = "../../results/task1/tabla_paper.csv"
 SAVE_DIR = "../../models/task1/comparison"
@@ -118,7 +118,7 @@ for name, model_id in MODELS.items():
                 return tokenizer(texts, padding="max_length", truncation=True, max_length=128)
             # Truncación estándar (más efectiva para textos largos con mean pooling)
             if is_mdeberta:
-                return tokenizer(texts, padding="max_length", truncation=True, max_length=256)
+                return tokenizer(texts, padding="max_length", truncation=True, max_length=MAX_LEN)
             
             return tokenizer(texts, padding="max_length", truncation=True, max_length=MAX_LEN)
         
@@ -142,13 +142,15 @@ for name, model_id in MODELS.items():
         args = TrainingArguments(
             #output_dir=f"{SAVE_DIR}/{name}/temp_checkpoints", # Carpeta temporal
             learning_rate=current_lr,
-            per_device_train_batch_size=32,
+            optim = "adamw_torch",
+            #adam_epsilon = 1e-6,
+            per_device_train_batch_size=32,  # DeBERTa puede necesitar batch size más pequeño por su arquitectura
             #gradient_accumulation_steps=16,
             num_train_epochs=10,              # Aumentamos épocas porque Early Stopping parará antes
             bf16=torch.cuda.is_bf16_supported(),
             fp16=False,
             warmup_ratio=0.1,
-            max_grad_norm=1.0,
+            max_grad_norm=1.0,  # DeBERTa puede necesitar un grad norm más bajo
             weight_decay=0.01,
             lr_scheduler_type="linear",
             eval_strategy="epoch",      # Evaluar cada época
