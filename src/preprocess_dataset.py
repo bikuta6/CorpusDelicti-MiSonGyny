@@ -27,14 +27,18 @@ def process_file(input_csv: Path, output_csv: Path, model_name: str, threshold: 
     texts = df[text_col].fillna("").astype(str).tolist()
 
     processed = []
+    mean_length = sum(len(t.split()) for t in texts) / len(texts)
+    print(f"Processing {len(texts)} lyrics with average length {mean_length:.1f} words using model '{model_name}' and threshold {threshold}...")
     for txt in tqdm(texts, desc="Processing lyrics"):
         try:
-            out = remove_redundant_lyrics_hierarchical(model, txt, stanza_threshold=0.88, line_threshold=0.92)
+            out = remove_redundant_lyrics(model, txt, threshold=threshold)
         except Exception:
             out = ""
         processed.append(out)
 
     # Replace the original text column in the output CSV
+    mean_length_out = sum(len(t.split()) for t in processed) / len(processed)
+    print(f"Finished processing. Average length after processing: {mean_length_out:.1f} words.")
     df[text_col] = processed
 
     output_csv.parent.mkdir(parents=True, exist_ok=True)

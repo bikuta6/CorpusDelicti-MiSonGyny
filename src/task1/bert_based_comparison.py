@@ -45,15 +45,17 @@ MODELS = {
     "BETO": "dccuchile/bert-base-spanish-wwm-cased",
     "MarIA": "IsGarrido/roberta-base-bne",
     "XLM-R": "xlm-roberta-base",
-    "mDeBERTa": "microsoft/mdeberta-v3-base",
-    "XLM-Longformer": "markussagen/xlm-roberta-longformer-base-4096",
-    "Robertuito": "pysentimiento/robertuito-hate-speech"  # Modelo optimizado para tweets, con preprocesamiento específico
+    #"mDeBERTa": "microsoft/mdeberta-v3-base",
+    #"XLM-Longformer": "markussagen/xlm-roberta-longformer-base-4096",
+    "Robertuito": "pysentimiento/robertuito-base-uncased"  # Modelo optimizado para tweets, con preprocesamiento específico
 }
 
 # --- CARGA DE DATOS ---
 print(f"Cargando datos desde {DATA_PATH}...")
 df = pd.read_csv(DATA_PATH)
 df["label"] = df["label"].map({"NM": 0, "M": 1})
+print(df["label"].unique())
+print(df["label"].isna().sum())
 print(f"Dataset cargado: {len(df)} canciones")
 print(f"Distribución original:\n{df['label'].value_counts()}")
 # Split simple 80/20 solo para esta tabla comparativa
@@ -144,13 +146,13 @@ for name, model_id in MODELS.items():
             learning_rate=current_lr,
             optim = "adamw_torch",
             #adam_epsilon = 1e-6,
-            per_device_train_batch_size=32,  # DeBERTa puede necesitar batch size más pequeño por su arquitectura
-            #gradient_accumulation_steps=16,
+            per_device_train_batch_size=16,  # DeBERTa puede necesitar batch size más pequeño por su arquitectura
+            gradient_accumulation_steps=2,
             num_train_epochs=10,              # Aumentamos épocas porque Early Stopping parará antes
             bf16=torch.cuda.is_bf16_supported(),
             fp16=False,
-            warmup_ratio=0.1,
-            max_grad_norm=1.0,  # DeBERTa puede necesitar un grad norm más bajo
+            # warmup_ratio=0.1,
+            # max_grad_norm=1.0,  # DeBERTa puede necesitar un grad norm más bajo
             weight_decay=0.01,
             lr_scheduler_type="linear",
             eval_strategy="epoch",      # Evaluar cada época
@@ -170,8 +172,11 @@ for name, model_id in MODELS.items():
             train_dataset=train_tok,
             eval_dataset=val_tok,
             compute_metrics=compute_metrics,
-            class_weights=weights_tensor,  # Pasamos los pesos al trainer personalizado
-            callbacks=[EarlyStoppingCallback(early_stopping_patience=3)],  # Early stopping
+            class_weights=None,  # Pasamos los pesos al trainer personalizado
+            loss_type="focal",  # Usamos focal loss para manejar el desbalance
+            focal_gamma=2.0,    # Gamma recomendado para focal lossfocal_alpha=weights_tensor,  # Alpha para focal loss basado en pesos de clase
+            focal_alpha=None,  # Alpha para focal loss basado en pesos de clase
+            callbacks=[EarlyStoppingCallback(early_stopping_patience=5)],  # Early stopping
         )
         
         # 6. Entrenar y evaluar
