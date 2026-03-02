@@ -38,7 +38,6 @@ def _normalize_lyric_text(text: str) -> str:
 def remove_redundant_lyrics(model: SentenceTransformer, text: str, threshold: float = 0.82) -> str:
     """
     Optimized for Spanglish lyrics and nuanced semantic redundancy using E5-Large.
-    Threshold 0.82 is the sweet spot for E5 to prevent over-deduplication.
     """
     if not text.strip():
         return ""
