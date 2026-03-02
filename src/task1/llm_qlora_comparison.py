@@ -86,6 +86,20 @@ def compute_metrics(pred):
         "recall": round(recall, 4),
     }
 
+def make_tokenize_fn(tokenizer, max_len: int):
+    """
+    Factoría de funciones de tokenización.
+    Evita el bug de closure en bucles Python.
+    """
+    def tokenize_fn(batch):
+        return tokenizer(
+            batch["text"],
+            padding="max_length",
+            truncation=True,
+            max_length=max_len
+        )
+    return tokenize_fn
+
 results_list = []
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -113,13 +127,7 @@ for name, model_id in MODELS.items():
             tokenizer.pad_token_id = tokenizer.eos_token_id
         
         # 3. Función de tokenización (Sin smart truncate, pasamos el texto completo)
-        def tokenize_fn(batch):
-            return tokenizer(
-                batch["text"], 
-                padding="max_length", 
-                truncation=True, 
-                max_length=MAX_LEN
-            )
+        tokenize_fn = make_tokenize_fn(tokenizer, MAX_LEN)
         
         # 4. Tokenizar datasets
         train_tok = train_ds.map(tokenize_fn, batched=True, remove_columns=["text"], load_from_cache_file=False)
@@ -201,6 +209,14 @@ for name, model_id in MODELS.items():
         })
         
         print(f" {name}: F1={metrics['eval_f1_macro']:.4f}")
+        
+        # Guardar modelo LoRA + tokenizador para inferencia posterior
+        model_save_path = os.path.join(SAVE_DIR, name, "final_model")
+        os.makedirs(model_save_path, exist_ok=True)
+        # Para modelos PEFT, save_pretrained guarda solo los adaptadores LoRA (muy ligero)
+        model.save_pretrained(model_save_path)
+        tokenizer.save_pretrained(model_save_path)
+        print(f"Adaptadores LoRA guardados en: {model_save_path}")
         
     except Exception as e:
         print(f" Error con {name}: {e}")

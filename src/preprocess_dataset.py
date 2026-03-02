@@ -6,13 +6,13 @@ from tqdm.auto import tqdm
 
 try:
     # try importing lyric_utils from src root
-    from lyric_utils import remove_redundant_lyrics, remove_redundant_lyrics_hierarchical
+    from lyric_utils import remove_redundant_lyrics
     from sentence_transformers import SentenceTransformer
 except Exception:
     # if running from this file's directory, ensure src/ is on path
     repo_root = Path(__file__).resolve().parents[1]
     sys.path.append(str(repo_root))
-    from lyric_utils import remove_redundant_lyrics, remove_redundant_lyrics_hierarchical
+    from lyric_utils import remove_redundant_lyrics
     from sentence_transformers import SentenceTransformer
 
 
