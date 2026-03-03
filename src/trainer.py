@@ -51,7 +51,7 @@ class WeightedTrainer(Trainer):
     def __init__(self, *args, class_weights=None, loss_type="weighted", 
                  focal_gamma=2.0, focal_alpha=None, **kwargs):
         super().__init__(*args, **kwargs)
-        self.loss_type = loss_type
+        self.loss_type = loss_type # "weighted",  "focal" o "standard"
         
         # Determine problem type from model config
         is_multilabel = (self.model.config.problem_type == "multi_label_classification")
@@ -63,56 +63,15 @@ class WeightedTrainer(Trainer):
                 alpha=focal_alpha, 
                 is_multilabel=is_multilabel
             ).to(self.args.device) # Ensure it starts on the right device
-        else:
+
+        elif self.loss_type == "weighted":
             self.focal_loss_fct = None
             self.class_weights = class_weights.to(self.args.device) if class_weights is not None else None
+        else:
+            self.focal_loss_fct = None
+            self.class_weights = None
 
 
-
-    def create_optimizer(self):
-        """
-        Setup the optimizer with different learning rates for 
-        the backbone and the classification head.
-        """
-        model = self.model
-        
-        # 1. Define learning rates
-        backbone_lr = self.args.learning_rate
-        classifier_lr = backbone_lr * 10  # Typically 10x faster
-        
-        # 2. Identify parameter groups
-        # Most HF models store the backbone in a child attribute like 'bert', 'roberta', or 'distilbert'
-        # We can also identify the head by looking for 'classifier' or 'summary'
-        backbone_params = []
-        classifier_params = []
-        
-        for name, param in model.named_parameters():
-            if not param.requires_grad:
-                continue
-            if "classifier" in name or "score" in name:
-                classifier_params.append(param)
-            else:
-                backbone_params.append(param)
-        
-        # 3. Create group dictionaries
-        optimizer_grouped_parameters = [
-            {
-                "params": backbone_params,
-                "lr": backbone_lr,
-                "weight_decay": self.args.weight_decay,
-            },
-            {
-                "params": classifier_params, 
-                "lr": classifier_lr,
-                "weight_decay": self.args.weight_decay,
-            },
-        ]
-        
-        # 4. Instantiate optimizer
-        optimizer_cls, optimizer_kwargs = Trainer.get_optimizer_cls_and_kwargs(self.args)
-        self.optimizer = optimizer_cls(optimizer_grouped_parameters, **optimizer_kwargs)
-        
-        return self.optimizer
     
     def compute_loss(self, model, inputs, return_outputs=False, **kwargs):
         labels = inputs.get("labels")

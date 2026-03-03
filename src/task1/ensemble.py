@@ -19,6 +19,7 @@ from transformers import (
 from datasets import Dataset
 from dataclasses import dataclass
 from typing import Optional
+from bert_model_configs import ModelConfig, MODEL_CONFIGS
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from utils import set_seed, DEFAULT_SEED
@@ -31,64 +32,16 @@ set_seed(SEED)
 # --- CONFIGURACIÓN ---
 TRAIN_FILE = "../../data/task1/processed_train.csv"
 SAVE_DIR = "../../models/task1/ensemble"
-N_FOLDS = 5
+N_FOLDS = 3
 
 # ─────────────────────────────────────────────────────────────
 # CONFIGURACIÓN POR MODELO (top 3 de la comparativa)
 # ─────────────────────────────────────────────────────────────
 
-@dataclass
-class ModelConfig:
-    model_id: str
-    classifier_dropout: float = 0.1
-    attention_probs_dropout_prob: float = 0.1
-    hidden_dropout_prob: float = 0.1
-    max_len: int = 512
-    learning_rate: float = 2e-5
-    per_device_train_batch_size: int = 16
-    gradient_accumulation_steps: int = 2
-    num_train_epochs: int = 10
-    weight_decay: float = 0.01
-    warmup_ratio: float = 0.06
-    max_grad_norm: float = 1.0
-    lr_scheduler_type: str = "linear"
-    early_stopping_patience: int = 5
-    loss_type: str = "focal"
-    focal_gamma: float = 2.0
-    focal_alpha: Optional[float] = None
-
 
 # Top 3 modelos según tabla_paper_test.csv
-MODELS_TO_TRAIN: dict[str, ModelConfig] = {
-    "DistilBETO": ModelConfig(
-        model_id="dccuchile/distilbert-base-spanish-uncased",
-        classifier_dropout=0.3,
-        attention_probs_dropout_prob=0.15,
-        hidden_dropout_prob=0.15,
-        learning_rate=4e-5,
-        per_device_train_batch_size=32,
-        gradient_accumulation_steps=1,
-        warmup_ratio=0.1,
-        weight_decay=0.05,
-    ),
-    "XLM-R": ModelConfig(
-        model_id="xlm-roberta-base",
-        classifier_dropout=0.15,
-        attention_probs_dropout_prob=0.1,
-        hidden_dropout_prob=0.1,
-        learning_rate=1e-5,
-        warmup_ratio=0.1,
-        weight_decay=0.05,
-    ),
-    "MarIA": ModelConfig(
-        model_id="IsGarrido/roberta-base-bne",
-        classifier_dropout=0.15,
-        attention_probs_dropout_prob=0.1,
-        hidden_dropout_prob=0.1,
-        learning_rate=2e-5,
-        warmup_ratio=0.06,
-    ),
-}
+models_names = ["DistilBETO", "XLM-R"]
+MODELS_TO_TRAIN: dict[str, ModelConfig] = {name: MODEL_CONFIGS[name] for name in models_names}
 
 # ─────────────────────────────────────────────────────────────
 # CARGA DE DATOS
@@ -96,7 +49,7 @@ MODELS_TO_TRAIN: dict[str, ModelConfig] = {
 
 print(f"Cargando datos desde {TRAIN_FILE}...")
 df = pd.read_csv(TRAIN_FILE)
-df["label"] = df["label"].map({"NM": 0, "M": 1}) if df["label"].dtype == object else df["label"]
+df["label"] = df["label"].map({"NM": 0, "M": 1})
 texts = df["lyrics"].tolist()
 labels = df["label"].tolist()
 
@@ -242,7 +195,7 @@ for model_name, cfg in MODELS_TO_TRAIN.items():
             class_weights=weights_tensor.to(device),
             loss_type=cfg.loss_type,
             focal_gamma=cfg.focal_gamma,
-            focal_alpha=cfg.focal_alpha,
+            focal_alpha=None,
             callbacks=[EarlyStoppingCallback(early_stopping_patience=cfg.early_stopping_patience)],
         )
 
@@ -250,7 +203,7 @@ for model_name, cfg in MODELS_TO_TRAIN.items():
 
         # Evaluar
         eval_result = trainer.evaluate()
-        fold_f1 = eval_result["eval_eval_f1_macro"]
+        fold_f1 = eval_result["eval_f1_macro"]
         model_f1_scores.append(fold_f1)
         print(f"   Fold {fold+1} F1-Macro: {fold_f1:.4f}")
 

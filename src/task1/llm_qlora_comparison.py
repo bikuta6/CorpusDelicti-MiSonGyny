@@ -27,26 +27,20 @@ from peft import (
 # Añadimos la carpeta padre al path para poder importar utils y trainer
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from utils import set_seed, DEFAULT_SEED
-from trainer import WeightedTrainer  # Importamos tu trainer personalizado
+from trainer import WeightedTrainer
+from llm_model_configs import LLMConfig, LLM_CONFIGS
 
 # --- REPRODUCIBILIDAD ---
 SEED = DEFAULT_SEED
 set_seed(SEED)
 
 # --- CONFIGURACIÓN ---
-DATA_PATH = "../../data/task1/train.csv"
+DATA_PATH = "../../data/task1/processed_train.csv"
 OUTPUT_DIR = "../../models/task1/comparativa_llm"
 RESULTS_FILE = "../../results/task1/tabla_paper_llms.csv"
 SAVE_DIR = "../../models/task1/comparison_llm"
 
-# Los LLMs soportan contextos mucho más largos. 2048 suele cubrir canciones enteras (intro, estribillos, outro).
-MAX_LEN = 2048 
 
-# Modelos LLM a comparar
-MODELS = {
-    "Qwen-2.5-7B": "Qwen/Qwen2.5-7B",
-    "Llama-3-8B": "meta-llama/Meta-Llama-3-8B",
-}
 
 # --- CARGA DE DATOS ---
 print(f"Cargando datos desde {DATA_PATH}...")
@@ -63,9 +57,11 @@ val_ds = Dataset.from_pandas(val_df.rename(columns={"lyrics": "text", "label": "
 # Calcular pesos para clase desbalanceada
 n_pos = sum(df["label"] == 1)
 n_neg = sum(df["label"] == 0)
-ratio = n_neg / (n_pos + 1e-5)
-weights_tensor = torch.tensor([1.0, ratio]).float()
-print(f"Desbalance: Neg={n_neg}, Pos={n_pos} -> Peso clase 1: {ratio:.2f}")
+total = n_neg + n_pos
+w0 = total / (2 * n_neg)
+w1 = total / (2 * n_pos)
+weights_tensor = torch.tensor([w0, w1]).float()
+print(f"Desbalance: Neg={n_neg}, Pos={n_pos} -> Peso clase 0: {w0:.2f}, clase 1: {w1:.2f}")
 
 
 def compute_metrics(pred):
@@ -105,9 +101,13 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 print(f"--- INICIANDO COMPARATIVA LLM EN {torch.cuda.get_device_name(0) if device.type == 'cuda' else 'CPU'} ---")
 
-for name, model_id in MODELS.items():
+for name, cfg in LLM_CONFIGS.items():
+    if name[-2:] != "3B":
+        continue
+    model_id = cfg.model_id
     print(f"\n{'='*50}")
-    print(f">>> Evaluando: {name}")
+    print(f">>> Evaluando: {name} ({model_id})")
+    print(f"    lr={cfg.learning_rate}, max_len={cfg.max_len}, lora_r={cfg.lora_r}")
     print(f"{'='*50}")
     
     try:
@@ -127,7 +127,7 @@ for name, model_id in MODELS.items():
             tokenizer.pad_token_id = tokenizer.eos_token_id
         
         # 3. Función de tokenización (Sin smart truncate, pasamos el texto completo)
-        tokenize_fn = make_tokenize_fn(tokenizer, MAX_LEN)
+        tokenize_fn = make_tokenize_fn(tokenizer, cfg.max_len)
         
         # 4. Tokenizar datasets
         train_tok = train_ds.map(tokenize_fn, batched=True, remove_columns=["text"], load_from_cache_file=False)
@@ -143,7 +143,8 @@ for name, model_id in MODELS.items():
             num_labels=2,
             quantization_config=bnb_config,
             device_map={"": 0}, # Forza a cargar todo en la GPU 0 para evitar conflictos con Trainer
-            problem_type="single_label_classification"
+            problem_type="single_label_classification",
+            attn_implementation="sdpa"
         )
         # Asignar explícitamente el token de padding a la configuración del modelo
         model.config.pad_token_id = tokenizer.pad_token_id
@@ -151,30 +152,31 @@ for name, model_id in MODELS.items():
         # 6. Preparar para LoRA
         model = prepare_model_for_kbit_training(model)
         lora_config = LoraConfig(
-            r=16,
-            lora_alpha=32,
-            target_modules="all-linear", # Aplica LoRA a todas las capas lineales, crítico para modelos grandes
-            lora_dropout=0.05,
-            bias="none",
-            task_type="SEQ_CLS" # Crítico para Sequence Classification
+            r=cfg.lora_r,
+            lora_alpha=cfg.lora_alpha,
+            target_modules=cfg.target_modules,
+            lora_dropout=cfg.lora_dropout,
+            bias=cfg.lora_bias,
+            task_type="SEQ_CLS"
         )
         model = get_peft_model(model, lora_config)
         model.print_trainable_parameters()
 
-        # 7. Configurar entrenamiento (Ajuste extremo para 12GB VRAM)
+        # 7. Configurar entrenamiento
+        checkpoints_path = os.path.join(SAVE_DIR, name, "checkpoints")
         args = TrainingArguments(
-            output_dir=f"{SAVE_DIR}/{name}/temp_checkpoints",
-            learning_rate=2e-4, # Los modelos LoRA necesitan un LR más alto que los BERTs
-            per_device_train_batch_size=1, # Obligatorio 1
-            per_device_eval_batch_size=1,
-            gradient_accumulation_steps=16, # Compensamos el batch size de 1
-            num_train_epochs=5, # 5 es suficiente con LLMs, el Early Stopping actuará rápido
+            output_dir=checkpoints_path,
+            learning_rate=cfg.learning_rate,
+            per_device_train_batch_size=cfg.per_device_train_batch_size,
+            per_device_eval_batch_size=cfg.per_device_eval_batch_size,
+            gradient_accumulation_steps=cfg.gradient_accumulation_steps,
+            num_train_epochs=cfg.num_train_epochs,
             bf16=torch.cuda.is_bf16_supported(),
             fp16=not torch.cuda.is_bf16_supported(),
-            optim="paged_adamw_8bit", # Optimizador que ahorra muchísima memoria
-            warmup_ratio=0.1,
-            weight_decay=0.01,
-            lr_scheduler_type="cosine",
+            optim=cfg.optim,
+            warmup_ratio=cfg.warmup_ratio,
+            weight_decay=cfg.weight_decay,
+            lr_scheduler_type=cfg.lr_scheduler_type,
             eval_strategy="epoch",
             save_strategy="epoch",
             load_best_model_at_end=True,
@@ -182,7 +184,7 @@ for name, model_id in MODELS.items():
             greater_is_better=True,
             save_total_limit=1,
             report_to="none",
-            gradient_checkpointing=True,
+            gradient_checkpointing=cfg.gradient_checkpointing,
         )
         
         # 8. Instanciar tu Trainer personalizado
@@ -192,8 +194,10 @@ for name, model_id in MODELS.items():
             train_dataset=train_tok,
             eval_dataset=val_tok,
             compute_metrics=compute_metrics,
-            class_weights=weights_tensor,  # Usa tus propios pesos
-            callbacks=[EarlyStoppingCallback(early_stopping_patience=2)],
+            loss_type=cfg.loss_type,
+            focal_gamma=cfg.focal_gamma,
+            focal_alpha=None,
+            callbacks=[EarlyStoppingCallback(early_stopping_patience=cfg.early_stopping_patience)],
         )
         
         # 9. Entrenar y evaluar
@@ -208,18 +212,17 @@ for name, model_id in MODELS.items():
             "Recall": metrics["eval_recall"],
         })
         
-        print(f" {name}: F1={metrics['eval_f1_macro']:.4f}")
-        
-        # Guardar modelo LoRA + tokenizador para inferencia posterior
-        model_save_path = os.path.join(SAVE_DIR, name, "final_model")
+        print(f"✓ {name}: F1={metrics['eval_f1_macro']:.4f}")
+
+        # Guardar adaptadores LoRA + tokenizador
+        model_save_path = os.path.join(SAVE_DIR, name)
         os.makedirs(model_save_path, exist_ok=True)
-        # Para modelos PEFT, save_pretrained guarda solo los adaptadores LoRA (muy ligero)
-        model.save_pretrained(model_save_path)
+        model.save_pretrained(model_save_path)   # Solo guarda los pesos LoRA
         tokenizer.save_pretrained(model_save_path)
-        print(f"Adaptadores LoRA guardados en: {model_save_path}")
+        print(f"Modelo guardado en: {model_save_path}")
         
     except Exception as e:
-        print(f" Error con {name}: {e}")
+        print(f"✗ Error con {name}: {e}")
         results_list.append({
             "Modelo": name,
             "F1-Macro": None,
