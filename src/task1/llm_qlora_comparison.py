@@ -102,7 +102,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"--- INICIANDO COMPARATIVA LLM EN {torch.cuda.get_device_name(0) if device.type == 'cuda' else 'CPU'} ---")
 
 for name, cfg in LLM_CONFIGS.items():
-    if name[-2:] != "3B":
+    if name[-2:] in  {"7B", "8B"}:
         continue
     model_id = cfg.model_id
     print(f"\n{'='*50}")
