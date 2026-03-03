@@ -124,9 +124,9 @@ def load_model_with_config(model_id: str, cfg: ModelConfig, device: torch.device
     print(f"    Arquitectura detectada: {arch} → kwargs: {list(dropout_kwargs.keys())}")
 
     model = AutoModelForSequenceClassification.from_pretrained(
-        model_id,
+        cfg.model_id,
         num_labels=2,
-        problem_type="single_label_classification",
+        ignore_mismatched_sizes=cfg.ignore_mismatched_sizes,
         **dropout_kwargs,
     )
 

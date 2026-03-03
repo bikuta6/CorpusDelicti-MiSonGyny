@@ -5,27 +5,32 @@ import pandas as pd
 from tqdm.auto import tqdm
 
 try:
-    # try importing lyric_utils from src root
     from lyric_utils import remove_redundant_lyrics
     from sentence_transformers import SentenceTransformer
+    from contraction_utils import normalize_contractions
 except Exception:
-    # if running from this file's directory, ensure src/ is on path
     repo_root = Path(__file__).resolve().parents[1]
     sys.path.append(str(repo_root))
     from lyric_utils import remove_redundant_lyrics
     from sentence_transformers import SentenceTransformer
+    from contraction_utils import normalize_contractions
 
 
-def process_file(input_csv: Path, output_csv: Path, model_name: str, threshold: float, text_col: str):
+def process_file(input_csv: Path, output_csv: Path, model_name: str, threshold: float, text_col: str, skip_contractions: bool = False):
     df = pd.read_csv(input_csv)
     if text_col not in df.columns:
         raise SystemExit(f"Input CSV has no column '{text_col}'")
 
-    model = SentenceTransformer(model_name)
-
-    # Ensure no NaNs
     texts = df[text_col].fillna("").astype(str).tolist()
 
+    # Step 1: Normalize contractions
+    if not skip_contractions:
+        print("Normalizing contractions...")
+        texts = [normalize_contractions(t) for t in texts]
+
+    model = SentenceTransformer(model_name)
+
+    # Step 2: Remove redundant lyrics
     processed = []
     mean_length = sum(len(t.split()) for t in texts) / len(texts)
     print(f"Processing {len(texts)} lyrics with average length {mean_length:.1f} words using model '{model_name}' and threshold {threshold}...")
@@ -36,7 +41,6 @@ def process_file(input_csv: Path, output_csv: Path, model_name: str, threshold: 
             out = ""
         processed.append(out)
 
-    # Replace the original text column in the output CSV
     mean_length_out = sum(len(t.split()) for t in processed) / len(processed)
     print(f"Finished processing. Average length after processing: {mean_length_out:.1f} words.")
     df[text_col] = processed
@@ -53,12 +57,12 @@ def main():
     p.add_argument("--threshold", type=float, default=0.90, help="Similarity threshold for redundancy (0-1)")
     p.add_argument("--text-col", default="lyrics", help="Name of the lyrics/text column in CSV")
     p.add_argument("--task", help="If provided and input is a filename, resolve under data/<task>/ (e.g. task1, task2)")
+    p.add_argument("--skip-contractions", action="store_true", help="Skip contraction normalization step")
 
     args = p.parse_args()
 
     inp = Path(args.input_csv)
 
-    # If the path doesn't exist but a task is given, try resolving under data/<task>/
     if not inp.exists() and args.task:
         candidate = Path("data") / args.task / inp.name
         if candidate.exists():
@@ -72,7 +76,7 @@ def main():
     else:
         out = inp.parent / f"processed_{inp.name}"
 
-    process_file(inp, out, args.model, args.threshold, args.text_col)
+    process_file(inp, out, args.model, args.threshold, args.text_col, skip_contractions=args.skip_contractions)
     print(f"Saved processed CSV to: {out}")
 
 

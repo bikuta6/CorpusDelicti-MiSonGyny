@@ -1,4 +1,3 @@
-
 from attr import dataclass
 from typing import Optional
 
@@ -34,6 +33,9 @@ class ModelConfig:
     focal_gamma: float = 2.0
     focal_alpha: Optional[float] = None
 
+    # --- Carga del modelo ---
+    ignore_mismatched_sizes: bool = False   # True para modelos con cabeza de clasificación preentrenada
+
 
 MODEL_CONFIGS: dict[str, ModelConfig] = {
     "DistilBETO": ModelConfig(
@@ -57,15 +59,35 @@ MODEL_CONFIGS: dict[str, ModelConfig] = {
         learning_rate=5e-6,
         warmup_ratio=0.06,
     ),
+    "BETO-sentiment": ModelConfig(
+        model_id="finiteautomata/beto-sentiment-analysis",
+        classifier_dropout=0.1,          
+        attention_probs_dropout_prob=0.1,
+        hidden_dropout_prob=0.1,
+        max_len=512,
+        learning_rate=5e-6,
+        warmup_ratio=0.06,
+        ignore_mismatched_sizes=True,    # ← pretrained with 3 sentiment labels
+    ),
     "MarIA": ModelConfig(
         model_id="IsGarrido/roberta-base-bne",
-        classifier_dropout=0.3934,
-        attention_probs_dropout_prob=0.2736,
-        hidden_dropout_prob=0.0531,
-        warmup_ratio=0.0946,
+        classifier_dropout=0.1,
+        attention_probs_dropout_prob=0.1,
+        hidden_dropout_prob=0.1,
+        warmup_ratio=0.0,
         max_len=512,
-        weight_decay=0.0017,
-        learning_rate=4.44e-6,
+        weight_decay=0.01,
+        learning_rate=5e-6,
+    ),
+    "BERT-multilingual": ModelConfig(
+        model_id="nlptown/bert-base-multilingual-uncased-sentiment",
+        classifier_dropout=0.1,          
+        attention_probs_dropout_prob=0.1,
+        hidden_dropout_prob=0.1,
+        max_len=512,
+        learning_rate=5e-6,
+        warmup_ratio=0.1,
+        weight_decay=0.01,
     ),
     "XLM-R": ModelConfig(
         model_id="xlm-roberta-base",
