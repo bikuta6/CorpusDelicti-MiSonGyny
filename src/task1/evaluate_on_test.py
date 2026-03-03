@@ -23,7 +23,7 @@ from tqdm.auto import tqdm
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from utils import set_seed, DEFAULT_SEED
-from bert_model_configs import MODEL_CONFIGS
+from bert_model_configs import MODEL_CONFIGS, ModelConfig
 
 SEED = DEFAULT_SEED
 set_seed(SEED)
@@ -42,37 +42,7 @@ ID2LABEL          = {0: "NM", 1: "M"}
 
 # max_len y pysentimiento_preprocess por modelo
 # Deben coincidir con lo usado en entrenamiento
-MODEL_INFERENCE_CFG: dict[str, dict] = {
-    "BERT-multilingual": {
-        "max_len": 512,
-        "use_pysentimiento_preprocess": False,
-    },
-    "DistilBETO": {
-        "max_len": 512,
-        "use_pysentimiento_preprocess": False,
-    },
-    "BETO": {
-        "max_len": 512,
-        "use_pysentimiento_preprocess": False,
-    },
-    "BETO-sentiment": {
-        "max_len": 512,
-        "use_pysentimiento_preprocess": False,
-    },
-    "MarIA": {
-        "max_len": 512,
-        "use_pysentimiento_preprocess": False,
-    },
-    "XLM-R": {
-        "max_len": 512,
-        "use_pysentimiento_preprocess": False,
-    },
-    "Robertuito": {
-        "max_len": 128,  # Contexto corto → tweets
-        "use_pysentimiento_preprocess": True,  # Preprocesamiento específico de pysentimiento
-    },
-}
-
+MODEL_INFERENCE_CFG: dict[str, ModelConfig] = MODEL_CONFIGS
 if Path(BEST_THRESHOLDS_PATH).exists():
     df_thr = pd.read_csv(BEST_THRESHOLDS_PATH)
     best_thresholds = dict(zip(df_thr["Modelo"], df_thr["Best-Threshold"]))
@@ -216,8 +186,8 @@ for name, inf_cfg in MODEL_INFERENCE_CFG.items():
             model_path=model_path,
             texts=df["text"].tolist(),
             true_labels=true_labels,
-            max_len=inf_cfg["max_len"],
-            use_pysentimiento_preprocess=inf_cfg["use_pysentimiento_preprocess"],
+            max_len=inf_cfg.max_len,
+            use_pysentimiento_preprocess=inf_cfg.use_pysentimiento_preprocess,
             threshold=best_thresholds.get(name, 0.5),
             device=device,
         )

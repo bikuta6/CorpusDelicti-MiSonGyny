@@ -20,7 +20,7 @@ class ModelConfig:
     learning_rate: float = 2e-5
     per_device_train_batch_size: int = 16
     gradient_accumulation_steps: int = 1
-    num_train_epochs: int = 6
+    num_train_epochs: int = 10
     weight_decay: float = 0.01
     warmup_ratio: float = 0.1
     max_grad_norm: float = None
@@ -61,7 +61,7 @@ MODEL_CONFIGS: dict[str, ModelConfig] = {
         attention_probs_dropout_prob=0.1,
         hidden_dropout_prob=0.1,
         max_len=512,
-        learning_rate=1e-5,
+        learning_rate=2e-5,
     ),
     "XLM-R": ModelConfig(
         model_id="xlm-roberta-base",

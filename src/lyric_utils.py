@@ -58,16 +58,23 @@ def remove_redundant_lyrics(model: SentenceTransformer, text: str, threshold: fl
     if not clean_stanzas:
         return ""
 
-    # --- Embed first stanza for stanza-level comparison ---
+    # --- Batch encode all stanzas at once ---
+    all_stanza_texts = [
+        f"passage: {' '.join([preprocess_tweet(l) for l in s])}"
+        for s in clean_stanzas
+    ]
+    all_stanza_embs = model.encode(all_stanza_texts, convert_to_tensor=True)
+
     kept_stanzas = [clean_stanzas[0]]
-    stanza_embeddings = [model.encode([f"passage: {preprocess_tweet(line)}" for line in clean_stanzas[0]], convert_to_tensor=True).mean(dim=0)]
+    kept_stanza_embs = [all_stanza_embs[0]]
 
     for i in range(1, len(clean_stanzas)):
-        current_embedding = model.encode([f"passage: {preprocess_tweet(line)}" for line in clean_stanzas[i]], convert_to_tensor=True).mean(dim=0)
-        similarities = [util.cos_sim(current_embedding, s_emb) for s_emb in stanza_embeddings]
-        if max([sim.item() for sim in similarities]) < threshold:
+        current_embedding = all_stanza_embs[i]
+        kept_embs_tensor = torch.stack(kept_stanza_embs)
+        max_sim = util.cos_sim(current_embedding, kept_embs_tensor).max().item()
+        if max_sim < threshold:
             kept_stanzas.append(clean_stanzas[i])
-            stanza_embeddings.append(current_embedding)
+            kept_stanza_embs.append(current_embedding)
 
     # --- Line-level deduplication within each kept stanza ---
     final_stanzas = []
@@ -75,18 +82,22 @@ def remove_redundant_lyrics(model: SentenceTransformer, text: str, threshold: fl
         if len(stanza) == 1:
             final_stanzas.append(stanza)
             continue
-        kept_lines = [stanza[0]]  # always keep first line
-        line_embs = [model.encode(f"passage: {preprocess_tweet(stanza[0])}", convert_to_tensor=True)]
-        for line in stanza[1:]:
-            current_emb = model.encode(f"passage: {preprocess_tweet(line)}", convert_to_tensor=True)
-            similarities = [util.cos_sim(current_emb, l_emb) for l_emb in line_embs]
+
+        preprocessed = [f"passage: {preprocess_tweet(line)}" for line in stanza]
+        all_embs = model.encode(preprocessed, convert_to_tensor=True)  # batch encode
+
+        kept_lines = [stanza[0]]
+        kept_embs = [all_embs[0]]
+        for idx, line in enumerate(stanza[1:], start=1):
+            current_emb = all_embs[idx]
+            similarities = [util.cos_sim(current_emb, l_emb) for l_emb in kept_embs]
             if max([sim.item() for sim in similarities]) < line_threshold:
                 kept_lines.append(line)
-                line_embs.append(current_emb)
+                kept_embs.append(current_emb)
         final_stanzas.append(kept_lines)
 
     # --- Return reconstructed lyrics with original text ---
-    return ".\n\n".join([".\n".join(stanza) for stanza in final_stanzas])
+    return "\n\n".join(["\n".join(stanza) for stanza in final_stanzas])
 
 
 if __name__ == "__main__":
@@ -105,4 +116,3 @@ if __name__ == "__main__":
     print("--- Cleaned Lyrics ---")
     print(cleaned_text[0])
     print("Number of words after cleaning:", len(cleaned_text[0].split()))
-    

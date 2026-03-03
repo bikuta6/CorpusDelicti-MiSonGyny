@@ -61,7 +61,7 @@ def main():
     p.add_argument("input_csv", help="Path to input CSV file with lyrics column")
     p.add_argument("--output", help="Output CSV path (default: processed_{original_name} in same folder)")
     p.add_argument("--model", default="intfloat/multilingual-e5-large", help="SentenceTransformer model name")
-    p.add_argument("--stanza-threshold", type=float, default=0.82, help="Similarity threshold for redundancy (0-1)")
+    p.add_argument("--stanza-threshold", type=float, default=0.9, help="Similarity threshold for redundancy (0-1)")
     p.add_argument("--line-threshold", type=float, default=0.95, help="Similarity threshold for line-level redundancy (0-1)")
     p.add_argument("--text-col", default="lyrics", help="Name of the lyrics/text column in CSV")
     p.add_argument("--task", help="If provided and input is a filename, resolve under data/<task>/ (e.g. task1, task2)")
