@@ -96,7 +96,7 @@ if __name__ == "__main__":
     preds, probs = predict_ensemble(texts)
 
     if "label" in df.columns:
-        y_true = df["label"].map({"NM": 0, "M": 1}) if df["label"].dtype == object else df["label"]
+        y_true = df["label"].map({"NM": 0, "M": 1})
         f1 = f1_score(y_true, preds, average="macro")
         print(f"\n{'='*60}")
         print(f"ENSEMBLE F1-Macro: {f1:.4f}")
@@ -110,3 +110,13 @@ if __name__ == "__main__":
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     df.to_csv(output_path, index=False)
     print(f"Predicciones guardadas en: {output_path}")
+    # Ahora calcular métricas en test usando test_labels.csv
+    test_labels_path = "../../data/task1/test_labels.csv"
+    if os.path.exists(test_labels_path):
+        df_test_labels = pd.read_csv(test_labels_path)
+        df_test_labels["label"] = df_test_labels["label"].map({"NM": 0, "M": 1})
+        y_test = df_test_labels["label"].values
+        f1_test = f1_score(y_test, preds, average="macro")
+        print(f"\n{'='*60}")
+        print(f"ENSEMBLE F1-Macro (test labels): {f1_test:.4f}")
+        print(f"{'='*60}")

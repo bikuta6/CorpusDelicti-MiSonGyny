@@ -8,15 +8,17 @@ try:
     from lyric_utils import remove_redundant_lyrics
     from sentence_transformers import SentenceTransformer
     from contraction_utils import normalize_contractions
+    from translation_utils import translate_english_parts
 except Exception:
     repo_root = Path(__file__).resolve().parents[1]
     sys.path.append(str(repo_root))
     from lyric_utils import remove_redundant_lyrics
     from sentence_transformers import SentenceTransformer
     from contraction_utils import normalize_contractions
+    from translation_utils import translate_english_parts
 
 
-def process_file(input_csv: Path, output_csv: Path, model_name: str, threshold: float, text_col: str, skip_contractions: bool = False):
+def process_file(input_csv: Path, output_csv: Path, model_name: str, threshold: float, text_col: str, line_threshold: float = 0.95, skip_contractions: bool = False, translate: bool = False):
     df = pd.read_csv(input_csv)
     if text_col not in df.columns:
         raise SystemExit(f"Input CSV has no column '{text_col}'")
@@ -28,15 +30,20 @@ def process_file(input_csv: Path, output_csv: Path, model_name: str, threshold: 
         print("Normalizing contractions...")
         texts = [normalize_contractions(t) for t in texts]
 
+    # Step 2: Translate English parts to Spanish
+    if translate:
+        print("Translating English parts to Spanish...")
+        texts = [translate_english_parts(t) for t in tqdm(texts, desc="Translating")]
+
     model = SentenceTransformer(model_name)
 
-    # Step 2: Remove redundant lyrics
+    # Step 3: Remove redundant lyrics
     processed = []
     mean_length = sum(len(t.split()) for t in texts) / len(texts)
-    print(f"Processing {len(texts)} lyrics with average length {mean_length:.1f} words using model '{model_name}' and threshold {threshold}...")
+    print(f"Processing {len(texts)} lyrics with average length {mean_length:.1f} words using model '{model_name}' and threshold {threshold} (stanza) and {line_threshold} (line)...")
     for txt in tqdm(texts, desc="Processing lyrics"):
         try:
-            out = remove_redundant_lyrics(model, txt, threshold=threshold)
+            out = remove_redundant_lyrics(model, txt, threshold=threshold, line_threshold=line_threshold)
         except Exception:
             out = ""
         processed.append(out)
@@ -54,10 +61,12 @@ def main():
     p.add_argument("input_csv", help="Path to input CSV file with lyrics column")
     p.add_argument("--output", help="Output CSV path (default: processed_{original_name} in same folder)")
     p.add_argument("--model", default="intfloat/multilingual-e5-large", help="SentenceTransformer model name")
-    p.add_argument("--threshold", type=float, default=0.90, help="Similarity threshold for redundancy (0-1)")
+    p.add_argument("--stanza-threshold", type=float, default=0.82, help="Similarity threshold for redundancy (0-1)")
+    p.add_argument("--line-threshold", type=float, default=0.95, help="Similarity threshold for line-level redundancy (0-1)")
     p.add_argument("--text-col", default="lyrics", help="Name of the lyrics/text column in CSV")
     p.add_argument("--task", help="If provided and input is a filename, resolve under data/<task>/ (e.g. task1, task2)")
     p.add_argument("--skip-contractions", action="store_true", help="Skip contraction normalization step")
+    p.add_argument("--translate", action="store_true", help="Translate English parts of lyrics to Spanish")
 
     args = p.parse_args()
 
@@ -76,7 +85,7 @@ def main():
     else:
         out = inp.parent / f"processed_{inp.name}"
 
-    process_file(inp, out, args.model, args.threshold, args.text_col, skip_contractions=args.skip_contractions)
+    process_file(inp, out, args.model, args.stanza_threshold, args.text_col, line_threshold=args.line_threshold, skip_contractions=args.skip_contractions, translate=args.translate)
     print(f"Saved processed CSV to: {out}")
 
 

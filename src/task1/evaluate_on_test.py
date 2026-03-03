@@ -23,6 +23,7 @@ from tqdm.auto import tqdm
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from utils import set_seed, DEFAULT_SEED
+from bert_model_configs import MODEL_CONFIGS
 
 SEED = DEFAULT_SEED
 set_seed(SEED)
@@ -35,18 +36,50 @@ TEST_LYRICS_PATH  = "../../data/task1/processed_test.csv"
 TEST_LABELS_PATH  = "../../data/task1/test_labels.csv"
 MODELS_DIR        = "../../models/task1/comparison"
 RESULTS_FILE      = "../../results/task1/tabla_paper_test.csv"
+BEST_THRESHOLDS_PATH      = "../../results/task1/tabla_paper.csv"
 BATCH_SIZE        = 32
 ID2LABEL          = {0: "NM", 1: "M"}
 
 # max_len y pysentimiento_preprocess por modelo
 # Deben coincidir con lo usado en entrenamiento
 MODEL_INFERENCE_CFG: dict[str, dict] = {
-    "DistilBETO": {"max_len": 512, "use_pysentimiento_preprocess": False},
-    "BETO":       {"max_len": 512, "use_pysentimiento_preprocess": False},
-    "MarIA":      {"max_len": 512, "use_pysentimiento_preprocess": False},
-    "XLM-R":      {"max_len": 512, "use_pysentimiento_preprocess": False},
-    "Robertuito": {"max_len": 128, "use_pysentimiento_preprocess": True},
+    "BERT-multilingual": {
+        "max_len": 512,
+        "use_pysentimiento_preprocess": False,
+    },
+    "DistilBETO": {
+        "max_len": 512,
+        "use_pysentimiento_preprocess": False,
+    },
+    "BETO": {
+        "max_len": 512,
+        "use_pysentimiento_preprocess": False,
+    },
+    "BETO-sentiment": {
+        "max_len": 512,
+        "use_pysentimiento_preprocess": False,
+    },
+    "MarIA": {
+        "max_len": 512,
+        "use_pysentimiento_preprocess": False,
+    },
+    "XLM-R": {
+        "max_len": 512,
+        "use_pysentimiento_preprocess": False,
+    },
+    "Robertuito": {
+        "max_len": 128,  # Contexto corto → tweets
+        "use_pysentimiento_preprocess": True,  # Preprocesamiento específico de pysentimiento
+    },
 }
+
+if Path(BEST_THRESHOLDS_PATH).exists():
+    df_thr = pd.read_csv(BEST_THRESHOLDS_PATH)
+    best_thresholds = dict(zip(df_thr["Modelo"], df_thr["Best-Threshold"]))
+    print(f"Cargados thresholds óptimos por modelo:\n{best_thresholds}")
+else:
+    print(f"⚠ No se encontró {BEST_THRESHOLDS_PATH}, se usarán 0.5 por defecto")
+    best_thresholds = {}
 
 # ─────────────────────────────────────────────────────────────
 # CARGA DE DATOS
@@ -77,6 +110,7 @@ def run_inference(
     max_len: int,
     use_pysentimiento_preprocess: bool,
     device: torch.device,
+    threshold: float = 0.5,
 ) -> dict:
     """
     Carga un modelo guardado, ejecuta inferencia en batch y devuelve métricas.
@@ -130,10 +164,10 @@ def run_inference(
 
             outputs = model(**kwargs)
             probs   = torch.softmax(outputs.logits, dim=-1)
-            preds   = probs.argmax(dim=-1)
-
+            prob_M = probs[:, 1]
+            preds = (prob_M >= threshold).long()
             all_preds.extend(preds.cpu().tolist())
-            all_probs.extend(probs[:, 1].cpu().tolist())  # prob clase M
+            all_probs.extend(prob_M.cpu().tolist())
 
     # Métricas
     precision, recall, f1, _ = precision_recall_fscore_support(
@@ -184,6 +218,7 @@ for name, inf_cfg in MODEL_INFERENCE_CFG.items():
             true_labels=true_labels,
             max_len=inf_cfg["max_len"],
             use_pysentimiento_preprocess=inf_cfg["use_pysentimiento_preprocess"],
+            threshold=best_thresholds.get(name, 0.5),
             device=device,
         )
 

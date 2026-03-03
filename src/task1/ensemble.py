@@ -40,7 +40,7 @@ N_FOLDS = 3
 
 
 # Top 3 modelos según tabla_paper_test.csv
-models_names = ["DistilBETO", "XLM-R"]
+models_names = ["DistilBETO", "XLM-R", "MarIA"]
 MODELS_TO_TRAIN: dict[str, ModelConfig] = {name: MODEL_CONFIGS[name] for name in models_names}
 
 # ─────────────────────────────────────────────────────────────
@@ -165,7 +165,7 @@ for model_name, cfg in MODELS_TO_TRAIN.items():
         args = TrainingArguments(
             output_dir=checkpoints_path,
             learning_rate=cfg.learning_rate,
-            optim="adamw_torch",
+            optim=cfg.optim,
             per_device_train_batch_size=cfg.per_device_train_batch_size,
             gradient_accumulation_steps=cfg.gradient_accumulation_steps,
             num_train_epochs=cfg.num_train_epochs,

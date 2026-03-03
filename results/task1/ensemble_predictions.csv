@@ -1,4 +1,4 @@
-id,lyrics
+id,lyrics,prediction,prob_M
 T1_TEST_0001,"Felicidad es un viaje lejano, mano con mano
 La felicidad, tu mirada inocente entre la gente
 La felicidad es saber que mis sueños ya tienen dueño
@@ -17,7 +17,7 @@ Que lleva en el aire un mensaje de amor
 Tiene el sabor de verdad a felicidad
 Esta es nuestra canción
 Es como el viento, el mar y el sol
-Tiene el calor de verdad, la felicidad"
+Tiene el calor de verdad, la felicidad",0,0.11369065393955673
 T1_TEST_0002,"s
 Grabé en la penca de un maguey tu nombre
 Unido al mío, entrelazados
@@ -42,7 +42,7 @@ Recriminarte, con un reproche
 No sé si creas las extrañas cosas
 Que ven mis ojos, tal vez te asombres
 Las pencas nuevas que al maguey le brotan
-Vienen marcadas con nuestros nombres"
+Vienen marcadas con nuestros nombres",0,0.21113652100722557
 T1_TEST_0003,"Soy un hombre inocente todavia
 Necesito una mujer
 Que en las noches me lleva a la luna
@@ -60,7 +60,7 @@ Maestra
 Enseñeme usted
 Desnudese, que yo la quiero ver
 Por primera vez
-hay maestra tu camaron"
+hay maestra tu camaron",1,0.8814214095608769
 T1_TEST_0004,"Atentado en El Cairo, cerca del ministerio de asuntos exteriores, al menos dos policías han muerto, la bomba habría causado heridas a otro seis policías y un civil
 La explosión que quebró las ramas de varios arboles se produjo junto a la Avenida 26 de julio y la mezquita ?
 No me pierdas la fe, encontré el punto G
@@ -102,7 +102,7 @@ Me confunden con Havoc porque me infama tu barrio
 Esta mierda es real, con mas peleas que Def Jam, nigga
 Each one, nigga, each one
 Viajo desde Melmac con jade imperial
-Cuando termina la guerra, la misma vuelve a empezar"
+Cuando termina la guerra, la misma vuelve a empezar",1,0.6455792819958098
 T1_TEST_0005,"Digamos, que te creo
 Que te arrepientes
 Pero es diferente a que te perdone
@@ -119,7 +119,7 @@ En tu perra vida
 Me dirijas la palabra
 Me caen en la punta las personas que son falsas
 No te pongas a llorar, déjate de payasadas
-Tú ya me perdiste, lo mejor es que te vayas"
+Tú ya me perdiste, lo mejor es que te vayas",1,0.6467654812219448
 T1_TEST_0006,"Yo por tí daría mi vida
 Hoy amanecí con ganas de enviarte
 Algo que te guste y pueda regalarte
@@ -141,7 +141,7 @@ Para que me extrañes si no estoy delante
 Y me pienses siempre cuando estés de viaje
 Todo lo que pidas voy a regalarte
 Haré lo imposible así no esté a mi alcance
-Yo lo lograría para que me ames"
+Yo lo lograría para que me ames",0,0.3136774956663631
 T1_TEST_0007,"La mejor versión de mí, no la conociste tú
 Porque siempre me frenaste con tu pésima actitud
 Nunca pude ser quien era por amarte a tu manera
@@ -176,7 +176,7 @@ Ahora empiezo a disfrutar un poco más las rosas
 Por fa', no me insistes, tampoco lo intentes
 Si ya sé que nunca cumples lo que me prometes
 The king
-Maldito sentimiento"
+Maldito sentimiento",0,0.30383130076301895
 T1_TEST_0008,"Xander
 Eh, Pablito Prr
 Yung Beef
@@ -215,7 +215,7 @@ El Ambidieztro, el que dispara con las dos pistola'
 El Ambidieztro
 No es Xanax, es má' adictivo y es Xander
 Gang Ih, ShiShi Gang Ih
-Shi-Shi-Shi-Shi-Shi-Shin"
+Shi-Shi-Shi-Shi-Shi-Shin",1,0.8013948097493092
 T1_TEST_0009,"Aha, ouh!
 Sí, ¡Como!
 Black Beats Producciones tío
@@ -287,7 +287,7 @@ Sudamos de lo lindo y de lo blando
 Si alguien cree que no , se lo juro, están flipando
 Quiero las frases más firmes, porque Loren está al mando
 Y todos esos soplapollas ¿a qué esperan?
-¡A largar! Están tardando"
+¡A largar! Están tardando",1,0.8282455070794845
 T1_TEST_0010,"Vienes arrepentida, vienes pidiendo perdón
 Diciendo que me quieres he sido tu primer amor
 Ya no quiero tus labios porque otros lo han besado
@@ -301,7 +301,7 @@ De mi mente te he borrado
 Ya no quiero besar tus labios
 Fuera de mi, ya no quiero tu querer
 De mi mente de mi mente te he borrado, te he borrado
-Ya no quiero, no, besar tus labios"
+Ya no quiero, no, besar tus labios",0,0.2443803547593702
 T1_TEST_0011,"Hola, me llaman Romeo
 Es un placer conocerla
 Qué bien te ves
@@ -337,7 +337,7 @@ You and I You and I
 Me and you I am a bad boy
 Me and you, you
 Ay, chichí
-Llora, guitarra, llora"
+Llora, guitarra, llora",1,0.8948525972562427
 T1_TEST_0012,"Se llama El Piloto, y dice así
 ¡Compa Alfredo!
 Y puro Mp3Culiacán loco, ¡huya!
@@ -372,7 +372,7 @@ Por que no se sabe ya con estos guachos
 A 2-3 amigos del aire han aterrizado
 Compa Partner, arriba La Tía viejón
 Se lo enviamos, El Piloto 2015, Codiciado, Mp3Culiacán
-Compa Omar Valdez, dice así"
+Compa Omar Valdez, dice así",0,0.29855584106745175
 T1_TEST_0013,"signo es la Ponderosa
 Tura Satana anda buscando su sombrero allá
 Allá en Las Vegas
@@ -402,14 +402,14 @@ Manos violentas, guantes cubren garras
 Que pueden hundirte en un mar de cuervos
 Un tendal de espíritus quedaron atrás
 Un tendal de espíritus quedaron atrás
-Un tendal de espíritus quedaron atrás"
+Un tendal de espíritus quedaron atrás",1,0.6666039757724657
 T1_TEST_0014,".
 Te tenía , te tenía tan cerca que podia rozarte el aliento, yo sabia que era ahora o nunca, como siempre, como ya es costumbre simplemente me aleje de mi, sin responderte todas tus preguntas, si aun no es tarde aqui me tienes, no me voy para ninguna parte, si me permites y si quieres escucharme ,ya aprendí que en esta historia no hay lugar para cobardes , si aun no es tarde , si aun tienes fuerzas y esto fué un punto y aparte , sé que no es fácil ,sé que hay camino por delante y sé también que en esta historia no hay lugar para cobardes
 Lentamente derribé mis miedos, me hice fuerte y volví esa noche de septiembre, visite mi tumba, no hay un día que no vuelva a ver tu despedida , tu expresiónn perdida no se olvida, siempre hay a quien buscar
 Si aun no es tarde aqui me tienes ,no me voy a ninguna parte , si me permites y si quieres escucharme, ya aprendí que en esta historia no hay lugar para cobardes , si aun no es tarde, si aun tienes fuerzas y esto fué un punto y aparte sé que no es facil, sé que hay camino por delante , sé tambien que en esta historia no hay lugar para cobardes, te tenia ...
 Te tenía , te tenía tan cerca que podia rozarte el aliento, yo sabia que era ahora o nunca, como siempre, como ya es costumbre simplemente me aleje de mi, sin responderte todas tus preguntas, si aun no es tarde aqui me tienes, no me voy para ninguna parte, si me permites y si quieres escucharme ,ya aprendí que en esta historia no hay lugar para cobardes , si aun no es tarde , si aun tienes fuerzas y esto fué un punto y aparte , sé que no es fácil ,sé que hay camino por delante y sé también que en esta historia no hay lugar para cobardes
 Lentamente derribé mis miedos, me hice fuerte y volví esa noche de septiembre, visite mi tumba, no hay un día que no vuelva a ver tu despedida , tu expresiónn perdida no se olvida, siempre hay a quien buscar
-Si aun no es tarde aqui me tienes ,no me voy a ninguna parte , si me permites y si quieres escucharme, ya aprendí que en esta historia no hay lugar para cobardes , si aun no es tarde, si aun tienes fuerzas y esto fué un punto y aparte sé que no es facil, sé que hay camino por delante , sé tambien que en esta historia no hay lugar para cobardes, te tenia ..."
+Si aun no es tarde aqui me tienes ,no me voy a ninguna parte , si me permites y si quieres escucharme, ya aprendí que en esta historia no hay lugar para cobardes , si aun no es tarde, si aun tienes fuerzas y esto fué un punto y aparte sé que no es facil, sé que hay camino por delante , sé tambien que en esta historia no hay lugar para cobardes, te tenia ...",0,0.13866118748535966
 T1_TEST_0015,"Ríes, lloras, mientes y te humillas
 Prometiéndome un viaje a Kenia en navidad
 Ruegas, gritas, cambias de estrategia
@@ -430,7 +430,7 @@ Cartas, flores, versos y bombones
 Abandona, no me vas a convencer
 Búscate lejos en otros cielos
 Y cálmate al aterrizar
-Gracias, nos vemos en veinte años más"
+Gracias, nos vemos en veinte años más",0,0.29073959865970467
 T1_TEST_0016,"Ostia, tío, habeis partido esta mierda en mil pedazos
 Oye, chaval, ¿tenéi' el oído bien puesto para escuchar esto?
 Oye cómo es que dice, wa wa wa jajaja, ah
@@ -532,7 +532,7 @@ El Movimiento Paralelo
 La Alcaldía
 Los Gotti Gotti
 ¿Cuál es la pámpara?
-Para que te acuerde 'e nosoto', ¿oíste?"
+Para que te acuerde 'e nosoto', ¿oíste?",1,0.8803683060281976
 T1_TEST_0017,"Ah, a di real  Blaze it up
 Well, dem know seh a Daddy Yankee and Blacka Nice again
 Ayy, Daddy Yankee, weh yah seh?
@@ -578,7 +578,7 @@ Daddy!
 Monserrate, DJ Urba y Fido
 Tranquilo para, esto es lo mío
 You know
-Blaze it up; brra, brra, brra"
+Blaze it up; brra, brra, brra",1,0.951894984646017
 T1_TEST_0018,"e
 Soy, algo mas que tu amigo
 Soy algo mas que tu amante, soy
@@ -586,7 +586,7 @@ Quien te extraña en silencio, soy quien de noche
 No duerme, pero, no puedo entregarte, mi
 Corazón entero, mas a pesar de todo, yo te seguiré
 Queriendo, amor, mi corazón te extraña tanto
-Y a pesar de amarte, y de quererte como a nadie"
+Y a pesar de amarte, y de quererte como a nadie",0,0.1331684455917021
 T1_TEST_0019,"Tu encuentro no es algo casual, para mí es un poco ilógico
 He vivido un acto histórico
 Tú me has llevado a mí a viajar, eres mi amor platónico
@@ -632,7 +632,7 @@ Yeah, yeah
 Zun dada, zun dada
 Que Dios me los bendiga
 Baby Records, all day daddy, ja
-Zun dada, zun dada"
+Zun dada, zun dada",1,0.8884598969555039
 T1_TEST_0020,"Hoy te llame y vos me atendiste
 Pero yo se que vos me mentiste
 Por que alas diez te vas a encontrar con el
@@ -644,7 +644,7 @@ Salto la ficha que ahora vos te revolcas con el
 A ese cheto gato el auto le fiche, y ahora le va a caber
 Gata de que las corres
 Salto la ficha que ahora vos te revolcas con el
-A ese cheto gato el auto le fiche, y ahora le va a caber"
+A ese cheto gato el auto le fiche, y ahora le va a caber",1,0.5785922766227097
 T1_TEST_0021,"t tickets as low as $39
 Me castiga Dios
 Porque aun te quiero
@@ -656,7 +656,7 @@ Y bebiendo la amargura de mi llanto
 Me da pena de mi mismo por cobarde
 Al cayarme la verguenza de tu engaño
 Me castiga Dios
-Me castiga Dios"
+Me castiga Dios",0,0.12339051404834138
 T1_TEST_0022,"s
 Si tu ya no me quieres vida mía
 Arráncame de un golpe el corazón
@@ -673,7 +673,7 @@ Cargando mi dolor
 Ni andar cantándole al mundo mi derrota
 Pidiendo a gritos que me sirvan otra copa
 Ahogando penas, pagando una condena
-En la cárcel de tu adiós"
+En la cárcel de tu adiós",0,0.20076908646986882
 T1_TEST_0023,"Ingrata mujer, quisiera volver a verte
 Como ayer, yo quisiera tenerte
 Ingrata mujer, hoy quisiera besarte
@@ -681,7 +681,7 @@ Y amarte, aunque sea un instante
 Ven, besame otra vez, y hagamos el amor toda la noche
 Ven, besame otra vez, y hagamos el amor toda la noche
 Ven ven ven, besame otra vez, y hagamos el amor toda la noche
-Ven, besame otra vez, y hagamos el amor toda la noche"
+Ven, besame otra vez, y hagamos el amor toda la noche",0,0.4588262883295633
 T1_TEST_0024,"Hey!
 No vayas presumiendo por ahí
 Diciendo que no puede estar sin ti
@@ -701,13 +701,13 @@ Yo era sombra y tu luz
 Hey!
 No se si tú también recordarás
 Que siempre que intentaba hacer la paz
-Yo era un río en tu mar"
+Yo era un río en tu mar",0,0.12117596298088924
 T1_TEST_0025,"Lai lai lo lai, lo lao
 
 Amor mío
 Amor mío, por favor, tú no te vas
 Yo contaré a las horas
-Que la ya veo"
+Que la ya veo",0,0.1609801287891363
 T1_TEST_0026,"' llegamo' hasta die'
 SP 'longside
 J Balvin, man
@@ -746,7 +746,7 @@ Say the gyal a bawl, f—
 Say the gyal a bawl, f—
 Say the, say the gyal a bawl, fuego-go-go-go-go, fuego
 Say the, say the gyal a bawl
-Say the gyal a bawl"
+Say the gyal a bawl",1,0.7322640555018284
 T1_TEST_0027,"¿Jura usted decir la verdad y solamente la verdad?
 Sí, lo juro
 Señor juez, no soy un niño
@@ -777,7 +777,7 @@ El que nada debe, nada teme
 Copy?
 Let us go
 The king
-Gostoso"
+Gostoso",0,0.4809506326035506
 T1_TEST_0028,".
 No sé qué va a pasar cuando regreses
 Cuando te vuelva a ver
@@ -810,7 +810,7 @@ Todavía me pierda entre tus fantasías
 Y que aún te sienta parte de mi vida
 Sólo espero que tú como yo sigamos
 Enamorados, enamorados
-No sé qué va a pasar cuando regreses..."
+No sé qué va a pasar cuando regreses...",0,0.14771428104178277
 T1_TEST_0029,"mos dos, somos dos.
 Somos dos, somos dos
 Hoy me desayuné
@@ -833,7 +833,7 @@ De un broche dorado, que no quiere cerrar
 Tú me tratas así, porque sabes que tengo
 Una llavecita con tu nombre en el llavero
 No vas a contestar, y por eso ni llamo
-¿Qué te hace pensar que me voy a regalar?"
+¿Qué te hace pensar que me voy a regalar?",0,0.14527036476149666
 T1_TEST_0030,"d
 Ven ven para bailar
 Ven ven para bailar
@@ -893,7 +893,7 @@ Corrieron a bailar el Rock
 Todo el mundo en la prisión
 Corieron a bailar el Rock
 Oh eh ehehehe
-End"
+End",1,0.5205169396080163
 T1_TEST_0031,"o la muerte, mujer
 Yeah, hmm
 Ey, ey, ey, ey, ey
@@ -935,7 +935,7 @@ Transpiro oro por los dedo' Transpiro, eh
 El humo me dejó ciego No veo bien
 'Toy que no lo creo
 El Duko lo hizo de nuevo No creo que—
-'Toy que—, ay, goteo ¡Eh!"
+'Toy que—, ay, goteo ¡Eh!",1,0.665114367271213
 T1_TEST_0032,"Bailando, lo de nosotros vamos' a resolverlo
 Bailando, sin miedo dale que me estás calentando ¿Qué paso más?
 Pide lo que tú quieras, no estoy jugando
@@ -979,7 +979,7 @@ En directo
 Simplemente
 No fallamos
 ¡Daddy!
-Sin mucho palabreo"
+Sin mucho palabreo",1,0.8391105494405965
 T1_TEST_0033,"Me levanto y no estás Me levanto y no estás
 De mi mente te vas De mi mente te vas
 Confundida yo estoy Confundida yo estoy
@@ -998,7 +998,7 @@ Tu recuerdo lo siento bien
 Pero el día de hoy, ya tu voz se desvaneció
 Ya no busco color Ya no busco color, el detalle murió
 Y me niego a pensar Y me niego a pensar, que a tu lado yo brillaré
-Y no puedo seguir así, necesito más de ti"
+Y no puedo seguir así, necesito más de ti",0,0.14129451673267668
 T1_TEST_0034,"Las palabras fueron avispas
 Y las calles como dunas
 Cuando aun te espero llegar
@@ -1031,7 +1031,7 @@ Por la espina dorsal
 Ya somos mas viejos y sinceros
 Y que mas da si miramos la laguna
 Como llaman a la eternidad
-De la ausencia"
+De la ausencia",0,0.24416153082630898
 T1_TEST_0035,"Comienza la historia de un hombre aguerrido
 Que dieron por muerto en aquél atentado
 Y mi misma sangre me pusieron cuatro
@@ -1059,7 +1059,7 @@ Vivo al 100 mis días no conozco el miedo
 Que suene la banda bailen los caballos
 Tragos de Bucanas para celebrarlos
 Que suenen corridos para la plebada
-Que todavía falta para que sea mañana"
+Que todavía falta para que sea mañana",0,0.17101880329182062
 T1_TEST_0036,"Yeah
 Para que escuchen todo' acá
 Que llego el verdadero, perri
@@ -1131,7 +1131,7 @@ Y cuando pinta pleito los puño' lo' agito
 Yo acá a nadie imito porque soy origin
 Y eso es lo que vale, me llueven la' mishi'
 Voy volando lejos, rumbo para la cima
-En la tarima explotan como Hiroshima Yeah, eh"
+En la tarima explotan como Hiroshima Yeah, eh",1,0.8987337960804034
 T1_TEST_0037,"Ya lo pasado, pasado
 No me interesa El ayer
 Si antes sufrí y lloré
@@ -1139,7 +1139,7 @@ Todo quedó en el ayer
 Ya olvidé Ya olvidé
 Ya olvidé Ya olvidé
 Ya olvidé Ya olvidé
-Soy feliz"
+Soy feliz",0,0.09922843165336655
 T1_TEST_0038,"Digo que no, pero quiero
 Sabe cómo la prefiero
 Se desnudó y me hizo fiero
@@ -1172,7 +1172,7 @@ Que aunque te haga sufrir, sigo siendo mejor
 Que me prefieres a mi, nunca hay que usar condón
 Que yo te hago venir como estos bobos no
 Que tu eres buena pero Lyanno te daño
-Ahh"
+Ahh",1,0.9552038816143619
 T1_TEST_0039,", oh, ey
 No, no, Ruff
 ¿Entonces por qué no estás conmigo?
@@ -1254,7 +1254,7 @@ EQ Mmm, ah-ah-ah
 Yeah, yeah
 En la I de Inc
 Dímelo, oh, ey
-No, no, Ruff"
+No, no, Ruff",1,0.9154532341544086
 T1_TEST_0040,"le tentación es el amor
 Imposible olvidar tu talismán
 Irresistible remar contra tu atracción
@@ -1276,7 +1276,7 @@ Quizás alguna vez pase a tu lado
 No te hagas la tontita, yo sé que lo has notado
 Y algún suspiro al aire se ha volado
 Ebria de tantas maravillas
-Florece fuera de estación"
+Florece fuera de estación",1,0.6741979490753252
 T1_TEST_0041,"a
 Sigues diciendo por ahí
 Que ya no volverás conmigo
@@ -1289,7 +1289,7 @@ Aunque tú digas lo que digas
 Porque aunque trates de olvidar
 Nunca podrás porque tu vida
 La tengo toda en mí poder
-Y si no has vuelto es porque yo no he querido todavía"
+Y si no has vuelto es porque yo no he querido todavía",0,0.12026345737936778
 T1_TEST_0042,"ce', no, no, no, no
 Devuélveme lo que me llevaste
 Tú mi corazón te robaste -e
@@ -1322,7 +1322,7 @@ Ya yo no te buscaré, prometo que te olvidaré
 Avísame, si quiere' algún día, aquí estaré
 Pero que no sea tarde, yo sé que superaré
 Del dolor que yo tenía, el corazón me curaré
-Ya yo no te buscaré, prometo que te olvidaré"
+Ya yo no te buscaré, prometo que te olvidaré",1,0.8326929660947978
 T1_TEST_0043,"Aprendí que todo cambia, el tiempo, las heridas, la distancia
 Y tuve que vencer el miedo para perder las ansias
 Yo, me consideraba adicto a esa fragancia
@@ -1373,7 +1373,7 @@ Antes que tener cadenas prefiero tener valores
 Aunque a diario sueño con cambiar de prendas
 Tengo el tiempo para todo menos para mi
 Yo soy como soy y no espero que me comprendan
-De todas maneras sufro porque lo elegí"
+De todas maneras sufro porque lo elegí",0,0.3332136746115362
 T1_TEST_0044,"Dímelo, Nino
 ¡Yah!
 Brr
@@ -1417,7 +1417,7 @@ Jaja, ah
 Chris Jeday
 Gaby Music
 Dímelo, Nino
-¡Yah!"
+¡Yah!",1,0.9007295247957129
 T1_TEST_0045,"e
 Perdí la razón, y no sé por qué
 Fué su caminar, quizás su altivez
@@ -1450,7 +1450,7 @@ Tu corazón transparente
 Oye morena que linda
 Tu corazón me enloquece
 Tus labios son tan ardientes
-Tu corazón ttransparente"
+Tu corazón ttransparente",1,0.7503039074577681
 T1_TEST_0046,"Primero, te quiero igual
 Te quiero pero te llevaste la flor
 Y me dejaste el florero
@@ -1474,7 +1474,7 @@ Sé que te quiero y que me esperan
 Más aeropuertos
 Te quiero te llevaste la vela
 Y me dejaste el entierro
-Primero, te quiero igual"
+Primero, te quiero igual",0,0.2888022875157036
 T1_TEST_0047,"Dinero, seguridad
 Si te dicen que cambié, no lo dudes que es verdad
 Ya que con mi dinero, arrogancia y seguridad
@@ -1509,7 +1509,7 @@ Vamo' a contar dinero hasta que se canse el contable
 Pásame el lighter, vo' a prender un blunt Eh
 Mis enemigo' saben que me va cabrón Ah-ah
 Para el de pepitas en el melón
-Haciéndome el mejor en esto como Lebron"
+Haciéndome el mejor en esto como Lebron",1,0.8017531462687956
 T1_TEST_0048,"Una carta por llegar espérame
 Miradas que dan alma
 Y no, no está él
@@ -1517,7 +1517,7 @@ Escucha...
 Hombre que hace latir fuerte
 Y rompe el dolor
 Kilómetros
-Escúchame"
+Escúchame",0,0.13286437026903547
 T1_TEST_0049,"Hoy mi hija me visita en casa por primera vez
 Traerá un vestido floreado, su sonrisa y su delgadez
 Es que hace poco me dijo: Yo ya estoy grande y me quiero ir, tengo el trabajo muy lejos, quiero un lugar para mí
@@ -1547,7 +1547,7 @@ Porque acá yo soy el padre, y siempre lo tuve claro
 Los hijos un día se van, porque es destino marcado
 Un poco le hice doler, y no por cruel ni malvado
 Sino porque ella se fue, y yo quedé abandonado
-Hoy mi hija me visita en casa..."
+Hoy mi hija me visita en casa...",0,0.32461660757075494
 T1_TEST_0050,"amente me pasa contigo
 Everything Foreign
 Bry, Bry, Bryant Ma
@@ -1634,12 +1634,12 @@ Solamente me pasa contigo
 Y si te estoy mintiendo que me castigue Dios
 Hablándote claro, no sé bien cómo expresar lo que está pasando
 Pero lo que sé es que solo es contigo
-Solamente me pasa contigo"
+Solamente me pasa contigo",1,0.9549192389050184
 T1_TEST_0051,"Galopa galopa y no para es la tropa loca
 De cuento de chiste de broma de poca monta
 No saben lo que es dormir
 Y en sueños vuelos remontan
-Son orgullosos culpables de vivir"
+Son orgullosos culpables de vivir",0,0.15675368088274533
 T1_TEST_0052,"omás guacha el rucón
 Traigo a la clica bien prendida en la Toyota
 Todos andamos pelones y siempre fumando mota
@@ -1666,7 +1666,7 @@ Versace siempre su hebilla, los haters llenos de envidia
 No cree en eso de la Biblia con putas y cocaína
 Me gusta andar por la sierra, crecí entre los matorrales
 Ya aprendí a sacar las cuentas nomás contando costales
-Me gusta burlar las redes que tienen los federales"
+Me gusta burlar las redes que tienen los federales",1,0.8443756491801829
 T1_TEST_0053,"La sangre gitana que llevo dentro
 Se mezcla en cóctel
 De dulce sabor
@@ -1694,7 +1694,7 @@ Si hay para los dos?
 En la sangre gitana que llevo dentro
 Me arde fuego
 De mis manos
-Directa al corazón, al corazón..."
+Directa al corazón, al corazón...",0,0.09152102573409335
 T1_TEST_0054,"Ciego, ciego, ciego
 Ciego, riego las plantas, ciego
 Uh, pillo la tabla, ciego
@@ -1733,7 +1733,7 @@ Yo sigo en el río, con los pies en remojo Oh
 Pero sin mirar hacia el futuro
 Llueven flechas, sueño que me olvido el escudo Wha
 Escarbo con las uñas tu muro
-Pero es muy fuerte el conjuro Oh"
+Pero es muy fuerte el conjuro Oh",0,0.206767677544359
 T1_TEST_0055,"Aventura
 No sé lo que me pasa con mi mami
 Que ya no me quiere ver, ya no me quiere hablar
@@ -1750,7 +1750,7 @@ Oye, qué fino, mami
 Me duele el corazón de tantas penas
 Por favor, llame un doctor, y que vuelva mi morena
 Te extraño día y noche sin cesar
-Y el pensar que estás con otro me atormenta cada día más"
+Y el pensar que estás con otro me atormenta cada día más",1,0.5000185580720177
 T1_TEST_0056,"Decir te quiero y decir amor no significa nada
 Las palabras sinceras las que tienen valor son las que salen del alma
 Y en mi alma nacen solo palabras blancas
@@ -1766,7 +1766,7 @@ Si quieres ser mi amante
 Es bonito reír, amar y vivir todo por alguien
 Y si es preciso, sufrir, llorar o morir por ese alguien
 Yo necesito saber si quieres ser mi amante
-Yo necesito saber si quieres ser mi amante"
+Yo necesito saber si quieres ser mi amante",0,0.15141341146694767
 T1_TEST_0057,"Oh-oh-oh
 Ah-ah-ah
 Full Harmony
@@ -1836,7 +1836,7 @@ Pero es de Channel la colonia
 Quiere con todos el mundo
 10 jevos en PR y tiene uno hasta en la Patagonia
 Yo quiero con ella pero para meterle
-Porque no la quiero de novia"
+Porque no la quiero de novia",1,0.9643490353570964
 T1_TEST_0058,"Uh
 Uh
 Uh
@@ -1878,7 +1878,7 @@ Uh, uh, uh, uh
 Uh-uh-uh
 Ah-ah-ah
 Uh, uh, uh, uh
-Uh-uh-uh"
+Uh-uh-uh",0,0.09389653657448437
 T1_TEST_0059,"inventar algo nuevo ya
 Ey, oh
 O-O-Ovy On The Drums
@@ -1949,7 +1949,7 @@ Sencillo, jeh
 ¿Qué me queda 'onde? ¿Hacer tango?
 Ey
 Cansado' de hacer todo' lo' género'
-Vamo' a inventar algo nuevo ya"
+Vamo' a inventar algo nuevo ya",1,0.8099559206685908
 T1_TEST_0060,"Voy a la cocina, luego al comedor
 Miro la revista y el televisor
 Me muevo para aquí, me muevo para allá
@@ -2021,12 +2021,12 @@ Sí, latino
 Latinos, ellos tienen el poder y lo van a perder
 Tienen el poder y lo van a perder
 Tienen el poder y lo van a perder
-Tienen el poder y lo van a perder"
+Tienen el poder y lo van a perder",1,0.6424049210551153
 T1_TEST_0061,"n
 Tú naciste para mí
 Yo nací para ti
 Como eslabón de cadenas
-Para unirnos entre si"
+Para unirnos entre si",0,0.11757706441597482
 T1_TEST_0062,"ja, El Dealer, baby
 Primera vez que estoy jangueando en la disco triste
 Segunda vez que bailo con otra, pero contigo en la mente
@@ -2075,7 +2075,7 @@ Que yo te dediqué La Reina
 Y que si no fuera por mi culpa estaríamo' chingando ahora mismo
 Buscando una excusa para irno'
 Tú y yo, baby, somo' un himno
-No me da pena decirlo, que"
+No me da pena decirlo, que",1,0.8883203269737271
 T1_TEST_0063,"La iglesia estaba toda iluminada
 Mucha gente fué invitada
 Yo también estaba ahi
@@ -2099,7 +2099,7 @@ Encontrarme cara a cara
 Y no supo que decir
 Se fué llorando si mirar que con su llanto
 Su vestido iba mojando
-Al llorar solo por mi"
+Al llorar solo por mi",0,0.34053235519562053
 T1_TEST_0064,"iesta nada se necesita
 Cuando se apaguen todas las farolas
 Cuando de miedo te quedes dormido
@@ -2131,7 +2131,7 @@ Yo te cuidé la espalda el día del daño
 Tú me aguantaste todas las caídas
 Búscame, Carlos
 Búscame
-Búscame, búscame, búscame"
+Búscame, búscame, búscame",0,0.27369165772693244
 T1_TEST_0065,"Ey
 Mmm, mmm, mmm, mmm, mmm
 A ver cómo le digo Así
@@ -2201,7 +2201,7 @@ Juanka
 Ovy en la batería, boy
 Tu problematik, bebé
 No es hasta luego, mami, es hasta nunca
-Para que sepi Sheesh"
+Para que sepi Sheesh",1,0.9360678838873974
 T1_TEST_0066,"Se ha formado un casamiento
 Todo cubierto de negros
 Negros novios y padrinos
@@ -2237,7 +2237,7 @@ Levitando para el cielo
 Era un dia muy nublado
 Todo se veía negro
 Le abrió la puerta San Pedro
-Que era de los mismos negros"
+Que era de los mismos negros",0,0.3754661432632599
 T1_TEST_0067,"…
 Hey vos, te vas a acordar de mi mañana
 Cuando choque contra tu cara ese sol de Abril y tengas que admitir que pasa si esto es Solo cuestión de amor o es cuestión de mi
@@ -2245,7 +2245,7 @@ Te recuerdo de esos tiempos que podías Hablar que no tenías el capricho de inv
 Pero hay algo dentro tuyo que no puedo Aguantar es lo que sé que vuelve aunque Sepa que todo va a ir mal y es que aunque no Quieras compartir tu cama se que es amarme Lo nuestro es amor casual …
 Quizás nubla mi mente el humo del café Caliente y aunque me maten las dudas mi Corazón sabe que siente y me dice que sos Lo más importante que siempre voy a Aguantarte y que al final si vos no te alejas es  Solo por mi…
 Lo más triste de todo esto es que al final me Resigno a entenderte y amarte así
-Así loca como estas…"
+Así loca como estas…",0,0.35854894003043897
 T1_TEST_0068,"He cobrado el sueldo del último mes
 La paga extraordinaria, la primi de tres
 Empeñé los candelabros, vendí el pequinés
@@ -2274,7 +2274,7 @@ La misma excavadora, ese ruido estridente
 Y el café se ha quedado frío
 La resaca de anoche va a durarme un mes
 El libro de derecho administrativo
-Sigue en la pagina número seis"
+Sigue en la pagina número seis",1,0.6338155706625437
 T1_TEST_0069,"Que bueno que se hizo noche para empezar la loquera
 Vayan trayendo los botes pa agarrar la borrachera
 Tambien traiganse unas tontas pa gozarlas de a deveras
@@ -2292,7 +2292,7 @@ Ya se me ha acabado el polvo pero aqui traigo mas lana
 Traiganse unas cuantas onzas pa seguirle hasta mañana
 Quiero hacerme unas lineotas como hace tonny montana
 Peliculas yo no tengo yo no soy ni actor ni artista
-Pero aqui hay cueros de rana"
+Pero aqui hay cueros de rana",1,0.8070469755293389
 T1_TEST_0070,"Mami
 Es El Mayimbe otra vez
 Antony Santos
@@ -2319,7 +2319,7 @@ No sé por qué de ti yo me fijé
 Me enamoré, me enamoré
 Y yo no sé ni cómo fue
 Me enamoré, me enamoré
-Y yo no sé ni cómo fue"
+Y yo no sé ni cómo fue",0,0.1963395581709706
 T1_TEST_0071,"Qué tristeza escuchar la voz de una juventú', siendo yo madre, cuando se expresa de esa manera ¿Y sabes el por qué? Porque, yo siendo madre, no quisiera que mis hijos llegaran al extremo
 Su nombre era María igual que la Virgen, la milagrosa
 Pero su pureza era como la coca dudosa
@@ -2388,7 +2388,7 @@ Sólo un caso má' que se pierde entre tanto' del archivo
 Esto son pequeña' historia', perdida' entre el ruido y el tiempo
 Sólo una muestra que he encajado así, aquí y ahora en el tempo
 Pero no piense' que tan sólo se trata de un par de cuento'
-Porque historia' así, en la vida, se cuentan por ciento'"
+Porque historia' así, en la vida, se cuentan por ciento'",1,0.6983794840731329
 T1_TEST_0072,"Ella, lo juro, me muera
 Ella, que ha nacido modelo, diva y superestrella
 Deja el mundo menos bonito cuando se aleja
@@ -2411,7 +2411,7 @@ Y ella cierra los ojos y ve
 A través de las paredes
 Tiene la fuerza de mil hombres
 Y yo me pierdo en su timidez
-Eso..."
+Eso...",1,0.6918108363915204
 T1_TEST_0073,".
 Y aquí voy entregando indeciso el calor de mis alas
 Y aquí estoy invocando imprecisa la última palabra
@@ -2420,7 +2420,7 @@ Y esta noche ha pintado con besos el calor de mis manos
 La mañana coloreando los rezos que marcaron mis pasos
 Y aquí voy seduciendo este tiempo, cautivando el dolor
 Y aquí estoy implorando mis miedos descarnando el sudor
-Solo me voy... solo... me voy solo..."
+Solo me voy... solo... me voy solo...",0,0.11701011665833656
 T1_TEST_0074,"Solo sin tu cariño
 Voy caminando, voy caminando y no se que hacer
 Ni el cielo me contesta cuando pregunto por ti mi bien
@@ -2433,7 +2433,7 @@ Olvida lo pasado ya no te acuerdes de aquel ayer
 Mientras yo estoy dormido sueño que vamos los dos muy juntos a un cielo azul
 Pero cuando despierto el cielo es rojo me faltas tú
 Aunque yo sea culpable de aquella triste de aquella triste separación
-Vuelve por Dios tus ojos vuelve a quererme vuelve mi amor"
+Vuelve por Dios tus ojos vuelve a quererme vuelve mi amor",0,0.09689333995044971
 T1_TEST_0075,"El mundo fue solo de los dos y para los dos
 Supo dar unas nubes tendidas al sol
 En sus miradas amor y sus respuestas si
@@ -2449,7 +2449,7 @@ Y en el hospital en un banco al sol se le puede ver, sonreír
 Consultando su viejo reloj
 Pensando que ha de venir aquel que se marcho
 Y se llevo con el, su corazon
-Estuve loca ayer, pero fue por amor"
+Estuve loca ayer, pero fue por amor",0,0.20937780194522898
 T1_TEST_0076,"Hablando de mujeres y traiciones
 Se fueron consumiendo las botellas
 Pidieron que cantara mis canciones
@@ -2477,7 +2477,7 @@ Y nunca lograríamos olvidarlas
 Mujeres, oh, mujeres, tan divinas
 No queda otro camino que adorarlas
 Mujeres, oh, mujeres, tan divinas
-No queda otro camino que adorarlas"
+No queda otro camino que adorarlas",0,0.36221105190275726
 T1_TEST_0077,"Me dicen el egoísta porque quiero amarme
 Me cansé de ser tan débil, ahora trato de ser fuerte
 Que lo que piensen de mí me de igual y no me afecte
@@ -2505,7 +2505,7 @@ Y ahora la ves muy normal, ya que nunca le importó
 No confío ni en mi sombra, no confío en nadie
 Paro solo en mi mundo, y no doy detalles
 Aunque hayan mil amigos pa mi son conocidos
-Solo creo en mi madre que siempre está conmigo"
+Solo creo en mi madre que siempre está conmigo",0,0.49381823298928385
 T1_TEST_0078,"e como si nada, bebé
 Infinity
 Ella es bien necia con las palabras que dice
@@ -2537,7 +2537,7 @@ Bull Nene
 Infinity Music
 Infinity
 J Balvin, man
-Y yo sigo firme como si nada, bebé"
+Y yo sigo firme como si nada, bebé",1,0.6108144998090109
 T1_TEST_0079,"corre en las venas
 
 ¡Ah!
@@ -2604,7 +2604,7 @@ Todo aquel que dio traición, ya no da respiración
 Cansado de la rutina, decide entrar a otra liga
 Significando un cambio brusco a lo Carlos Salinas
 Tan cerca del precipicio, muy lejos de su familia
-En la calle te ganas hermanos y también envidias"
+En la calle te ganas hermanos y también envidias",1,0.704837721333243
 T1_TEST_0080,"in ti ya no puedo...
 Yo! Yo!
 Este es Nicky Jam! Yo!
@@ -2627,7 +2627,7 @@ Porque no aguanto esta pena
 Que me mata a fuego lento
 Y yo me estoy muriendo
 Regresa a mi, por favor
-Porque sin ti ya no puedo"
+Porque sin ti ya no puedo",0,0.11567240134068957
 T1_TEST_0081,"Distincion al platicar y tambien al trabajar
 Siempre firme y bien quitado de la pena en la forma de caminar
 En la mano un buen morral con radios y celular
@@ -2664,14 +2664,14 @@ La cuadrilla de los cuadras y el joven las escuadras reitero es un señoron
 Trailers, motos mi pasion carros de buen arrancon
 Compa marcos del equipo codiciado sabe que yo soy de accion
 Ya me boy a retirar antes quiero recordar
-Soy el chaval y ando con mi chavalada siempre listos pa chambear"
+Soy el chaval y ando con mi chavalada siempre listos pa chambear",0,0.4201342935909274
 T1_TEST_0082,"Yo lo que quise saber es si tú eres la misma
 Yo lo que quise saber es si aún queda a la vista
 Estuve un tiempo tan escondido que
 No veía ni la luz ni mis pintas
 Como el agua clara, el mar entró en mi casa
 Y se llevó hasta al gato que tanto había querido
-Me dejó sin ella"
+Me dejó sin ella",0,0.1258068354952352
 T1_TEST_0083,"o cambió cuando te vi
 Todo cambió cuando te vi
 De blanco y negro a color me convertí
@@ -2687,7 +2687,7 @@ Tengo que decir que eres el amor de mi vida
 Antes que te ame más, escucha, por favor
 Déjame decir que todo te di
 Y no hay cómo explicar pero menos dudar
-Simplemente así lo sentí cuando te vi, ¡huh!"
+Simplemente así lo sentí cuando te vi, ¡huh!",0,0.13424824358995913
 T1_TEST_0084,"et tickets as low as $61
 De pura Kush para darle un jalón
 Y lo peor del caso, fue que me gusto
@@ -2726,7 +2726,7 @@ Me pierdo en el viento y el avión no lo he querido aterrizar
 Se me entume hasta la cara con el humo cuando la empiezo a calar
 Es mi religión andar bien marihuano
 Los problemas, las envidias al carajo
-No me quiten, me relajo"
+No me quiten, me relajo",0,0.3171243275544506
 T1_TEST_0085,"ros
 Brass
 Para los rumberos
@@ -2739,7 +2739,7 @@ Repica fuerte, tu, tu timbalero
 Y sigue la clave y afina el cuero
 Repica fuerte, tu, tu timbalero
 Más timbal para los rumberos
-Mambo"
+Mambo",0,0.24219922019647902
 T1_TEST_0086,"!
 En una cama de hotel, nos sorprendió la mañana
 Noté el desorden y tú, la mujer habilitada
@@ -2762,7 +2762,7 @@ Casi dos meses después, cuando ni tú lo esperabas
 Te convencí de mi amor, casándonos de mañana...
 Y SEGUIMOS AMANDONOS
 En la piel se ocultan tus penas
-Es que tú encierras tanto amor, en tus venas"
+Es que tú encierras tanto amor, en tus venas",1,0.6361700008840849
 T1_TEST_0087,"Salte W con—
 Si no estás bailando con ella, salte Y, Yandel
 Si no estás perreando con ella, salte
@@ -2804,7 +2804,7 @@ Matando la liga, El Arma Secreta, sin miedo
 Nelly
 Mas Flow 2
 W El Sobreviviente con Yandel
-El dúo dinámico"
+El dúo dinámico",1,0.9292852995330707
 T1_TEST_0088,"s
 Me invitas una copa o te la invito
 Tenemos que brindar por nuestras cosas
@@ -2821,7 +2821,7 @@ Quedarme entre tu amor aprisionado
 Quién sabe cuántos años han pasado
 La vida nos dejó las almas rotas
 Y estamos recordando nuestra historia
-Nomás mientras tomamos cuatro copas"
+Nomás mientras tomamos cuatro copas",0,0.11774886933729493
 T1_TEST_0089,"Entre el silencio y las palabras donde dicen que la noche es larga
 Estás tú
 Tú entre la mente y la mirada donde dicen que no existe nada
@@ -2835,7 +2835,7 @@ Y luego por debajo de mi ropa
 Te regalé el arrullo de las olas
 Todo el mar metido en una caracola
 En una antología de caricias nos amamos sin reproches
-Por eso irrepetible es, amor, aquella noche"
+Por eso irrepetible es, amor, aquella noche",0,0.26362423718174915
 T1_TEST_0090,"La Paciencia
 Bad Bunny, baby
 Prende otro Phillie, bebé
@@ -2890,7 +2890,7 @@ Siempre jangueando a escondía' del pai
 Tiene un mahón que no es de su size
 Y yo loco de hacerle un creampie
 Todo' le tiran, pero siempre en vano
-Todo' le tiran, pero yo siempre soy el que le gano"
+Todo' le tiran, pero yo siempre soy el que le gano",1,0.9676495209294065
 T1_TEST_0091,"Vuelvo a jugar en modo experto
 Novatos creyeron que estaba muerto
 No soy dueño de la verdad quizás no esté en lo cierto
@@ -2918,7 +2918,7 @@ No quiero ataduras mucho menos encierro
 Voy a seguir haciendo hip hop aasta el día de mi entierro
 Y no les bajo la mirada aunque me apunten con un fierro
 Fin de la mediocridad 
-Uno de los tipos más raperos del mundo"
+Uno de los tipos más raperos del mundo",0,0.17748236023339584
 T1_TEST_0092,"Mami Cuidate que en la calle
 Los perros están rabioso
 Y eso que tu tienes se ve apetitoso
@@ -2965,7 +2965,7 @@ Y siempre lo rechazó
 To el que ve este biscocho
 De una vez quiere un pedazo
 Si me pongo de espalda y se lo muevo alpaso
-Sufriendo arriva y gozando abajo"
+Sufriendo arriva y gozando abajo",1,0.9683050702971591
 T1_TEST_0093,"masiado
 Duele demasiado
 Duele demasiado, duele demasiado
@@ -2991,7 +2991,7 @@ Un cielo sin fronteras
 Y el amor que con tanta pasión les niega
 Cuando más se desesperan, más se desesperan
 Si te duele como a mí, abrázalo
-Si te duele como a mí, abrázalo"
+Si te duele como a mí, abrázalo",0,0.12926799202936454
 T1_TEST_0094,"Pop ur pussy like this
 Pop, pop, pop ur pussy like—
 Pop, pop, pop ur pussy like—
@@ -3019,7 +3019,7 @@ Como algo que siempre quisiste y nunca pudiste hacer
 Como una línea y un carnet Pop it, pop it
 Como si fuera la última vez Pop it, pop it
 I wanna pop ur—, I wanna pop ur—
-I wanna pop ur pussy like ¡Ey!"
+I wanna pop ur pussy like ¡Ey!",1,0.5895445425124578
 T1_TEST_0095,"Yo no sé, por qué me engañas
 Si yo, si yo te adoro
 Quizás la culpa fue mía que no supe
@@ -3038,7 +3038,7 @@ Que estoy vibrando todo
 Estoy palidecido
 Y un poco asustado de ti
 Me engañaste, tu cuerpo me es extraño
-Eres otra mujer desnuda"
+Eres otra mujer desnuda",1,0.8110251783408914
 T1_TEST_0096,"Una sensación de merecer
 Me persigue sin cesar
 Un exceso de valoración
@@ -3060,7 +3060,7 @@ Que me llega a convencer
 Me puedo abandonar
 Y olvidar que estoy aquí
 Gesticular, descomponer
-Aunque no pueda dormir"
+Aunque no pueda dormir",0,0.14935420276746822
 T1_TEST_0097,"Salgo acicalá' de pie' a tope
 Porque puede ser que con el culo mío te topes Oh
 Me siento bichota sin salir del bloque Ah
@@ -3091,7 +3091,7 @@ La que me fronteó de aquí no se escucha Ja
 Tra, tra Ah
 Papi, papi
 O-O-Ovy On The Drums
-Papi, papi"
+Papi, papi",1,0.8832533577982491
 T1_TEST_0098,"y estoy mejor sin ti
 Tú, llegaste a mi vida para enseñarme
 Tú, supiste encenderme y luego apagarme
@@ -3113,7 +3113,7 @@ En mí no queda espacio para ti
 Y, y, y, y, y el tiempo hizo lo suyo y comprendí
 Las cosas no suceden porque sí
 No eres la persona que pensé
-Que creí, que pedí"
+Que creí, que pedí",0,0.11410340017736648
 T1_TEST_0099,"Cada día por la carretera, noche y madrugada entera
 Y mi amor aumenta mas
 Porque pienso en ella en el camino
@@ -3133,7 +3133,7 @@ Va y da en el parabrisas, late igual mi corazón
 Loco por lo dulce de sus besos
 Miro lleno de deseos su retrato en el panel
 Es en el calor de su abrazo que me olvido del cansancio
-Y me abastezco de su miel"
+Y me abastezco de su miel",0,0.14567451656817318
 T1_TEST_0100,"a
 Anoche nos contaste
 Que tu mamá se iba a morir
@@ -3152,7 +3152,7 @@ Pero aunquе lo sea las cosas siguen
 Igual me da mucho tеmor
 Reconocer que es un poco mi culpa
 Sentir la desconexión
-Sentir que estoy flotando en un abismo"
+Sentir que estoy flotando en un abismo",0,0.12131944569492491
 T1_TEST_0101,"Letra de Mi Último Deseo
 Me gustan los parties y las desveladas
 Lunes a Domingo y toda la semana
@@ -3181,7 +3181,7 @@ Por si hay otra vida... seguir la parranda
 Y más vale disfrutar la vida compa
 Porque no sabes cuando se acaba
 Los Recoditos, oiga
-Fierro, 'amonos"
+Fierro, 'amonos",0,0.20906461030123732
 T1_TEST_0102,"Cierro los ojos pa verte cuando no estás
 Y puedo ver cómo el mundo se apaga cuando te vas
 Mi cielo, ya no me importa el pasado, lo dejo atrás
@@ -3213,7 +3213,7 @@ Y luego atravesar la noche en un carro de fuego
 Y decirte que las horas se demoran
 Si tus ojos me devoran de la noche hasta la aurora
 Sentir que aunque todo se desmorona
-Tu amor es la corona de este cora'"
+Tu amor es la corona de este cora'",0,0.13839027668481607
 T1_TEST_0103,"Hacedle fotos, tomadle las huellas
 Miradle bien los dientes
 Si se resiste rompedle la cabeza
@@ -3241,7 +3241,7 @@ Para la oveja negra
 Balas blancas, balas blancas
 Para la oveja negra
 Uuuuh, lalalalala
-Uuuuh, lalalalala"
+Uuuuh, lalalalala",0,0.28044523028124047
 T1_TEST_0104,"Miau
 Bla-Bla-Blackthoven
 Rico por la boca, es como un bazooka
@@ -3267,7 +3267,7 @@ Pasándola bien, y
 Me odian porque soy épico, me follé a todo el que se picó
 Un saludo para mi público de Argentina, Chile y México
 Me odian porque soy épico, me follé a todo el que se picó
-Un saludo para mi público de Argentina, Chile y México"
+Un saludo para mi público de Argentina, Chile y México",1,0.8427021944438255
 T1_TEST_0105,"Uh, ey, AK 4:20 uh
 La ropa que visto es de alta gama
 Si no es la Dior, es la Balenciaga
@@ -3317,7 +3317,7 @@ Y en mi cuello un cadenón que brilla mas que lo rayos U.V
 Para que vea, las bulle's que tenemo', es hebrea
 Fuí del Chapo y que me tumbara la DEA
 No busques que en tu barrio la cosa se ponga fea
-Si no quieres ver un familiar como de por vida el cojea"
+Si no quieres ver un familiar como de por vida el cojea",1,0.933130131676855
 T1_TEST_0106,"Tú pensabas que yo iba a llorar
 Cuando dijiste que te ibas lejos
 Te imaginaste que se acabaría mi mundo
@@ -3333,7 +3333,7 @@ Tu adiós no me tumbó
 En cambio tú estas sola
 Y no hay quien te de amor
 Querías verme perder
-Y yo fui quién más ganó"
+Y yo fui quién más ganó",0,0.12448725716184136
 T1_TEST_0107,"Ando por ahí con los de siempre, un flow cabrón
 Dando vuelta en un maquinón
 Cristale' G5 en un capsulón En un capsulón
@@ -3384,9 +3384,9 @@ Con un flow bien cabrón
 It is Mariah, babe
 Mariah Angeliq
 No
-Papi"
+Papi",1,0.9173907226615002
 T1_TEST_0108,"r
-Nadie entiende que podamos convivir - tan distintos los dos - nadie entiende que lo nuestro es natural - como el bien como el mal. - Nadie entiende como a dos equilibristas - el amor nos dio sus alas y no nos deja caer - nadie entiende que vivamos condenados - a dormirnos abrazados - nadie entiende pues no hay nada que entender. - Nadie entiende que despues de fracasar - otra vez lo volvamos a intentar - nadie entiende como calma y tempestad - son el tiempo mas perfecto para amar. - Nadie entiende como a dos equilibristas - el amor nos dio sus alas y no nos deja caer - nadie entiende que vivamos condenados - a dormirnos abrazados - nadie entiende pues no hay nada que entender. - Nadie entiende como a dos equilibristas - el amor nos dio sus alas y no nos deja caer - nadie entiende que vivamos condenados - a dormirnos abrazados - nadie entiende pues no hay nada que entender - nadie entiende pues no hay nada que entender"
+Nadie entiende que podamos convivir - tan distintos los dos - nadie entiende que lo nuestro es natural - como el bien como el mal. - Nadie entiende como a dos equilibristas - el amor nos dio sus alas y no nos deja caer - nadie entiende que vivamos condenados - a dormirnos abrazados - nadie entiende pues no hay nada que entender. - Nadie entiende que despues de fracasar - otra vez lo volvamos a intentar - nadie entiende como calma y tempestad - son el tiempo mas perfecto para amar. - Nadie entiende como a dos equilibristas - el amor nos dio sus alas y no nos deja caer - nadie entiende que vivamos condenados - a dormirnos abrazados - nadie entiende pues no hay nada que entender. - Nadie entiende como a dos equilibristas - el amor nos dio sus alas y no nos deja caer - nadie entiende que vivamos condenados - a dormirnos abrazados - nadie entiende pues no hay nada que entender - nadie entiende pues no hay nada que entender",0,0.14917216459102542
 T1_TEST_0109,"r
 Es mi destino vivir así
 Triste agonía vivir sin ti
@@ -3396,13 +3396,13 @@ Se que tu no quieres ya jamás volver a estar cerca de mi
 Que no te importa mi manera de vivir
 Ni te interesas más por mí
 Sé que aunque yo muera tu jamás podrás saber lo que sentí
-En mi agonía de vivir lejos de ti, llorando estoy"
+En mi agonía de vivir lejos de ti, llorando estoy",0,0.1045705574122244
 T1_TEST_0110,"Marimar, costenita soy
 Con mis abuelos crecí yo
 En un lindo y cálido mar
 Que todito me dió
 Cuando al amor me llevó
-No que no"
+No que no",0,0.10550608549211705
 T1_TEST_0111,"Yeah, yeah
 Yeah Hijo mío
 Perdón que no pude criarte, perdón por las veces que me llamaste
@@ -3430,7 +3430,7 @@ Cuán importante era para ti
 Perdón porque te hice falta
 Y nunca estuve ahí para ti
 Perdóname
-Perdóname, yeah"
+Perdóname, yeah",0,0.16603507558768527
 T1_TEST_0112,"¡Compa Edwin!
 Qué dice, mi compa Flaco
 Fíjese bien
@@ -3461,7 +3461,7 @@ Salud, compadre
 ¡Cómo la quiero!
 Y esa es La Banda del Flaco, casi nadie
 ¡Ay-ay-ay!
-¡Uh!"
+¡Uh!",0,0.32298232554003814
 T1_TEST_0113,"z
 Quisiera saber, si todavía me quieres
 Si todavía me extrañas, para volver contigo
@@ -3481,7 +3481,7 @@ A mi pobre corazón
 Quisiera saber, saber si aun me quieres, hoy quiero volver
 Contigo vida mía
 Y comenzar de nuevo, aquel amor bonito, solo tu puedes darme
-La vida otra vez"
+La vida otra vez",0,0.12020403340671043
 T1_TEST_0114,"Mi prisión, mi libertad
 Mi oscuridad y mi lucero
 Mezcla de brisa y tempestad
@@ -3490,7 +3490,7 @@ Amante del amor
 Quisiera ser la enredadera
 Que sube por tu piel de seda
 Beberme tu pasión, amarte entera
-Amante del amor"
+Amante del amor",0,0.27860119180048315
 T1_TEST_0115,"o
 No sé que tienen tus ojos
 No sé que tiene tu boca;
@@ -3503,7 +3503,7 @@ Tan sólo para adorarte
 Qué influencia tienen tus labios
 Que cuando me besan tiemblo
 Y hacen que me sienta esclavo
-Y amo del universo"
+Y amo del universo",0,0.2620342767007597
 T1_TEST_0116,"s
 Quererme me dijistes aquel dia
 Y que siempre serias para mi
@@ -3516,7 +3516,7 @@ Porque tengo otra que esa si me quiere
 Yo de ti siempre estuve enamorado
 Pero a mi esto se me podra pasar
 Amor fingido siempre me lo han sobrado
-Ahi con el tiempo tu te arrepentiras"
+Ahi con el tiempo tu te arrepentiras",0,0.27135124685850215
 T1_TEST_0117,"chica embarazada chica
 Esto que tú ves
 Que escondo aquí adentro
@@ -3543,7 +3543,7 @@ De que sea un problema para su mamá
 Nunca imaginé sentirme tan confusa
 Tengo náuseas al comer, parece que ando cruda
 Voy perdiendo la figura cuando crece mi cintura
-Y también crece el temor con ella mes a mes"
+Y también crece el temor con ella mes a mes",1,0.8012806448994841
 T1_TEST_0118,"pies puestos en el suelo
 Con un vasito en la mano y el cuerpo siento cansado
 Fumando muy relajado y la fiesta no va a parar
@@ -3563,7 +3563,7 @@ Con el Lalo por un lado tomando un jarabe extraño
 Y nunca jamás le había dado y ahora no quiero bajar
 Indica, me indica todos mis planes me activa
 La mente siempre en mi línea y una línea que es para despertar
-No se me agüite, mejor péguese un baile con la niña de allá"
+No se me agüite, mejor péguese un baile con la niña de allá",1,0.8067108877716175
 T1_TEST_0119,"Perdona si te hago llorar
 Perdona si te hago sufrir
 Pero es que no está en mis manos
@@ -3590,7 +3590,7 @@ Ya no puedo ni debo quererte, ya no te amo
 Me he enamorado de un ser divino
 De un buen amor que me enseñó a olvidar y a perdonar
 Ah, ah-ah-ah-ah
-Ah-ah-ah, ah-ah-ah-ah"
+Ah-ah-ah, ah-ah-ah-ah",0,0.1410211660229918
 T1_TEST_0120,"Era feliz en su matrimonio
 Aunque su marido era el mismo demonio
 Tenía el hombre un poco de mal genio
@@ -3628,7 +3628,7 @@ La-dai-da
 La-dai-da, da-da, dai-da
 La-dai-da
 La-dai-da
-La-dai-da, da-da, dai-da"
+La-dai-da, da-da, dai-da",0,0.350799658980062
 T1_TEST_0121,"ro]
 ¿Y cuándo volverás?
 ¿Cómo te voy a decir?
@@ -3647,7 +3647,7 @@ Para yo acordarme siempre que hay alguien esperando con razón
 Tengo esperanza que algún día me vuelvas a encontrar
 Volver a llenar tus ojos de alegría junto al mar
 Y tengo esperanza que si tú no me encuentras seguro lo haré yo
-Sí lo haré yo"
+Sí lo haré yo",0,0.09528488102507765
 T1_TEST_0122,"Mis noches no tienen luna
 Son oscuras y amargas
 En esta historia que narro
@@ -3666,7 +3666,7 @@ Me dejo una nota adentro del bolsillo
 Decía estas dormido pero me despido
 Llora guitarra mia llora... lloraaa
 Tengo todo lo que el dinero pueda comprar pero no la tengo a ella
-Me quiero morir"
+Me quiero morir",0,0.17521733723316724
 T1_TEST_0123,"Eh
 Esa nena cuando baila me vuelve loco y yo pago ese show
 Es callaíta', pero la motiva el dembow
@@ -3727,7 +3727,7 @@ Gaby Morales Uh-yeh
 Rich Music
 Dímelo Flow Yeih
 Magnífico Yeah-yeah
-Yeah-yeah, eh"
+Yeah-yeah, eh",1,0.9617120078254304
 T1_TEST_0124,"t tickets as low as $61
 Clavado en este rincón
 Como tú clavaste a mi corazón
@@ -3738,7 +3738,7 @@ Yo sé que me querías y sé que me adorabas
 Por si acaso quieres regresar
 Te voy a esperar, te voy a esperar
 Tragos de amargo licor que no me hacen olvidar
-Y me siento como un cobarde, que hasta me pongo a llorar"
+Y me siento como un cobarde, que hasta me pongo a llorar",0,0.12612821499144097
 T1_TEST_0125,"Oh-oh, oh-oh, oh
 Desde que te fuiste
 Vivo en el despiste
@@ -3760,7 +3760,7 @@ Desde que te fuiste Tal vez un día volvamos a vernos
 Desde que te fuiste Tal vez un día volvamos a vernos
 Tal vez un día volvamos a vernos
 Desde que te fuiste, desde que te fuiste
-Los momentos tristes"
+Los momentos tristes",0,0.09617952690247644
 T1_TEST_0126,"Necesito olvidar, para poder vivir
 No quisiera pensar, que todo lo perdí
 En una llamarada, se quemaron nuestras vidas
@@ -3777,7 +3777,7 @@ Pero me voy de aquí, te dejo mi canción
 Amor te vas de mi, también me voy de ti
 Lo nuestro terminó
 Tal vez me extrañarás, tal vez yo soñare
-Con esos ojos verdes como mares"
+Con esos ojos verdes como mares",0,0.09025900660324006
 T1_TEST_0127,"Si alguna vez preguntas el porqué
 No sabré decirte la razón
 Yo no la sé
@@ -3787,7 +3787,7 @@ Ni una sola palabra más
 No más besos al alba
 Ni una sola caricia habrá
 Esto se acaba aquí, no hay manera ni forma
-De decir que sí"
+De decir que sí",0,0.1695456568982056
 T1_TEST_0128,"o tocaría ni una botella
 Yeah-yeah-yeah
 Maluma, baby
@@ -3845,7 +3845,7 @@ Un capitulo más de Uoh, uoh, oh
 Maluma, baby, aka Papi Juancho Edge
 Dímelo, Edge, Edge Edge
 Muah, jaja
-Por ti no tocaría ni una botella"
+Por ti no tocaría ni una botella",1,0.9311377959863496
 T1_TEST_0129,"Es un ranchero en plena moda
 Que le gusta el buen vestir
 Usa corbata, lentes negros, mancuernillas, casimir
@@ -3859,7 +3859,7 @@ Sus huaraches pura onda, son de suela plataforma
 Tiene el cierre, estoperoles; dicen que son los mejores
 Tienen su tacon cubano, de un patin mato un marrano
 Y ademas..... son de charol
-Aaahhh Que chido es! X4"
+Aaahhh Que chido es! X4",1,0.7354970053353524
 T1_TEST_0130,"Quiero asistir a ese baile
 Dijo la hermosa María
 Y le contestó su madre:
@@ -3889,7 +3889,7 @@ Sacó el arma que traía
 Le destellaban los ojos
 Por la furia que traía
 Y en medio del alboroto
-Cayó muerto Rentería"
+Cayó muerto Rentería",0,0.2439336813633962
 T1_TEST_0131,".
 Juntos, la inmensidad
 Un mundo, nuestra casa chica, el tiempo no importa porque
@@ -3918,7 +3918,7 @@ Un iman perfecto
 Casi el egoismo
 Solo para amarnos
 Para amarnos mas...
-Coro..."
+Coro...",0,0.14292445229641768
 T1_TEST_0132,"No es un adiós aunque lo nuestro
 Se acabó lo lamento
 Y lo peor no soy yo
@@ -3941,7 +3941,7 @@ Pendiente de ese trapo
 No se tú pero yo
 Le quitaré su disfraz
 Dile adiós a tu novio
-¡Shock!"
+¡Shock!",1,0.7801911749092034
 T1_TEST_0133,"n
 Barrio triste
 Marta Nuñez Corregidor
@@ -3974,7 +3974,7 @@ Que censa cada dÍa un loco más
 Angel Triste
 Regresa a las montañas, tu humilde hogar
 Tus hijos crecerán
-Why tú tambien"
+Why tú tambien",0,0.26032685292130636
 T1_TEST_0134,"!
 Hablando de amor, a un lado están ellas
 Sensibles, coquetas, listas y atrevidas con curvas del sol
@@ -3985,7 +3985,7 @@ El juego de conquista va a empezar, no te dejes llevar solo por algo superficial
 Por que al final lo que cuenta es ser especial, dar eso que otro no puede dar, jugar y dejarse seducir al juego del amor
 Y me da igual lo que tu cara pueda aparentar, la esencia primera esta en el interior, cambiemos papeles para conquistar!
 MUJERES Y HOMBRES Y VICEVERSA!
-Varios pretendientes, es la hora de elegir, aprovecha bien tu cita y que la química pueda subir"
+Varios pretendientes, es la hora de elegir, aprovecha bien tu cita y que la química pueda subir",1,0.7892901501008941
 T1_TEST_0135,"low as $49No sé olvidar...
 Yo no sé
 Porqué no puedo olvidar lo que fué
@@ -4016,7 +4016,7 @@ No sé como arrancar tus besos de mi piel
 Eres tú mi obsesión, mi tormento
 Y nada puedo hacer
 Yo daría hasta la vida por verte otra vez
-No sé olvidar..."
+No sé olvidar...",0,0.16834593475378418
 T1_TEST_0136,"Si quisieras, te puedo enamorar toda la vida
 En tu reino, seria yo el sentir de tu sonrisa
 Y solo a ti me rendiré
@@ -4042,7 +4042,7 @@ Si quisieras te llevaría altar
 Y hasta te puedo regalar una lunita de miel
 Si quisieras sería tu ángel guardián
 Y un angelito real cuidándote
-Los ángeles de la bachata"
+Los ángeles de la bachata",0,0.3218527010392487
 T1_TEST_0137,"Dicen los viejos que en este país
 Hubo una guerra
 Que hay dos Españas que guardan aún
@@ -4060,7 +4060,7 @@ Guárdate tu miedo y tu ira
 Dicen los viejos que hacemos
 Lo que nos da la gana
 Y no es posible que así pueda haber
-Gobierno que gobierne nada"
+Gobierno que gobierne nada",0,0.13078742560147955
 T1_TEST_0138,"Cómo pasa el tiempo, cómo hemos cambiado
 Yo no somos quizás ni la sombra de lo que fuimos ayer
 Cómo es la vida, después de tantos años
@@ -4073,7 +4073,7 @@ Dime si eres feliz
 Porque yo no he podido ser feliz
 ¿Te sientes bien?
 ¿Eres feliz?
-Quiero saber"
+Quiero saber",0,0.12309519807029319
 T1_TEST_0139,"s dado
 Golpes en el corazón
 Yo te regalaba todo
@@ -4083,7 +4083,7 @@ Y te daba hasta mi vida
 Yo te regalaba todo
 Hoy reñimos y te olvidas
 Salí mal con mis amigos
-Porque tú no los querías"
+Porque tú no los querías",0,0.20571756624854345
 T1_TEST_0140,"pana Messiah
 N.I.C.K
 Son las seis de la mañana
@@ -4145,7 +4145,7 @@ La Industria Inc
 Ya tú sabes como va
 Nicky, Nicky, Nicky Jam
 Y mi pana Messiah
-N.I.C.K"
+N.I.C.K",1,0.9539457408449289
 T1_TEST_0141,"La cabra, illuminaty
 Se tiró el COBA Eh, daña'n el party
 Lo' negro' vienen a pie' entrando por lo' matorrale' 3030
@@ -4175,7 +4175,7 @@ El que sabe del dembow, dije yo
 Hablamo' ahora
 Vamo' para mi blo', allá hay pastilla' y mari
 Tripy03
-Mari, mari, mari, mari, mari, mari"
+Mari, mari, mari, mari, mari, mari",1,0.7473484262879877
 T1_TEST_0142,"Hey
 Who are you?
 Mi memoria ha conservado lo que se ha llevado el viento
@@ -4210,14 +4210,14 @@ Tell me where she is at?
 Tell me where she is at?
 Yo la extraño ¿a dónde se me perdió?
 Tell me where she is at?
-Que regrese mi amada porque tú, no eres tú"
+Que regrese mi amada porque tú, no eres tú",1,0.7875937196104957
 T1_TEST_0143,"Duérmete y aprender a volar libre como un cometa
 Deslízate por el tobogán de la luna inquieta
 No tengas prisa en despertar no dejes de ser pequeño un nuevo día ya llegara que tengas dulces sueños
 Las estrellas que vigilas te aconsejan al compas que debes dejar a un lado esa carga que a veces te atormenta, todo ira mеjor por la mañana
 Y no me digas que no puedes desconectar
 Todo corazón tiene un consuelo
-Apaga la bombilla y no mires nunca atrás desnuda tu pesadilla y el servuelo"
+Apaga la bombilla y no mires nunca atrás desnuda tu pesadilla y el servuelo",0,0.1404669706883446
 T1_TEST_0144,"Cuando tú estás conmigo es cuando yo digo
 Que valió la pena todo, todo lo que yo he sufrido
 No sé si es un sueño aún o es una realidad
@@ -4232,7 +4232,7 @@ Ha hecho estragos en mi gente como en mi persona
 Abrázame que el tiempo es malo y muy cruel amigo
 Abrázame que el tiempo es oro si tú estas conmigo
 Abrázame fuerte, muy fuerte, y más fuerte que nunca
-Siempre abrázame"
+Siempre abrázame",0,0.10700707275509791
 T1_TEST_0145,"Los pasos en la casa no me dejan tranquila
 Y espero no caer cuando me vaya
 Pacientemente espero que se quede dormida
@@ -4241,7 +4241,7 @@ Dormida
 Cuántas horas tristes
 Cuantas horas tristes serán?
 Serán
-HORAS TRISTES!"
+HORAS TRISTES!",0,0.1319666231947846
 T1_TEST_0146,"Qué tristeza tan grande, tan grande
 Dejaste en mi alma
 Qué dolor tan profundo y tan fuerte
@@ -4257,7 +4257,7 @@ Seré tu recuerdo
 Yo te puedo apostar lo que quieras
 Que no te despides
 Yo te puedo apostar que te vas
-De la gloria al infierno"
+De la gloria al infierno",0,0.15176357345897906
 T1_TEST_0147,"Tomame en tus brazos
 Embriagame de amor
 Y llena mis sentidos de ti...
@@ -4298,7 +4298,7 @@ Yo nunca habia sentido asi el amor
 Hazme olvidarla por favor, con tu amor ...
 Hoy te agradesco el calor que has brindado en mi
 Hazme olvidarla por favor, con tu amor ...
-Pido un aplauso para el amor que a mi ha llegado"
+Pido un aplauso para el amor que a mi ha llegado",0,0.4928592784202498
 T1_TEST_0148,"Pequeñas cosas
 Que vivimos tu y yo
 Aquellas cosas
@@ -4327,7 +4327,7 @@ Y como no me pude dar cuenta...
 De esas pequeñas cosas
 He tratado de creerme
 Que lo que yo siento
-No es amor"
+No es amor",0,0.1125353842604391
 T1_TEST_0149,"a
 Ehhhh...
 Sonny Ehh....
@@ -4391,7 +4391,7 @@ Y despues te como completa
 Te suelto el pelo Oh Oh Oh
 Te quito la camisa Ah Ah Ah
 Tu pantalon Oh Oh Oh
-Y despues te como completa"
+Y despues te como completa",1,0.9335321285421698
 T1_TEST_0150,"e embrujaste primero
 Me ha pegado en la cara mi error
 Mi corazón se cansó de gritar
@@ -4411,7 +4411,7 @@ Y no escogí enamorarme
 Pero es amor verdadero y si te hechizo al quedarte
 Tú me embrujaste primero
 Tú me embrujaste primero
-Tú me embrujaste primero"
+Tú me embrujaste primero",0,0.21144663764255997
 T1_TEST_0151,"e
 Correré el peligro de buscar a ciegas entre tanta luz
 Es tu sangre, tu sangre
@@ -4431,7 +4431,7 @@ Esta en tu sangre, tu sangre
 Tu no sabes nada
 Puedes gritar, gritar y no oir tu voz, sin voz, tu voz y la misma fe 2
 Puedes gritar....
-Puedes gritar, gritar y no oir tu voz, sin voz, tu voz y la misma fe"
+Puedes gritar, gritar y no oir tu voz, sin voz, tu voz y la misma fe",0,0.1815603562383842
 T1_TEST_0152,"vez
 Niño, hah
 He venido para hablarte, y de mis cosas contarte
@@ -4445,7 +4445,7 @@ Reconoce que el amor llegó esta vez
 Soy cara de niño, con alma de hombre
 Quiero amarte para siempre, pero tú no me respondes
 Soy cara de niño, con alma de hombre
-Ven conóceme, te reto, que hay amor para que te sobre"
+Ven conóceme, te reto, que hay amor para que te sobre",0,0.2942231324655776
 T1_TEST_0153,"Lo piloto' aterriza'n, vamo' a busca' eso
 Andamo' ruleta en una camioneta
 Recogimo' la vaina, que llegó la avioneta
@@ -4498,7 +4498,7 @@ Año 2 Mil Windows El Alfa
 Descárguese eso, palomo, que tengo má' aplicación Uy
 Mierda, Alfa 2 Mil Windows Hmm, eso es do' mil ventana'
 El 2 Mil Ventana es mío es, ¿qué fue?
-¡Cha-el!"
+¡Cha-el!",1,0.9036399142808583
 T1_TEST_0154,"Te llamé borracho, y estabas con tu macho
 Te dije te amo, al frente 'e los muchachos
 Te llamé borracho, y me hablaste dormi'a
@@ -4523,7 +4523,7 @@ Chosen Few
 New Generation
 Mucha versatilidad, niveles de música
 Loco, Humilde y Real
-Yi Yi Yi Yi"
+Yi Yi Yi Yi",1,0.5243477922943279
 T1_TEST_0155,"Te vas porque yo quiero que te vayas
 A la hora que yo quiera te detengo
 Yo sé que mi cariño te hace falta
@@ -4538,7 +4538,7 @@ Entonces yo daré la media vuelta
 Y me iré con el sol cuando muera la tarde
 Entonces yo daré la media vuelta
 Y me iré con el sol cuando muera la tarde
-Te vas porque yo quiero que te vayas..."
+Te vas porque yo quiero que te vayas...",1,0.5676291790059205
 T1_TEST_0156,"Esta calle trae recuerdos hoy de ti
 Que no logro abandonar, por más que quiera
 Trae recuerdos tan lejanos hoy de ti
@@ -4554,7 +4554,7 @@ Frente aquel nuestro lugar Viejo motel
 Muy lentamente te repaso en mi memoria
 Aquel nuestro lugar donde quedaron tantos recuerdos
 Siendo el único testigo de lo que juntos
-Hicimos en una noche de pasión"
+Hicimos en una noche de pasión",0,0.13131631435375843
 T1_TEST_0157,"Cuando te empieza a pegar
 Tanto amor de golpe
 Podría morirme en este momento
@@ -4582,7 +4582,7 @@ Y habrá pétalos luego que caen en la cama
 Y cuando todo ha terminado tu me miras con calma
 Y dices: mira no te pongas mal no pasa nada
 La noche es un sueño que se lleva la mañana
-La noche es un sueño que se lleva la mañana"
+La noche es un sueño que se lleva la mañana",0,0.37366426547823106
 T1_TEST_0158,"tickets as low as $300
 No sé qué pasó
 Otro amor que de repente fracasó
@@ -4618,7 +4618,7 @@ Ni atardecere' en Ibiza
 ¿A dónde habrá ido aquella mirada
 Que sin palabras todo me decía?
 Te juro que yo no me imaginaba lo que se sentía ni cómo sería
-Un verano sin ti"
+Un verano sin ti",0,0.22408403260604953
 T1_TEST_0159,"Oh-oh, oh-oh
 Oh, oh-oh, oh-oh, oh-oh, oh-oh Yeah
 Oh-oh, oh-oh
@@ -4676,7 +4676,7 @@ Esto siempre acaba igual
 Dile que fuimos los dos
 Y ahora soy tuyo, pero es que tú no estás
 Pero es que tú no estás
-KYO—, Rele"
+KYO—, Rele",1,0.7476843231214353
 T1_TEST_0160,"Muy seguro de sí mismo
 Cómo han pasado los años
 Pero sé muy bien, mi nombre han escuchado
@@ -4716,7 +4716,7 @@ Tengo ganas de verlos
 Don Rafa ya salió, y viene con todo
 Su legado sigue activo
 Su apellido es Caro y el señor sigue siendo
-Muy seguro de sí mismo"
+Muy seguro de sí mismo",0,0.1519004676180152
 T1_TEST_0161,"No tengo nada...
 Nada que te pueda ofrecer
 Nada que te llegue a caber
@@ -4732,7 +4732,7 @@ Que nunca se apaga...
 No somos nada
 Más que una estrella fugaz
 Que se pierde en la oscuridad
-Llena de fantasmas"
+Llena de fantasmas",0,0.09328227985813861
 T1_TEST_0162,"o
 Que rayos me pasa a mi
 Que quiero llorar gritando...
@@ -4752,7 +4752,7 @@ Y a mi que me lleve el diablo
 Cantinas muchas cantinas
 Recorro de arriva a bajo
 Estoy asta el mero fondo
-No puedo caer mas bajo"
+No puedo caer mas bajo",0,0.17628233068245838
 T1_TEST_0163,"A fue-a fue-a fue-a fuego tú y yo, tú y yo
 A fue-a fue-a fue-a fuego tú y yo, vámono'
 A fue-a fue-a fue-a fuego tú y yo, tú y yo
@@ -4780,7 +4780,7 @@ Cuando todo esto esté pegando por aquí
 Nena te llevo pa donde tú quieras si quieres hasta el amanecer
 Solo Dios será testigo de todas las cosas que vamos a hacer
 Tengo mi objetivo claro mantenerte aquí no te quiero perder
-Rompamos esa rutina y fluyamos solo como tiene que ser Yee-eh"
+Rompamos esa rutina y fluyamos solo como tiene que ser Yee-eh",1,0.768869188884389
 T1_TEST_0164,"RVFV
 Keen Levy, la esencia
 Nastu Music
@@ -4815,7 +4815,7 @@ Maldito dolor
 Duele, duele, duele, duele
 Duele el corazón
 Maldito dolor
-Dímelo, Jimenez"
+Dímelo, Jimenez",1,0.630383660083449
 T1_TEST_0165,"é
 Yo como creído me equivoqué
 Triste es mi vida
@@ -4836,7 +4836,7 @@ Como era pobre, yo mi vida la hipotequé
 Y todavía valor me sobra
 Hasta donde tuve aposté
 Si me matan a balazos
-Que me maten; al cabo y qué"
+Que me maten; al cabo y qué",0,0.14486529106260013
 T1_TEST_0166,"Se hace la difícil
 Pero lo mío lo tengo asegura'o por ley
 Mami, no te me cohíbas, que la noche es corta Julio Voltio El Chamaco
@@ -4884,7 +4884,7 @@ Flow Nelson
 Montana
 Ya tú sabe', eso es lo que hay
 Perreque, a fuego
-El Chamaco coming soon"
+El Chamaco coming soon",1,0.9534767731170696
 T1_TEST_0167,"diga, que me lo digan
 ¿Cómo es que te amo así, con todo el pensamiento?
 ¿Cómo lograste entrar así sin preguntar robándote el momento?
@@ -4919,7 +4919,7 @@ Alguien que me lo diga, que me lo digan
 Que me lo digan, que me lo digan
 Alguien que me lo diga, que me lo digan
 Que me lo digan, que me lo digan
-Alguien que me lo diga, que me lo digan"
+Alguien que me lo diga, que me lo digan",0,0.10740258927025491
 T1_TEST_0168,"Cielo por tu luz
 Por esa caricia
 Yo sería capaz de rendir mi ser
@@ -4931,7 +4931,7 @@ Es a donde pierdo mi confusión
 Y cuando estas ausente
 Te abrazo a mi mente
 Mi cielo para sobrevivir....
-Cielo para poder.... vivir........"
+Cielo para poder.... vivir........",0,0.09698873837827596
 T1_TEST_0169,"Y esta es la banda sinaloense
 Los recoditos oiga
 Fierro amomos
@@ -4944,7 +4944,7 @@ Pidiendo tu regreso y tus besitos
 Gritándole al olvido maldito
 Bebiéndome la vida perdido
 Jodido entre las noches sin tu cuerpo
-Yo si te necesito te necesito"
+Yo si te necesito te necesito",0,0.18799149706255786
 T1_TEST_0170,"Black
 La Industria Inc
 ¿Cómo tú te llama'? Yo no sé
@@ -4975,7 +4975,7 @@ Me muero por llevarte
 N-I-C-K
 Nicky-Nicky-Nicky Jam
 Saga WhiteBlack
-La Industria Inc"
+La Industria Inc",1,0.883566122603725
 T1_TEST_0171,"No sé quién las inventó
 No sé quién nos hizo ese favor, tuvo que ser Dios
 Que vio al hombre tan solo y sin dudar lo pensó en dos
@@ -5002,7 +5002,7 @@ Si no existieran musas como ustedes?
 Nosotros con el machismo, ustedes al feminismo
 Y al final la historia termina en par
 Porque en pareja vinimos y en pareja hay que terminar
-Terminar, terminar"
+Terminar, terminar",0,0.34519413146912287
 T1_TEST_0172,"¡Taxi!
 Eran las diez de la noche, piloteaba mi nave
 Era mi taxi un Volkswagen del año 68
@@ -5047,7 +5047,7 @@ Mira si es grande el destino y esta ciudad es chica
 Era mi mujer
 Desde aquella noche ellos juegan a engañarnos
 Se ven en el mismo bar
-Y la rubia para el taxi siempre a las diez en el mismo lugar"
+Y la rubia para el taxi siempre a las diez en el mismo lugar",1,0.8885927550096767
 T1_TEST_0173,"Todos piensan que el muchacho es muy calmado
 Porque aveces lo ven cerio o de la bola apartado
 Y tal vez lo ven pensando
@@ -5088,7 +5088,7 @@ Saludos para el equipo
 Para el papio y para toda la plebada
 Con el chavo a lo que manda
 Gracias por esa confianza
-Se retira Samuel Fuentes el muchacho de la barba"
+Se retira Samuel Fuentes el muchacho de la barba",1,0.6729953299256826
 T1_TEST_0174,"o
 Calienta esto, que esto está frío
 Calienta esto, que esto está frío
@@ -5100,7 +5100,7 @@ Enseguida les doy mambo y yo los pongo a gozar
 Porque mis amigos quieren música pa’ disfrutar
 Todos me piden a coro y hasta se me hace un lío
 Me dicen llegó el rey del mambo
-Calienta esto, que esto está frío"
+Calienta esto, que esto está frío",0,0.2536878735048262
 T1_TEST_0175,"En el pasado y me pone a imaginar
 Si mañana te quedas o mañana tú te vas
 Yo te amaba mucho, eso no voy a negar
@@ -5123,7 +5123,7 @@ Mi corazón no tiene sentido, es una piedra
 Se acabó el cariño que adentro yo tenía
 No tengo motivación para yo continuar
 Mi vida se ha acabado desde que tú ya no estás
-Y puro Rancho Humilde"
+Y puro Rancho Humilde",0,0.32309061229120223
 T1_TEST_0176,"Uh-uh
 Eh-eh
 Geezy
@@ -5168,7 +5168,7 @@ Original Crissin
 Dímelo Juan Jha
 Kapital Music
 King Records
-Ajá"
+Ajá",1,0.7023879907343592
 T1_TEST_0177,"r
 Yo no quería quererte y no lo pude evitar
 Creí poder defenderme
@@ -5176,7 +5176,7 @@ Pero a mi corazón no lo puedes atar
 Y yo no sé mi amor que hago buscándote
 Si te gano pierdo libertad
 Y yo no sé mi amor que hago besándote
-Si yo no me quiero enamorar"
+Si yo no me quiero enamorar",0,0.21045365907476857
 T1_TEST_0178,"' una canción antigua
 No la trates de controlar, ella siempre será libre Libre
 Las foto' no las tiene que editar, los filtro' son inservible' -vible'
@@ -5217,7 +5217,7 @@ Ah-ah, ah-ah-ah
 Cannabis, no a la nicotina
 En alta siempre como su autoestima
 Pero conmigo se fue hasta abajo en una esquina, ah;
-Hizo que perrearamo' una canción antigua"
+Hizo que perrearamo' una canción antigua",1,0.810794634581786
 T1_TEST_0179,"ar, visite nuestro bar
 Yo no sé, si estás muy pedo o lo vas a estar
 Solo sé, que estás en nuestro bar
@@ -5233,7 +5233,7 @@ Bar, visite nuestro bar
 Bar, visite nuestro bar
 Bar, visite nuestro bar
 Bar, visite nuestro bar
-Bar, visite nuestro bar"
+Bar, visite nuestro bar",0,0.3822237184295687
 T1_TEST_0180,"ío
 Mezclada con mar, oh yeah
 No sé bien qué día es hoy
@@ -5263,7 +5263,7 @@ Mezclada con mar
 A ti te quiero decir
 No te preocupes mi amor
 Que yo te voy a entender
-Que yo te voy a querer"
+Que yo te voy a querer",0,0.35217592505122886
 T1_TEST_0181,"Junta tu cuerpo junto al mío así
 Solo una noche más
 Que no vas a olvidar
@@ -5315,7 +5315,7 @@ Dime por qué Dime por qué el tiempo ¿Por qué? se me va en este carnaval En e
 Wow
 Noriega, Tazmania
 Noriega, Tazmania
-Sentenciado por ti, ma"
+Sentenciado por ti, ma",1,0.9505726739689455
 T1_TEST_0182,"Yo y mi mala costumbre
 De llamarte cuando debería ignorarte
 De quererte cuando es demasiado tarde
@@ -5348,7 +5348,7 @@ Livan pro,livan el mesias yo
 Célula Célula Célula Music Yo
 Y mi mala costumbre de grabar todas las canciones aquí
 Vamos, no no no no yo yo
-Sigue moviéndome el piso"
+Sigue moviéndome el piso",1,0.8854490865054776
 T1_TEST_0183,"s
 Ah cuantas veces me han sacado del tinapá
 Ya bien borracho y con un nudo en la garganta
@@ -5361,7 +5361,7 @@ Me recordaron un amor que yo antes tuve
 En el tinapá se recuerdan muchas cosas
 Y los mariachis son los amos y señores
 Te tomas 4, 5, 20 o 30 copas
-Y las canciones te recuerdan tus amores"
+Y las canciones te recuerdan tus amores",0,0.19433235400764975
 T1_TEST_0184,"Letra de Pecadora
 Amanécete
 Conmigo una vez más
@@ -5381,7 +5381,7 @@ Dejo tu alma adolorida
 Pero abrázame
 Y olvida el dolor
 Que el doc nos recetó
-Un beso a diario a escondidas"
+Un beso a diario a escondidas",0,0.21005275025307912
 T1_TEST_0185,"Te voy a mandar un mensaje después de las 12 Después de las 12
 Para que me digas en dónde escondiste la llave La llave
 Si alguien se levanta, tranquila, me escondo en el clóset Wuh
@@ -5438,7 +5438,7 @@ Santana El Nene de Oro, shh
 Ganda
 Dile', Jay
 Jay Anthon
-Lo' que no fallan nunca Wuh"
+Lo' que no fallan nunca Wuh",1,0.9588094853372526
 T1_TEST_0186,"Quiero ser
 La unica mujer que solo puedas ver
 Puedo ser lo que tu requieras
@@ -5460,7 +5460,7 @@ Tambin que sepa como y cuando es tiempo de aflojarle
 Sera que tienes tu esas calidades
 Sera que a la primera no te fijes y te claves quien sabe
 Tendr que buscar con cuidado
-No quiero verme luego arrepentido y embarrado"
+No quiero verme luego arrepentido y embarrado",1,0.8376561462157671
 T1_TEST_0187,"Me pides tu libertad
 Sabrás ya qué hacer con ella
 De la puerta para allá, hay lobos por donde quiera
@@ -5475,7 +5475,7 @@ Y cuida tu corazón, te lo van a destrozar
 Me dejas la soledad, y no te deseo un fracaso
 A donde tú vas, yo fui
 Me arrancaron mil pedazos
-Unos se pueden salir, y otros se quedan llorando"
+Unos se pueden salir, y otros se quedan llorando",0,0.16004072510057243
 T1_TEST_0188,"¿Dónde vas? Si son las 11
 Es que, es que, es que
 Ese culo quiere bounce
@@ -5515,7 +5515,7 @@ Te buscaste una que intenta, pero no se me parece
 La llamé para enseñarle lo que en verdad se merece
 Y ahora compra con mi banda y no con tus estupidece'
 Fuck you, bro Hahaha
-Bounce that booty, bi'"
+Bounce that booty, bi'",1,0.9432971586241904
 T1_TEST_0189,"Ahora vengo, con algo callejero!
 Elvis Martinez! El camarón....
 Siempre pensé que eras conmigo feliz
@@ -5544,7 +5544,7 @@ Que si me hablaban de ti, era capaz de matar
 Mi mujercita era fiel, mi gran amigo era él
 Y es que no hay ciego peor que aquel que no quiere ver
 Yo estaba loco por ti, cuando te fuiste de mi
-Y aún corroen mis entrañas el dolor que yo sentí..."
+Y aún corroen mis entrañas el dolor que yo sentí...",0,0.4085076791004713
 T1_TEST_0190,"A veces suelo imaginarte, suelo pensar que soy feliz
 Y tan solo quisiera que tú estuvieras aquí
 Sé que no vas a volver, pero al menos déjame ver por ultima vez
@@ -5557,7 +5557,7 @@ Quiero pensar que puedo, lo tengo que aceptar
 Y ya no quiero empeorar, ¿de qué me sirve estar así?
 Sufriendo por ti
 Sufriendo por ti
-Sufriendo por ti"
+Sufriendo por ti",0,0.1309600207514717
 T1_TEST_0191,"Doliendo
 mucho estar sin ti...
 A mí que me gustaba tanto
@@ -5572,7 +5572,7 @@ cerrando mis ojos
 y luego quitarte
 tu ropa despacio
 y hacerte el amor...
-Música"
+Música",0,0.39441432576871543
 T1_TEST_0192,"puerta negra sale sobrando
 Ya está cerrada con tres candados
 Y remachada a la puerta negra
@@ -5586,7 +5586,7 @@ Pero la puerta no es la culpable
 Que tú por dentro estés llorando
 Tú a mi me quieres y yo te quiero
 La puerta negra sale sobrando
-jajajay, prietita"
+jajajay, prietita",0,0.256384751234428
 T1_TEST_0193,"lo, Krizous
 , jaja
 Yeah
@@ -5635,7 +5635,7 @@ Yeah
 Junior H
 Yo'
 Dímelo, Krizous
-, jaja"
+, jaja",1,0.5814237932926124
 T1_TEST_0194,"os la grasa, yeh ¡Prr!
 Corridos tumbados
 ¡Aju-ju-ju-ju-juy!
@@ -5683,7 +5683,7 @@ Aunque pongan más alto el muro, comoquiera se traspasa
 Pero a mi familia no le faltará nada en casa
 Hoy ando con mi manada y toda la banda como El Dasa
 México y Puerto Rico ¡Viva México!
-Los que tenemos la grasa, yeh ¡Prr!"
+Los que tenemos la grasa, yeh ¡Prr!",1,0.7682343346221182
 T1_TEST_0195,"le
 El rating
 ¡Plah!
@@ -5727,7 +5727,7 @@ Ella baila y retumba el suelo Suéltalo
 Coge vuelo, toco el cielo Heh
 Cuando me toca, yo me desvelo ¡W!
 Me toquetea, yo me revelo
-Ven, dame un besito de caramelo ¡Hah!"
+Ven, dame un besito de caramelo ¡Hah!",1,0.8745529732267451
 T1_TEST_0196,"es, ¿oíste, bebecita?
 Eh-eh
 Uah, uah
@@ -5768,7 +5768,7 @@ Si tú quiere' que adentro de ti me deslice Eh-eh, eh
 Eh-eh-eh, tan mala y tan indecente Eh
 Eh-eh-eh, escondiéndono' de la gente Eh
 Eh-eh-eh, yo sé que tú ere' un pecado Eh
-Eh-eh-eh, tú temblando en un orgasmo"
+Eh-eh-eh, tú temblando en un orgasmo",1,0.9282180442443849
 T1_TEST_0197,"Caile, caile
 Que yo quiero una noche más
 Pues caile, caile
@@ -5838,7 +5838,7 @@ Ven, que te quiero de rehén
 Es que como tu no hay quien
 Aquí en lo oscuro no nos ven, más
 La calle está que quema
-Quiero una noche mas y caile suena"
+Quiero una noche mas y caile suena",1,0.9587654525472933
 T1_TEST_0198,"r
 Aquel amor
 Que destrozó mi vida
@@ -5857,7 +5857,7 @@ Que destrozó mi vida
 Dónde andará
 La prenda más querida
 Donde andará
-Aquel, aquel amor"
+Aquel, aquel amor",0,0.14142155934009307
 T1_TEST_0199,"libertad
 Yo quiero el aire que tiene tu alma
 Yo quiero el aire que, que vive en ti
@@ -5891,7 +5891,7 @@ Porque no tiene cura la locura de mis labios
 Ya nada en esta vida me parece raro
 El alma roza despacito el mundo en nuestra piel
 De mi vida caminar
-Y de tu vida niña, lo que no se ve"
+Y de tu vida niña, lo que no se ve",0,0.1842285394299033
 T1_TEST_0200,"Ay, jejeje
 Ya tú chabelita Y yo Che Guevara
 El Kinkilleroski
@@ -5943,7 +5943,7 @@ El Parla, qué lo que tú dices
 Dame la luz monarca
 Jeison El Mono
 El sicario Yubel Mora
-Chris Capell, la suprema de los Jincho maníacos"
+Chris Capell, la suprema de los Jincho maníacos",1,0.9204270684460392
 T1_TEST_0201,"Coro
 Que no te enteras..
 A nadie le gusta de cruza una frontera...
@@ -5982,7 +5982,7 @@ Que no te entera
 Que pa mi Dios to somos iguales
 Que no te entera que todos tenemos nuestro male
 Que no te entera? que no te entera?
-Little Pe'!"
+Little Pe'!",0,0.3327578734930881
 T1_TEST_0202,"-ja-ja!
 Thank you
 Baila rica nena, sabrosito
@@ -6034,7 +6034,7 @@ Mejor no vemos el cha-cha-chá No, mejor only cha-cha-chá
 Only cha-cha-chá Are we fire yet?
 ¿Di... dijiste cha-cha-chá, no? Sí, solo...
 We have got that one, right? Yeah, thank you ¡Ja-ja-ja-ja-ja-ja!
-Thank you"
+Thank you",1,0.949620137055896
 T1_TEST_0203,"rimas
 No llores mujer
 Yo me acuerdo cuando te besé
@@ -6067,7 +6067,7 @@ No te preocupes, todo va a calmar
 Alta' y baja', pero estamo' bien, yeah-yeah
 Seguimo' firme, todo va a estar bien
 Buena' y mala', pero estamo' bien
-No llore' mujer"
+No llore' mujer",1,0.6437696296453213
 T1_TEST_0204,"Quisiera abrir lentamente mis venas
 Mi sangre toda verterla a tus pies
 Para poderte demostrar
@@ -6086,7 +6086,7 @@ De este drama sin final
 Que breve fue tu presencia y mi hastнo
 Que tibias fueron tus manos, tu voz
 Como luciйrnaga llegу tu luz
-Y disipу las sombras de mi rincуn"
+Y disipу las sombras de mi rincуn",0,0.1121234381462915
 T1_TEST_0205,"s
 ¿Que será de mí lejos de tu amor?
 Porque a donde voy sólo pienso en ti
@@ -6095,7 +6095,7 @@ Pídele perdón, deja de sufrir
 Sé que tú la quieres, mira, no lo niegues
 Todas las mujeres no te importan ya
 Sé que tú la quieres, de celos te mueres
-Porque no la tienes a tu lado más"
+Porque no la tienes a tu lado más",0,0.384116514844519
 T1_TEST_0206,"Vamos a bailar la murga, la murga de Panamá
 Los muchachos se alborotan cuando la ven caminar
 Eeeh, vamos a balilar la murga, la murga de Panamá
@@ -6107,7 +6107,7 @@ Y cuando bailas la murga, oye mamita, que buena estás
 ¡Ataca Yomo!
 En el cuatro, Yomo Toro
 ¡Guapea Willie Colón!
-¡El Diablo!"
+¡El Diablo!",0,0.3326260520485881
 T1_TEST_0207,"Qué bonito amor
 Qué bonito cielo
 Qué bonita luna
@@ -6120,7 +6120,7 @@ Si algo en mí cambió
 Te lo debo a ti
 Porque aquel cariño
 Que quisieron tantos
-Me lo diste a mí"
+Me lo diste a mí",0,0.10111967446545475
 T1_TEST_0208,"Dejaré mi tierra por ti
 Dejaré mis campos y me iré, lejos de aquí
 Cruzaré llorando el jardín
@@ -6132,7 +6132,7 @@ Lograré encontrar otra ilusión, lejos de aqui
 Al partir, un beso y una flor
 Un te quiero, una caricia y un adiós
 Es ligero equipaje para tan largo viaje
-Las penas pesan en el corazón"
+Las penas pesan en el corazón",0,0.0933530642867744
 T1_TEST_0209,"¿Quieren otra?
 Sale el popurri de Juan Gabriel
 Todos
@@ -6173,7 +6173,7 @@ Que no me sienta nada bien, oh, ven ya
 Olvidarnos tú y yo será mucho mejor
 Fácil es para ti, ya que tienes otro amor
 Muchas gracias, te agradezco los momentos de felicidad
-Te deseo buena suerte, porque no me verás ya jamás"
+Te deseo buena suerte, porque no me verás ya jamás",0,0.15533864173443152
 T1_TEST_0210,"Nena, lo sé
 Que cuando te aleja', lo único que piensas e’ solamente en volver
 Y cuando me alejo, lo único que quiero es volverte a ver
@@ -6203,7 +6203,7 @@ Te soy sincero
 Esto no es música,  Molokk0 No lo sé
 Preciado Eh, eh
 C.R.O
-No lo sé, no lo sé"
+No lo sé, no lo sé",1,0.7713536277060363
 T1_TEST_0211,"Soy yo, mami
 Luis Vargas
 El Rey Supremo, mami
@@ -6297,7 +6297,7 @@ La amo con todas las fuerzas de mi corazón
 Y que digan por ahí que estoy loco, no importa
 ¡Loco!, ¡soy un loco!
 ¡Jaja-jaja-jaja-jaja!
-¡Jaja-jaja-jaja-jaja!"
+¡Jaja-jaja-jaja-jaja!",1,0.7145116757264935
 T1_TEST_0212,"We, we, we, we
 We, we, we, we
 We, we, we, we Hay un bobote, hay un bobote
@@ -6402,7 +6402,7 @@ Del que no le pagó lipo y nada má' le baja pote'
 No, coja el bobote para uste'
 Que uste' tiene iPhone 11 y todavía anda a pie
 Conoce todos lo' capo' y no tiene ni tre'
-¿Y si te piden la casa, quién va a resolve'?"
+¿Y si te piden la casa, quién va a resolve'?",1,0.9489148540557029
 T1_TEST_0213,"ue ya no pensaría en ti
 No, no, oh
 Nunca fue tan falsa una promesa
@@ -6425,7 +6425,7 @@ Vuelve, vuelve, y no verte me duele
 Te pensé el invierno entero y nunca dije que te quiero a tiempo
 Te lo juro que ahora me arrepiento
 Ay, yo siento que de nada sirve el tiempo
-Si no lo vivo contigo y tú conmigo, créemelo cuando te digo"
+Si no lo vivo contigo y tú conmigo, créemelo cuando te digo",0,0.20831020577625536
 T1_TEST_0214,"Lloro por ti
 Lloro por ti
 Te busque en el infinito
@@ -6453,7 +6453,7 @@ Y tú has llenado el vacío
 Un rincón donde tu boca fue mi alivio
 Y es que no encuentro una salida
 Oh, ni la forma de curar estas heridas
-Y yo"
+Y yo",0,0.16337810327698435
 T1_TEST_0215,"Ye', se acaba el tiempo
 Ah
 Se acaba el tiempo, trajo sirenas con el viento
@@ -6502,7 +6502,7 @@ Que una vez que parte en llanto el cuerpo no lo traerá
 Y no es cobardía, misántropia de la literal
 No pierdo caspa ni energía de la visceral
 Ahí viene el ángel de la muerte, ya lo vi llegar
-Tú estabas distraído, con él te vi llegar"
+Tú estabas distraído, con él te vi llegar",1,0.6341071727044877
 T1_TEST_0216,"Duermo para en ti soñar, con la noche por testigo
 No te miento cuando digo, que este amor es de verdad
 Te quiero sin importar, lo que la historia decida
@@ -6518,7 +6518,7 @@ Ni contigo, ni sin ti
 Duele tanto la verdad, vivo en la melancolía
 Al saber que no eres mía, y siempre en mente estar
 No falta sinceridad, ni es cuestión de cobardía
-Lo que siento intentaría, pero sé que te hago mal"
+Lo que siento intentaría, pero sé que te hago mal",0,0.15525627750067142
 T1_TEST_0217,"No no te enamores de él , no no te enamores
 Que mira que ese gitano y es ladrón de corazones
 Y a mí me hablaba de amor
@@ -6540,7 +6540,7 @@ Y ese gitano malo
 No tiene sentiemientos
 No sabe del amor
 Y es libre como el viento
-Estribillo"
+Estribillo",0,0.13709441767102487
 T1_TEST_0218,"r
 Hey ¡aguas, aguas!
 Ya llego el bailador
@@ -6555,7 +6555,7 @@ Y a ellas les gusta como las mueve el señor
 Lleva la fama hasta san nicolas
 Ya llego Sergio el bailador
 Bailar jalao le gusta mas
-Ya llego Sergio el bailador"
+Ya llego Sergio el bailador",1,0.5126365204489458
 T1_TEST_0219,"Yo era una niña del pueblo, era feliz
 De pronto una princesa me volví
 Y ahora debo entender cómo hacerlo bien
@@ -6567,7 +6567,7 @@ Emocionada de ser Sofía Primera
 A descubrir que es la realeza por vivir Sofía Primera
 Y sin cambiar mil aventuras encontrar Sofía
 Es mi momento y yo Sofía
-Demostraré que soy Sofía Primera"
+Demostraré que soy Sofía Primera",0,0.2310922473414742
 T1_TEST_0220,"¡Pibes Chorros!
 Pamela tiene un problema
 No la puede dejar de chupar
@@ -6578,7 +6578,7 @@ Pamela tiene un problema
 Si se la saco se pone a llorar
 Me pide con ganas: Ponemela ya
 Ay, Pamela, deja de chupar
-Sos una viciosa, tenés que parar"
+Sos una viciosa, tenés que parar",1,0.8540996338763813
 T1_TEST_0221,"Gastando lo' cuarto' como un charlatán ¡Trr!
 Tirándolo' para arriba para que baile' gogo dance ¡Yah!
 Gastando lo' cuarto' como un charlatán ¡Wuh!
@@ -6621,7 +6621,7 @@ Ella coge Cash App, PayPal y dólare'
 Se busca, lo gasta en Dior, también en Prada
 Tiene un Richard Millie y una guagua 'e la cuadrada'
 Bailando gogo su cuarto' no lo' da
-La mente de popi y el culo wa wa wa"
+La mente de popi y el culo wa wa wa",1,0.9341765056841548
 T1_TEST_0222,"El amor es una magia, una simple fantasía
 Es como un sueño, y al fin lo encontré
 Es como una luz, que se esparce por el alma
@@ -6633,7 +6633,7 @@ Sólo tienes que aprender a amar, a amar
 El amor te ciega, aunque a veces te engaña
 El amor es pureza, si es que a alguien tú amas
 El amor te atrapa y de él nunca escaparás
-Sólo tienes que aprender a amar, a amar"
+Sólo tienes que aprender a amar, a amar",0,0.12814671414038434
 T1_TEST_0223,"quiere' entender que
 Uah
 Han pasado varios día' y 'toy enfermo de ti
@@ -6694,7 +6694,7 @@ Real hasta la muerte, baby
 Uah
 Real hasta la muerte, baby
 Uah, uah; bebé, yo soy adicto a tu piel; uah
-Yo trato de explicarte y tú no quiere' entender que"
+Yo trato de explicarte y tú no quiere' entender que",1,0.8986070362899138
 T1_TEST_0224,"Lo que ella piensa no va con lo que hace Oh-oh
 Se le nota una inocencia pero se roba la base Ey, eh
 Tira la piedra pero esconde la mano
@@ -6732,7 +6732,7 @@ Adso Alejandro, mami
 Adso Alejandro, bebé
 Big Soto
 Dímelo, Vancho
-Reite"
+Reite",1,0.9518503836685859
 T1_TEST_0225,"do les juro que si traia
 Y les voy a contar.. Lo que susede en las oficinas jajaja
 Yo tengo una secretaria muy efficiente
@@ -6750,7 +6750,7 @@ Caray no sean mal pensados.. Ni piensen mal de Maria
 Porque eso que estan pensando les juro que si traia
 Caray no sean mal pensados.. Ni piensen mal de Maria
 Porque eso que estan pensando les juro que si traia
-Arrre Machos"
+Arrre Machos",0,0.4953384609649266
 T1_TEST_0226,"Fala conmigo, ¿qué pasó?
 Estou chorando por amor
 Yo estoy aquí, no tengas miedo
@@ -6772,7 +6772,7 @@ Quero esquecer, bailar e beber para ser feliz
 No llores más, yo estoy aquí Ah-ah-ah
 No sufras tanto, que un loco fue el que te dejó Te dejó
 Não posso mais, devo seguir
-Quero esquecer, bailar e beber para ser feliz"
+Quero esquecer, bailar e beber para ser feliz",0,0.2076676692720358
 T1_TEST_0227,"Ya no me importa
 Si estas con otro
 Que ya no soy ni tu amigo
@@ -6780,7 +6780,7 @@ Cuando antes eras mi esposa
 Lo que paso entre tu y yo
 Ya se paso, ya se murioooo
 No me duele si no estas conmigo, pero me lastimas
-Al no verte feliz"
+Al no verte feliz",0,0.25540435963045244
 T1_TEST_0228,"Yea! .........
 Tienes tu derecho en tu vida
 Para hacer lo que tu decidas
@@ -6803,7 +6803,7 @@ En esa tortura me olvide de mi
 Decidido a dejarte libre
 Por si era tu bella ilusion
 Te abrí las puertas de mi corazón
-Y dije estas palabras como ultimo adiós"
+Y dije estas palabras como ultimo adiós",0,0.17027846978126582
 T1_TEST_0229,"Aunque malgastes el tiempo sin mi cariño
 Y aunque no quieras este amor que yo te ofrezco
 Y aunque no quieras pronunciar mi humilde nombre
@@ -6827,7 +6827,7 @@ Consciente estoy mi amor, que no eres para mí
 No hay necesidad que me desprecies
 Tú ponte en mi lugar, a ver que harías
 La diferencia entre tú y yo, tal vez sería corazón
-Que yo en tu lugar, si te amaría"
+Que yo en tu lugar, si te amaría",0,0.18367908208696615
 T1_TEST_0230,"Si te vuelvo a ver pintar
 Un corazón de tiza en la pared
 Te voy a dar una paliza por haber
@@ -6850,7 +6850,7 @@ O es qué viste en el cine algún final así?
 Y yo tenia la intención de olvidarlo
 Y al salir al otro día no pensaba en ti
 Pero vi justo en mi puerta dibujado un corazón
-Y mi nombre estaba escrito junto al tuyo"
+Y mi nombre estaba escrito junto al tuyo",0,0.22138762556131167
 T1_TEST_0231,"Mami, dile a Voltio que presente
 Que no se aventó
 Voltio presenta Arcangel pa
@@ -6917,7 +6917,7 @@ Sigan imitándome
 Porque yo no grabo con el que esté pegado
 Yo grabo con el que sea de corazón
 ¿Escucharon bien? Pa que sigan hablando
-Bobos"
+Bobos",1,0.9399581674054356
 T1_TEST_0232,"Y aun estoy perdido en tus labios tus besos tu cuerpo mujer
 Perdí los sentido ya no tengo abrigo ya no se que hacer
 Quise ir a buscarte y ya era muy tarde te fuiste otra vez
@@ -6939,7 +6939,7 @@ No sana problemas pero me quita el miedo
 Esa girl tan bella que me tienen en sus brazos
 Se queda conmigo si me sigue los pasos
 Me quedo con ella si no corta los lazos
-Te voy a encontrar, nunca apto pal fracaso"
+Te voy a encontrar, nunca apto pal fracaso",1,0.671125908799307
 T1_TEST_0233,"melo, Colla
 Colla, eh
 No me digas que me ama' porque sabes que no puedo amarte
@@ -6988,7 +6988,7 @@ Brytiago, bebé-eh
 Duars Entertainment con lo' fuckin' sensei, con lo' fuckin' sensei
 Jay Music
 Dímelo, Colla
-Colla, eh"
+Colla, eh",1,0.9171207389689553
 T1_TEST_0234,"raga LiveGet tickets as low as $44
 Pena tras pena
 Las que destrozan mi vida
@@ -7003,7 +7003,7 @@ Como arancarla de mi corazon
 Me voy muy lejos
 Pongo tierra de por medio
 Pues si me quedo
-Tu me vas a ver llorar"
+Tu me vas a ver llorar",0,0.12216292939642832
 T1_TEST_0235,"Metete en mi mundo
 Mira a donde voy
 Tal vez es absurdo
@@ -7026,7 +7026,7 @@ Ooh-oh-oh
 Oh-oh-ooh
 Ella te espera
 Tu niña buena
-Solo te aburrirás"
+Solo te aburrirás",1,0.6896063018847765
 T1_TEST_0236,"Tunin Slow Beat
 Aquí somo' perro' para la' perra', uh
 Aquí somo' perro' para la' perra', uh, uh
@@ -7063,14 +7063,14 @@ El filósofo de velda
 Desde Italia para España
 Banks
 Aquí somo' perro' para la' perra'
-Tenemo'"
+Tenemo'",1,0.9559459086555816
 T1_TEST_0237,"vor no te olvides de mi
 Quien te llena de alegría? como yo
 Quien te besa quien te mima? solo yo
 Quien te da tanto cariño? como yo
 Quien te da lo que tu pides? solo yo
 Te juro amor yo por ti daría toda la vida
-Seguro estoy que jamas nadie te ha querido como yo"
+Seguro estoy que jamas nadie te ha querido como yo",0,0.1656694153354359
 T1_TEST_0238,"e
 Grupo Montez De Durango
 Miscellaneous
@@ -7108,7 +7108,7 @@ Nunca pudo imajinar
 Los diamantes que tu lloraste
 Yo los guarde
 Los diamantes que tu lloraste
-Yo los guarde"
+Yo los guarde",0,0.1210785528596463
 T1_TEST_0239,"o
 Muero de amor, por ti
 Me muero por robarte un beso
@@ -7134,7 +7134,7 @@ Que sea de amor por ti
 Si me muero, si yo me muero
 De amor que muera
 Y que cuando muera
-Que sea de amor por ti, por ti"
+Que sea de amor por ti, por ti",0,0.09826722175986047
 T1_TEST_0240,"n, party
 Ay, Nicky
 Yo, yo
@@ -7189,7 +7189,7 @@ Party
 Con los maliantes, party
 En la disco. party
 En La Conspiración, party
-Ay, Nicky"
+Ay, Nicky",1,0.9344074258381241
 T1_TEST_0241,"Un, dos, tres, cuatro
 Pinche Juan
 No te hagas el punk
@@ -7197,7 +7197,7 @@ Que el arete no te va y no lo puedes evitar
 Pinche Juan
 Solo te he recordar
 Hace algunos años te gustaba criticar
-El punk"
+El punk",0,0.2157607997440209
 T1_TEST_0242,"De todas tus mentiras guardo un mal sabor
 Y mentiras ya no quiero más
 No pierdas más tu tiempo en pedir perdón
@@ -7224,7 +7224,7 @@ Ya
 Oh
 Y vete... ya
 Ya
-Ya, uh"
+Ya, uh",0,0.21450918759032978
 T1_TEST_0243,"Guaguancó para La Perla
 De Puerto Rico
 La Perla
@@ -7271,14 +7271,14 @@ Yo te veo en La Perla
 Para ela Perla este Guaguancó es para la Perla
 Imboró!
 Pero que chevere, que chevere La Perla!
-Y para los de San Miguel, Lleva!"
+Y para los de San Miguel, Lleva!",0,0.2202721610486307
 T1_TEST_0244,"ickets as low as $871
 Oye, tu sabes que yo soy como una llanta
 Como una llanta de camión
 Muchos caminos he pasado
 Muchas botellas he quebrado
 Ya varias veces me han parchado
-Pero aún sigo rodando, todavía sigo rodando"
+Pero aún sigo rodando, todavía sigo rodando",0,0.14750697497974471
 T1_TEST_0245,"na y es un carnaval
 Si te hace falta que te quiera
 Yo te amo a mi manera, yo lo haré
@@ -7319,7 +7319,7 @@ Pretty Boy baby, oh
 La vida es una y es un carnaval
 MadMusick
 El Código Secreto
-La vida es una y es un carnaval"
+La vida es una y es un carnaval",0,0.26806515704379835
 T1_TEST_0246,"tickets as low as $70
 Un anillo en el dedo, es mi mujer
 Una estrella en el pelo, es mi mujer
@@ -7328,7 +7328,7 @@ Una voz escondida, es mi mujer
 Fierecilla dormida, es mi mujer
 Una suave melena, un amor sin veneno, una forma de amar....desconocida
 Y así la quiero...así! amor de cuerpo entero! La quiero! mujer!
-Y así la quiero....así! mujer cada momento, la quiero...tener!"
+Y así la quiero....así! mujer cada momento, la quiero...tener!",1,0.7135308629597225
 T1_TEST_0247,"Yo quiero que tú seas princesa de mi corazón
 Yo quiero ser el sapo que besas sólo por amor, ser aquél
 Que ponga en tú pié la zapatilla
@@ -7344,7 +7344,7 @@ Y en una alfombra mágica mostrarte el mundo entero
 Como un cuento de hadas, te quiero contar todo lo que siento
 Y como un príncipe azul, yo quisiera llegar y llevarte al
 Fin y juntos vivir…
-Nuestro mágico mundo de amor"
+Nuestro mágico mundo de amor",0,0.3751456148271799
 T1_TEST_0248,"r
 Mujer, mujer divina
 Tienes el veneno que fascina en tu mirar
@@ -7358,7 +7358,7 @@ La divina magia de un atardecer
 Why la maravilla de la inspiración
 Tienes en el ritmo de tu ser
 Todo el palpitar de una canción
-Eres la razón de mi existir, mujer"
+Eres la razón de mi existir, mujer",0,0.35136022109098236
 T1_TEST_0249,"No se que fue la razón
 Fue real en su momento
 No es tu culpa solo la culpa mia y lo siento
@@ -7380,7 +7380,7 @@ Y déjame olvidarte
 Y ya no tienes que buscarme
 Mejor nomás sueñame
 Porque no vas a encontrarme
-No vas a encontrarme"
+No vas a encontrarme",0,0.1016896668354684
 T1_TEST_0250,"a
 Recobrar una vida es imposible
 Cuando hay culpa por su muerte
@@ -7397,11 +7397,11 @@ Absurda horda salvaje
 Todo se silencia con bala, a bala
 Un cuerpo en el piso deja huella, tu huella
 Para siempre en mi memoria dejaste huella
-Dejaste huella para siempre en mi memoria"
+Dejaste huella para siempre en mi memoria",0,0.14366585732236886
 T1_TEST_0251,"Andan diciendo que me vas a abandonar
 Que de la vida te dispones a gozar
 Que ya te hallaste otro amor más principal
-Y a mí me importa una pura y dos con sal"
+Y a mí me importa una pura y dos con sal",0,0.31214059310986636
 T1_TEST_0252,"!
 Y me cai porque el triciclo
 Ya no tiene gasolina
@@ -7415,7 +7415,7 @@ Siempre rápido termina
 Los felices que por siempre
 Solamente porque mienten
 Aprovechan bien las vidas
-¡Pégale con el martillo!"
+¡Pégale con el martillo!",0,0.16787101742327504
 T1_TEST_0253,"Me estoy acobardando y lo ha notado
 Y eso no es muy bueno para mí
 Si quiero retenerla entre mis brazos
@@ -7431,7 +7431,7 @@ Mordiendo el corazón
 Por mujeres como tú, amor
 Hay hombres como yo
 Que se pueden perder en el alcohol
-Por una decepción"
+Por una decepción",0,0.45116488395222165
 T1_TEST_0254,"Tus-tus-tus-tus, tus uñas de gel
 Mala mujer, mala mujer
 Me han dejado cicatrices por todo mi cuerpo tus uñas de gel
@@ -7465,7 +7465,7 @@ Que me has llevado a la ruina
 Te has llevado mi corazón, mi orgullo, mi pasta, mi paz, mi vida
 Tú lo que eres es una ladrona ¡Ladrona!
 Que me has llevado a la ruina ¡A la ruina!
-Te has llevado mi corazón, mi orgullo, mi pasta, mi paz, mi vida"
+Te has llevado mi corazón, mi orgullo, mi pasta, mi paz, mi vida",1,0.7841920574106348
 T1_TEST_0255,"-oh-oh
 Oh-oh-oh-oh-oh
 Aquí estoy
@@ -7488,7 +7488,7 @@ Y las heridas que dejó tu adiós
 Lo espero, el corazón cuanto dolió
 Ahora estoy bendecido y vuelo más alto hoy
 Aunque te extraño más que nunca voy
-En dirección de mis sueños sin ti, mi amor"
+En dirección de mis sueños sin ti, mi amor",0,0.12757491961903314
 T1_TEST_0256,"¿Hola? ¿Hola?
 Te habla mi contestador
 Si no te atiendo el teléfono, seguro que no quiero hablar con vo'
@@ -7519,7 +7519,7 @@ Yo no peleo por cuero, mami, quédate con él
 Ya lo probé, lo descarté; no era para tanto
 Me lo robé, lo secuestré, perdió el encanto
 ¿Que llamo a quién? No sé quién es, me quiere olvidar pero ahora me pegué
-Y ahora hasta su' beba' me aman, del barrio la jefa la que está sonando, bitch Ey"
+Y ahora hasta su' beba' me aman, del barrio la jefa la que está sonando, bitch Ey",1,0.9143131664730748
 T1_TEST_0257,"Una noche de loquera
 Andaba echando cerveza
 De repente se paro
@@ -7587,7 +7587,7 @@ Ni ando comprando al gobierno
 Ni les temo a embajadores
 Con esta nave que tengo
 De los que debo cuidarme
-Es de los hombres de negro"
+Es de los hombres de negro",1,0.7351752724111256
 T1_TEST_0258,"Te escribo mensajes, te hago llamadas y tú no contestas
 Siempre estás ocupado, es obvio que esto ya no te interesa
 Ya no me miras lo ojos, ya no me besas los labios
@@ -7603,7 +7603,7 @@ Ya no sé vivir sin ti
 ¡Y que sufran ellos, Ana Emilia!
 No soportaron, Carolina Ross
 ¡Eah! jajaja
-Mmh"
+Mmh",0,0.26465714215727176
 T1_TEST_0259,"Que Comience La Fiesta!
 Mira, Agarra Tu Mujer Y A Cepillar Se Ha Dicho!
 Cepilla Cepilla, Cepilla Cepilla, Cepilla Cepilla
@@ -7632,7 +7632,7 @@ Perico Ripea'o, Go Dancing My People Con El SimbÃ¡
 I Want To Get A Little Closer, cepilla Cepilla
 Why You Supposed To?
 Aprieta, Fulanito... De Tal
-Dominicanita"
+Dominicanita",1,0.747299900590123
 T1_TEST_0260,"Te gusta el mueve mueve
 Te gusta el mueve mueve
 Te gusta el mueve mueve
@@ -7685,7 +7685,7 @@ Preguntas: ¿Por qué?, porque yo quiero verlo
 A mover, mujeres, que aquí hay soporte
 Desde el Polo Sur hasta el Polo Norte
 Bailen de nuevo que aquí se puede
-Y yo sé que te gusta el Mueve mueve"
+Y yo sé que te gusta el Mueve mueve",1,0.9603590994589387
 T1_TEST_0261,"Algo quieres esconder
 Que no sé qué es
 Y ya me hace daño
@@ -7701,14 +7701,14 @@ Un cofre de sorpresas
 Llegas, me besas y
 Me desharé, por dentro me desharé
 De dolor, pero no daré
-Por pararte ni un solo paso"
+Por pararte ni un solo paso",0,0.2276865836533466
 T1_TEST_0262,"¿Cómo fue?
 No sé decirte cómo fue
 No sé explicarme qué pasó
 Pero de ti me enamoré
 Fue una luz que iluminó todo mi ser
 Tu risa, como un manantial
-Regó mi vida de inquietud"
+Regó mi vida de inquietud",0,0.09706374093071989
 T1_TEST_0263,"Por el Bravo y sus riveras
 Cuanto corrido se ha escrito
 Por Tamaulipas y Texas
@@ -7744,7 +7744,7 @@ Antes de morir le dijo
 Anda a avisar a la corte
 Que tu no tienes delito
 Que el culpable de este crimen
-A sido el polvo maldito"
+A sido el polvo maldito",0,0.23392034614348323
 T1_TEST_0264,"Brr
 Lanalizer got the fire
 Yeah, yeah, yeah, yeah
@@ -7796,7 +7796,7 @@ Mera, dímelo, Anuel
 Este es el remix má' hijo 'e la gran puta de la historia del trap
 Brr
 Millo Gang
-Cromo La X"
+Cromo La X",1,0.8949491240169765
 T1_TEST_0265,"Has destrozado todo el gran cariño que yo te daba
 Y como un tonto yo a tu lado enamorado
 Sé que juraste no engañarme o traicionarme
@@ -7805,7 +7805,7 @@ Y tú que solo pensabas en todos mis errores
 Y nunca aceptabas mis explicaciones
 Y tú que solo inventabas buscar más de una excusa
 Para que terminara esta verdad oculta
-Que en el alma guardabas sin decirme nada"
+Que en el alma guardabas sin decirme nada",0,0.1950975990097171
 T1_TEST_0266,"Yo soy la más cumbanchera del solar
 La negra más linda que nació
 En La Habana en el barrio 'e Belén
@@ -7825,7 +7825,7 @@ por tu cinturita
 Es que yo tengo salsa y pimienta en mi andar
 por tu cinturita
 Oye, Belén, Mari Belén, Mari Belén que me muero
-por tu cinturita"
+por tu cinturita",1,0.7863512182689443
 T1_TEST_0267,"En esta ciudad no puedes besar
 Ahora el amor, es vil subversión
 Nos quieren restar las fuerzas de amar
@@ -7854,7 +7854,7 @@ Te puedes casar
 Después dirá el juez
 Tu luna de miel
 Y claro que está
-La ilegalidad"
+La ilegalidad",0,0.4478514077710102
 T1_TEST_0268,"Tu cara de perro mareado
 Tu cara de busco problemas
 El rostro de los que rieron cuando no debían hacerlo
@@ -7863,7 +7863,7 @@ Ya no soy tu amigo
 Ya no soy tu amigo, puedes creerlo
 Ya no soy tu amigo
 El tiempo pasa y ya ves
-Desencuentro fortuito, tal vez"
+Desencuentro fortuito, tal vez",0,0.16254584950770465
 T1_TEST_0269,"Me llamas para decirme que te marchas
 Que ya no aguantas más
 Que ya estás harta
@@ -7880,7 +7880,7 @@ Y sales a la calle buscando amor
 Y te has pintado la sonrisa de carmín
 Y te has colgado el bolso que te regalo
 Y aquel vestido que nunca estrenaste, lo estrenas hoy
-Y sales a la calle buscando amor"
+Y sales a la calle buscando amor",1,0.5992984489872313
 T1_TEST_0270,"Yo no tengo la culpa de ya no amarte
 La culpable eres tu porque me traicionaste
 Yo no tengo la culpa mi amor que ya no me quieras
@@ -7906,7 +7906,7 @@ Y como viniste, mismo te vas, no quiero saber de ti ya nada mas
 Olvida mi nombre cara y, bye bye, tu te lo buscaste y esa es la que ay
 Por mas que lo intentamos nunca funciono, me Rompiste el corazon y no te importo
 Ni llames,ni me mires,ni me hables, por que fuiste tu,solo tu la culpable
-Sappe para ya, vete para ya que tu amor pertenece a un periodo de ayer"
+Sappe para ya, vete para ya que tu amor pertenece a un periodo de ayer",1,0.6596287374051284
 T1_TEST_0271,"Anoche saliste con el
 Es verdad no te voy a mentir
 Seguro de mí se acordé
@@ -7927,7 +7927,7 @@ Por un rato, por un rato
 Te apuesto a que vuelvo con el
 No lo intentes que vas a perder
 Extraña mis besos de amor
-Conmigo le sobra mujer"
+Conmigo le sobra mujer",0,0.3911213492624685
 T1_TEST_0272,"Y yo puedo comerte como a ti te gusta
 Si solo te dejas querer
 En caliente yo voy por ti
@@ -7943,7 +7943,7 @@ Fendi, Balenciaga, para ti me sobra lana
 Lo que quieras, mi amor
 Mi chula princesa, te bajo la luna
 Y si te dejas, verás quе ninguno te va a dar lo que yo te voy a dar
-Erеs una diabla"
+Erеs una diabla",1,0.840630276553648
 T1_TEST_0273,".
 Disculpe usted
 No quiero molestarlo
@@ -7967,7 +7967,7 @@ Ella es mas fiel de lo que pueda imaginarse
 Que nunca cruce por su mente traicionarla
 Eso mi amigo
 Eso la mata
-Le gusta mucho que le lleven cerenata..."
+Le gusta mucho que le lleven cerenata...",1,0.5558623336167589
 T1_TEST_0274,"Eh-oh-oh
 Eh-ah
 Oh-oh
@@ -8001,7 +8001,7 @@ Mami, sigue allá en lo tuyo, así los do' tamo' mejor, yeah
 Es Gonzy, ma
 Yeh
 Es Gonzy, ma, ah-ah
-Oh-oh-oh, eh"
+Oh-oh-oh, eh",0,0.38396005171668535
 T1_TEST_0275,"Me extrañas
 Ya tu cara me lo dice
 Y yo sé que lo sabes Sabes
@@ -8045,7 +8045,7 @@ Sigues teniendo sed Sed
 Pero, tenerme como me tenías
 Ahora se quedará en fantasía
 Tanto que tu madre te lo decía
-Valora esa niña, que algún día la puedes perder"
+Valora esa niña, que algún día la puedes perder",1,0.616357299453554
 T1_TEST_0276,"Sería tan fácil siendo lluvia
 Solo un roce y tendría que caer
 Sería tan fácil siendo monte
@@ -8059,7 +8059,7 @@ Al regresar verás mi carnaval
 Sería tan fácil fingir que te volveré a ver
 Que te volveré a ver
 Sería tan fácil vivir con la mirada hacia adentro
-Con los ojos adentro"
+Con los ojos adentro",0,0.11633751604266017
 T1_TEST_0277,"Y yo que pensaba que tú no lo hacías
 Y todo salió de diferente' manera', manera'
 Yeah, cuando me marchaba, tus sábanas frías
@@ -8094,7 +8094,7 @@ Symon Dice Dice
 Tell Them
 CNCO, baby
 Alex Rose, El Nuevo Rockstar
-Mera dime, JX El Ingeniero"
+Mera dime, JX El Ingeniero",1,0.942405081971106
 T1_TEST_0278,"El don del todos
 Woh, woh-oh-oh
 El don del todos
@@ -8171,7 +8171,7 @@ Internacional
 Panamá
 ?
 Puerto Rico
-Shhh, callao'"
+Shhh, callao'",1,0.9418594673906342
 T1_TEST_0279,"¿Qué tenías pensado?
 ¿Qué te hizo llegar hasta acá?
 Pensé que había cambiado
@@ -8191,7 +8191,7 @@ De tu odio, tu risa, tus manos, tu pelo y tu...
 Ya no sos lo que eras
 Poco ocurrеnte y poco audaz
 No pensé que tе doliera
-Que no fuera como los demás"
+Que no fuera como los demás",0,0.20854207185182416
 T1_TEST_0280,"a
 Que fue novia de quintana
 Lauro Cantu Villarreal
@@ -8229,7 +8229,7 @@ Era de ojitos borrados
 Segun el retrato hablado
 Por la version de un empleado
 Ella escapo de la ley
-Y nunca la han encontrado"
+Y nunca la han encontrado",0,0.4770061821225777
 T1_TEST_0281,"Poder tocar tu mano, estar siempre a tu lado
 Es importante, es importante para mí
 Estar donde tú estás me hace feliz
@@ -8245,9 +8245,9 @@ Tu amor se me ha subido a la cabeza
 Me controla el corazón y las ideas
 No-oh, no-oh-oh, oh
 No
-Inténtalo"
+Inténtalo",0,0.0989357179887893
 T1_TEST_0282,"a
-Entre cantina y cantina"
+Entre cantina y cantina",0,0.3713435518672004
 T1_TEST_0283,"Querida, cada momento de mi vida
 Yo pienso en ti más cada día
 Mira mi soledad, mira mi soledad
@@ -8261,7 +8261,7 @@ Querida
 Dime cuando tú, dime cuando tú
 Dime cuando tú vas a volver, aja-ay!
 Dime cuando tú, dime cuando tú
-Dime cuando tú vas a volver-er"
+Dime cuando tú vas a volver-er",0,0.15944455310864153
 T1_TEST_0284,"Prrr-ay
 Muñequita linda
 Pelos de algodone'
@@ -8299,7 +8299,7 @@ I been lookin' for my bae-ae-ae
 Oh, call me crazy Yeah
 I pull up to all your places Oh
 I got your heart, did not mean to break it Oh, no
-I got your heart, did not mean to break it-it-it Oh"
+I got your heart, did not mean to break it-it-it Oh",0,0.43170377801086435
 T1_TEST_0285,"Cómo duele equivocarse
 Cómo duele enamorarse y recibir puñaladas en el alma
 Cómo duelen las traiciones
@@ -8309,7 +8309,7 @@ Duele, cómo duele
 ¡Y ahí te va, persona mala!
 Compa, Carín no se agüite pariente
 Y le duele, pero bonito viejo
-Échale, compa Espinoza, ayayay"
+Échale, compa Espinoza, ayayay",0,0.3386770209477591
 T1_TEST_0286,"Espejos de miseria, de rendición sin autoestima
 No hay luz en la mirada ni manos que sujeten la caída
 No hay un lamento que yo quiera escuchar de ti
@@ -8321,7 +8321,7 @@ Conozco el suelo de cerca, y ya el olor me es común
 Soy un cobarde
 Soy un cobarde
 Soy un cobarde
-Soy un cobarde"
+Soy un cobarde",0,0.09631533841187666
 T1_TEST_0287,"No me importa lo que de mí se diga
 Viva usted su vida, que yo vivo la mía
 Que solo es una, disfruta el momento
@@ -8354,7 +8354,7 @@ Victor Cárdenas
 White Star
 Sharo Towers
 La 167
-La 167"
+La 167",1,0.6997563153857258
 T1_TEST_0288,"Ocho años confirman que tu eres lo mejor para mi
 Esto siempre ha sido así Y yo no entiendo por qué
 Tu risa causa risa, tu llanto me hace querer llorar
@@ -8373,7 +8373,7 @@ Hey! Hey! Hey!
 ¿Que voy hacer? No sé parar
 Todo está bien, me ayudarás
 Noche de fiesta, humo y alcohol
-Yo ya voy mal, tú estás peor"
+Yo ya voy mal, tú estás peor",0,0.33767868881049556
 T1_TEST_0289,"Es la historia de un hombre que cae de un edificio de 50 pisos
 Para tranquilizarse mientras cae al vacío
 No para de decirse
@@ -8432,7 +8432,7 @@ He vencido a la codicia, el egoísmo y la ambición
 La herida no cicatriza, el tiempo pasa
 Tu imagen duele, el recuerdo es lo último que muere
 No olvidarás si no quieres, lo importante se mantiene
-Aunque a veces creas que no te conviene"
+Aunque a veces creas que no te conviene",0,0.3223446115287714
 T1_TEST_0290,"Procuro olvidarte
 Siguiendo la ruta de un pájaro herido
 Procuro alejarme
@@ -8448,7 +8448,7 @@ Lo que haría por no sentirme así
 Por no vivir así
 Perdida
 Por no vivir así
-Perdida"
+Perdida",0,0.09960190998807406
 T1_TEST_0291,"Te vas amor
 Si así lo quieres, ¿qué puedo yo hacer?
 Tu vanidad no te deja entender
@@ -8461,7 +8461,7 @@ Vete olvidando
 De esto que hoy dejas y que cambiarás
 Por la aventura que tú ya verás
 Será tu cárcel y nunca saldrás
-¡Dilo!"
+¡Dilo!",0,0.15223209385400235
 T1_TEST_0292,"Me encantas cuando sonríes
 Te ves de lo más hermosa
 Estoy tan enamorado
@@ -8469,7 +8469,7 @@ Que hasta enojado te veo preciosa
 Estar contigo es la gloria
 No más con verte suspiro
 Te llevo dentro de mi alma
-Y si tú sufres, sufro contigo"
+Y si tú sufres, sufro contigo",0,0.18558173899814234
 T1_TEST_0293,"Ya no se que decir, si quedarme callado
 O decirte gritando, que no doy más, no puedo más
 Ya no se, lo que hacer si seguir alejado
@@ -8477,7 +8477,7 @@ O rendirme en tus brazos, ya no se, decide tú
 Vuelve conmigo, vuelve, decide tú
 Hazlo por mi, decide tú
 Vuelve si quieres, vuelve, no puedo mas
-La soledad me va a matar"
+La soledad me va a matar",0,0.13265006671846072
 T1_TEST_0294,"Aquel verano en París
 En Mallorca haciendo escala
 Todos esos recuerdos que ahora guardo y me acompañan
@@ -8498,7 +8498,7 @@ Nos vamos a beber hasta el amanecer
 Solamente hace falta una buena canción
 Las noches por Madrid, nunca tuvimos fin
 Cerrábamos los bares, olvidamos que era dormir
-Las ganas de vivir, solo éramos dos locos"
+Las ganas de vivir, solo éramos dos locos",0,0.16950539352412508
 T1_TEST_0295,"¿Qué será de ti mañana?
 Si ya no casi no nos vemos más
 Un día se va a olvidar
@@ -8521,7 +8521,7 @@ Si ya casi no nos vemos más
 Un día se nos va a olvidar
 Somos lo mismo
 Yo espero que algún día este mundo
-No te deje triste, triste"
+No te deje triste, triste",0,0.10943875228293727
 T1_TEST_0296,"El moreno que te habla más claro
 Mi voz un trueno desde el epicentro del flow más caro
 Fuck de varo, sólo tres al aro cada que lo intento
@@ -8579,7 +8579,7 @@ De los ritmos, los silencios y la voz del verso junto
 Larga vida para todos los que crean
 Aquello que está en su mente, aunque los otros no crean
 Larga vida pal’ MC, larga vida, larga vida
-Larga vida pa los beats, larga vida, larga vida"
+Larga vida pa los beats, larga vida, larga vida",0,0.43547541658103284
 T1_TEST_0297,"í, nunca fui el amor de tu vida
 A lo mejor te olvido
 A lo mejor jamás
@@ -8589,7 +8589,7 @@ Pero, ¿quién olvida el amor de su vida en un par de días?
 En un par de noches, woh
 Tal vez solo tú
 O tal vez ni tú
-Pues si me olvidas así, nunca fui el amor de tu vida"
+Pues si me olvidas así, nunca fui el amor de tu vida",0,0.12918029049304622
 T1_TEST_0298,"Que estarás asiendo
 Tal vez ya estas dormida
 O estas despintandonte
@@ -8607,7 +8607,7 @@ Dímelo corazón
 Las cortinas de aquel cuarto eran guindas
 Tu tiеrna piel es trigueña
 Yo cuando tе miro
-Mis ojos me brillan"
+Mis ojos me brillan",0,0.40560023416629415
 T1_TEST_0299,"o te sientas solita
 Alguien como yo no iba a enamorarse, yeah
 Yo que ni miro al celu hago si no tirarte, yeah
@@ -8646,7 +8646,7 @@ Love you more than how mi love burnin' trees
 And I wanna make memories
 With you, baby girl, mi seh please do not tease
 I get up inna your blood capillaries
-And make families, that is the way I see it, girl"
+And make families, that is the way I see it, girl",1,0.8971327437823206
 T1_TEST_0300,"Me han preguntado que si tú eres mi verdadero amor, y yo...
 Yo les digo: es el amor de mi vida
 Gracias por quererme como yo te quiero
@@ -8657,7 +8657,7 @@ Igual te hago enojar
 Hasta a veces llorar
 Más sabes que te amo
 Y quiero que recuerdes esto
-Calibre 50, chiquitita"
+Calibre 50, chiquitita",0,0.32459139915940505
 T1_TEST_0301,"Quiero ser tus canciones del principio al fin
 Quiero rozar tus labios y ser tu jardin
 Sere el jabon que te suaviza el baño que te baña
@@ -8691,7 +8691,7 @@ De mañana, tarde o noche, no hago ni dieta
 Y ese amor que alimenta a mi fantasía
 Es mi sueño, es mi fiesta, es mi alegria
 La comida mas sabrosa, mi perfume, mi bebida
-Es todo en mi vidaaa...."
+Es todo en mi vidaaa....",1,0.7474651802332323
 T1_TEST_0302,"Yo no sé que siento contigo
 Si es un pecado divino quererte
 Yo no sé que sientes conmigo..
@@ -8714,7 +8714,7 @@ Gritaré que te necesito
 Y no dejo de pensare en ti
 Ni en porque tardaste tanto en venir
 Y gritar, gritar al mundo entero que te quiero
-Apagar el dolor de callar este amor tan verdadero"
+Apagar el dolor de callar este amor tan verdadero",0,0.10078356481335564
 T1_TEST_0303,"ablan, algunos nos aman
 Desde que ya no está
 Él no descansa en paz
@@ -8741,7 +8741,7 @@ Si pones atención
 Escucharás su voz
 Y seguro que ella ya en su blanca celda
 Baila psicofonías de amor
-Los muertos nos hablan, algunos nos aman"
+Los muertos nos hablan, algunos nos aman",0,0.14196581030449182
 T1_TEST_0304,"o
 Yo no sabía que en esta fiesta tan contento te vería
 Y que estarías tan distante de mis cosas
@@ -8757,7 +8757,7 @@ Que dondе hay dos es imposible que hayan tres
 Te estás pasando
 Mucho cuidado que con fuego estás jugando
 Que se descubra que tu amor me está matando
-Y que mis ojos hoy te están recriminando"
+Y que mis ojos hoy te están recriminando",0,0.4622957550372433
 T1_TEST_0305,"Ciérrame las puertas en la cara
 Pásame con otra por enfrente
 Grítame que no con la mirada
@@ -8773,7 +8773,7 @@ Pero a mi corazón cómo diablos se lo hago entender
 Ya lo sé
 Que aunque tú no me quieras yo siempre te recordaré
 ¡A-ay!
-¡Pinche pelón!"
+¡Pinche pelón!",0,0.243568297115698
 T1_TEST_0306,"Cuando era un chiquillo que alegria;
 Jugando a la guerra noche y día
 Saltando una verja verte a ti y así en tus ojos algo nuevo descubri
@@ -8787,7 +8787,7 @@ Querida,querida vida mía;
 Reflejo de luna que reia
 Si amar es cerrado culpa mía te ame;
 En el fondo que es la vida no lo se
-El gato que esta en la oscuridad sabe que en mi alma una lagrima hay"
+El gato que esta en la oscuridad sabe que en mi alma una lagrima hay",0,0.12972618160092397
 T1_TEST_0307,"Bulería, bulería, yeah
 Y ay, ay, ay
 Ah-ah
@@ -8827,7 +8827,7 @@ Ella es la luna, ella es la luna, sin ella muero
 De rodillas yo te lo pido
 Dile que yo la estoy llamando
 Ya no quiero vivir solito
-Dime hasta cuando ¡Sí!"
+Dime hasta cuando ¡Sí!",0,0.23236544369845263
 T1_TEST_0308,"Fue más o menos así:
 Vino blanco, noche y viejas canciones
 Y se reía de mí
@@ -8850,7 +8850,7 @@ Una caricia que no
 Suena sincera
 Un te quiero y no te quiero
 Y aunque no quieras
-Sin quererlo piensa en mí"
+Sin quererlo piensa en mí",0,0.17383297478467652
 T1_TEST_0309,"Iba de excursión
 Perdido en la selva negra
 Y en eso se me apareció
@@ -8868,7 +8868,7 @@ Pícale la panza o te va pisar
 Pica, pícale la panza o te va moler
 Ya no te puedes dejar pisar
 Ya no te puedes dejar vencer
-Te quieren pisotear"
+Te quieren pisotear",0,0.17929860180978027
 T1_TEST_0310,"a
 Ya sé que no me quieres
 Ya sé que me desprecias
@@ -8905,7 +8905,7 @@ Yo vengaré tu traición, aunque me muera
 Maldito sea tu amor, maldito sea
 Y el día que te encontré, maldito sea
 Yo vengaré tu traición, aunque me muera
-Aunque me muera"
+Aunque me muera",1,0.5306608167244583
 T1_TEST_0311,"Falsas relaciones y bajas intenciones
 No podía comenzar mejor;
 Película de amor en technicolor
@@ -8928,7 +8928,7 @@ Y el vacio lentamente se enfría
 Crisis amorosa, me diste cada cosa
 Que muy pocos se imaginan en vos;
 Muy mal entretenidos, en juegos retorcidos
-Que ganamos y perdimos los dos"
+Que ganamos y perdimos los dos",0,0.3754680164363854
 T1_TEST_0312,"No existe un momento del día
 En que pueda apartarte de mí
 El mundo parece distinto
@@ -8942,7 +8942,7 @@ Ya nada me conforma si no estás tú también
 Más allá de tus labios
 Del sol y las estrellas
 Contigo en la distancia
-Amada mía, estoy"
+Amada mía, estoy",0,0.13652231696381834
 T1_TEST_0313,"Me tienes y te vas, me haces esperar
 No entregas nada a cambio
 Me ruegas y mis pies descalzos otra vez
@@ -8962,7 +8962,7 @@ Te odio, te amo, te amo, te odio
 Sonríes y le das otra oportunidad
 A este amor viajero
 Aunque parece ser que está en tu realidad
-Arrodillarte al miedo"
+Arrodillarte al miedo",0,0.1685950463462804
 T1_TEST_0314,"Aguanta corazón, no seas cobarde
 Si te tienes que ausentar, que sea por Dios
 No olvides que por lejos que te vayas
@@ -8974,7 +8974,7 @@ Ahora pagas el precio del amor
 Si tú aguantas, como yo te lo he pedido
 Y que nunca la dejes de adorar
 Te prometo que ya nunca la dejamos
-Donde quiera que he de ir, la he de llevar"
+Donde quiera que he de ir, la he de llevar",0,0.2532024349418198
 T1_TEST_0315,"!
 Se logro sobrepasar sistemas de seguridad
 Esto se a vuelto tan normal
@@ -8986,7 +8986,7 @@ Otra vez es mio el rol principal
 Luces, cámara y comienza
 Quien dirige? quien observa?
 Pero seguimos aquí
-Yeah!"
+Yeah!",0,0.14226461368771476
 T1_TEST_0316,"Eres como una mariposa
 Vuelas y te posas, vas de boca en boca
 Fácil y ligera de quien te provoca
@@ -9010,7 +9010,7 @@ Ay, mujer, que fácil eres
 Abres tus alitas, muslos de colores
 Donde se posan tus amores
 Vuela amor, vuela dolor
-Que tengas suerte en tu vida"
+Que tengas suerte en tu vida",1,0.6547845949779142
 T1_TEST_0317,"Todo lo que necesites, sólo yo lo puedo dar
 Todo lo que tú quieras, yo lo tengo
 Necesitas un abrigo, entre mis brazos estarás
@@ -9020,7 +9020,7 @@ Mi muñeca está
 Mi muñeca está llorando
 Mi muñeca está
 ¿Sabes quién fue?, ¿tal vez por qué ella lloró? Nadie la hizo llorar
-Yo la quiero, mas no quiero verla feliz Nadie la hizo llorar"
+Yo la quiero, mas no quiero verla feliz Nadie la hizo llorar",0,0.1697504496944139
 T1_TEST_0318,"í
 Vuelo alterado sin nubes que travesar
 Miro el intenso mar, sin aire
@@ -9034,7 +9034,7 @@ Tengo alas, sin embargo no puedo salir de aquí
 Somos nubes, te escuchamos
 Tu cuerpo se está quemando
 Sin protеcción, contaminación
-Para su satisfacción"
+Para su satisfacción",0,0.23449562207297348
 T1_TEST_0319,"Letra de Eres Mi Todo
 Tú eres mi todo
 Todo hago por este amor
@@ -9066,7 +9066,7 @@ Toby en el papel con la letra
 Dímelo JuanJa
 Original Christian
 King Records
-Capital Music"
+Capital Music",0,0.4412846068104722
 T1_TEST_0320,"Dime la hora...
 Es tiempo de marchar
 Toda la tierra
@@ -9095,7 +9095,7 @@ Los que hoy estoy dejando en este lugar
 ... la maldad...
 ¡Oh, cuánta tierra por sembrar!
 Y así aplacar mi dolor...
-... Y arrastrar mi interior..."
+... Y arrastrar mi interior...",0,0.10211436338125278
 T1_TEST_0321,"Querías tu libertad
 Pues te la regalo
 Te espera una cita esta noche a las diez
@@ -9114,7 +9114,7 @@ Y tenías la razón
 Él si era tu amigo, pero amigo con derechos
 Y a mi no me gusta eso de compartir los besos
 No vales la pena y de quererte me arrepiento
-Jary Franco"
+Jary Franco",0,0.3965646640204161
 T1_TEST_0322,"Yeah, yeah
 Hola, tengo tiempo sin escuchar tu nombre
 Ya no era amor, era costumbre
@@ -9166,7 +9166,7 @@ Uff, hielo, me mira y me congelo
 Imagíname, John Lennon para mí era una modelo Ey
 Yo sé que la cagué, pero no del todo
 Desde que te fuiste la music me paga
-Y mi cuenta ahora tiene como cinco ceros"
+Y mi cuenta ahora tiene como cinco ceros",0,0.3308719515372911
 T1_TEST_0323,"Yo'
 Desafío
 Jejejejeje
@@ -9215,7 +9215,7 @@ Oah
 Oh, oh Eso perra
 Oah
 Oh, oh Eso perro
-Oah"
+Oah",1,0.958954197514881
 T1_TEST_0324,"Pueden decirte que yo
 No soy lo mejor para vos
 Porque no tengo trabajo
@@ -9230,7 +9230,7 @@ Me río sin descansar
 Cuando soñamos con un nuevo mundo
 Soy un hombre con amor
 Que solo piensa en amarte
-Y darte todo lo mejor"
+Y darte todo lo mejor",0,0.12049956330301125
 T1_TEST_0325,"Si supieras cuánto lloré
 Me dejaste bien dañado
 Mis ojos irritados
@@ -9243,11 +9243,11 @@ Lágrimas salen sin querer
 Pero fue tu culpa
 Tú matas mi ser
 Y ya ando más que dolido
-Y escucho canciones de esas que duelen"
+Y escucho canciones de esas que duelen",0,0.17335115966674325
 T1_TEST_0326,", enséñame a olvidarte
 Alguien me dijo que tú encontraste un nuevo amor
 Que ahora si vives feliz, que encontraste a alguien mejor que yo
-A alguien que te supo amar y que no te hace llorar como yo"
+A alguien que te supo amar y que no te hace llorar como yo",0,0.12806067672103655
 T1_TEST_0327,"Dicen que hay peligro cuando salgo
 Que no le temo a lo malo A veces soy candela
 No te confundas que no soy nada de buena
@@ -9288,7 +9288,7 @@ Estamo' para maldade'
 Y que esto no pare
 Que a penas comienza
 Apaguen celulare'
-Estamo' para maldade'"
+Estamo' para maldade'",1,0.9194241632529417
 T1_TEST_0328,"Xander
 Chu Chu, ShiShi
 Pablo para ti
@@ -9346,7 +9346,7 @@ Seguro que quiero verte, mami, no te quedes tan distante
 Fumando los blones en un capsulon, demonia, pienso en ti
 De aquella noche en la cama de tu padre cuando te partí
 De tanto pensarte me mareo, mami, de tu cuerpo soy un reo
-Tú eres mi fea y yo tu feo, y al que se meta entre nosotros meto deo"
+Tú eres mi fea y yo tu feo, y al que se meta entre nosotros meto deo",1,0.9386329886215086
 T1_TEST_0329,"Para realizar
 Mi sueño que haré
 Por donde empezar
@@ -9377,10 +9377,10 @@ De la esclavitud ese día que
 Tú de mí, amor
 Te enamores tú
 Veré por fin
-De una vez la luz"
+De una vez la luz",0,0.1768663708127149
 T1_TEST_0330,"a
 El humo del Joe pesa más que palabras
-Papi, reinicia el programa"
+Papi, reinicia el programa",0,0.23467853299977132
 T1_TEST_0331,"ser alegre es mi vicio más grande
 Hay que darle gusto al gusto mientras pueda
 Destapando botes y también botellas
@@ -9401,7 +9401,7 @@ Porque ser alegre es mi vicio más grande
 Hay que darle gusto al gusto pariente
 Porque vida solo hay una, oiga
 Seguro
-Iuh"
+Iuh",0,0.14820478232547157
 T1_TEST_0332,"Vamos aclarando este asuntico
 Ni tú estás para policía
 Ni yo para andar huyendo
@@ -9444,7 +9444,7 @@ Si ya no vuelves a verme
 Para ser sincero haría lo mismo
 Solo que si estoy sin ti
 Lo haría sin esconderme
-Lo haría sin esconderme"
+Lo haría sin esconderme",0,0.3608387457970126
 T1_TEST_0333,"Dayme Beats
 Yeh
 Y El High
@@ -9488,7 +9488,7 @@ Yo sigo insistiendo hasta el cementerio
 Muero por comerte y no me conviene
 Logro complacerte, a chorros te vienes Hmm
 Entra suavecito todos lo que lubrica
-Yo dando dedito, tú misma lo ubicas"
+Yo dando dedito, tú misma lo ubicas",1,0.9630153906498954
 T1_TEST_0334,"Si te vas de aquí ya no traigas en las manos
 La ilusión que yo te di
 Te quedas solo, te quedas solo
@@ -9514,7 +9514,7 @@ En un acorde menor
 Todo da vueltas por mi cabeza
 Y siento el viento que me despeina
 Ahora soy libre, mi amor
-Sin ti la paso mejor"
+Sin ti la paso mejor",0,0.11342018778123837
 T1_TEST_0335,"l
 Yo se que el viento se a puesto a mi favor
 Y me a quitado esa benda de los ojos
@@ -9530,7 +9530,7 @@ Yo se que el tiempo mis heridas va a cerrar
 Y que por fin la luz del dia va a brillar
 Estoy enamorada
 Y mi corazon ya no aguanta
-Que otra vez me hagas llorar"
+Que otra vez me hagas llorar",0,0.1312400910719805
 T1_TEST_0336,"Estoy en el rincón de una cantina
 Oyendo una canción que yo pedí
 Me están sirviendo ahorita mi tequila
@@ -9546,7 +9546,7 @@ Exigiendo su tequila y exigiendo su canción
 Me están sirviendo ya la del estribo
 Ahorita, ya no se si tengo fe
 Ahorita, solamente ya les pido
-Que toque otra vez La que se fue"
+Que toque otra vez La que se fue",0,0.1829650866406239
 T1_TEST_0337,"Are you ready?
 Jejeje, ay
 El Wasón, bebé Jejeje
@@ -9597,7 +9597,7 @@ Dijo que le gustó y lo repitió
 No sabía que era del vecino cuando me lo dio
 Tenía una amiga, y para completa' le llamé a Gaston Rrra
 Ahora no deja 'e buscarme despué' que esa noche yo la maté Wuh
-No se conformó con lo que yo le hice y tuvimo' que darle lo' tre' ¿Cómo así?; eh, eh"
+No se conformó con lo que yo le hice y tuvimo' que darle lo' tre' ¿Cómo así?; eh, eh",1,0.9142303866792887
 T1_TEST_0338,"Y se le llama La Novelita
 Paso los dias soñando, pensando, corazón
 De este amor, y de lo malo que está la situacion
@@ -9619,7 +9619,7 @@ Mi muñequita, este amor se va a lograr
 Por favor, mami
 Que se logre, que se logre
 Este amor, amor, amor
-¡Amor!"
+¡Amor!",0,0.26526344247237515
 T1_TEST_0339,"l corazón en la maleta
 Ya me cansé de tu tornillo suelto
 Me atraganté el caramelo envuelto
@@ -9638,7 +9638,7 @@ Yo me llevo el corazón en la maleta
 Adiós, me voy, no puedo más
 Qué bien me irá sin tí
 Lo mejor que me ha pasado es despedirme
-Y poder decirte hoy"
+Y poder decirte hoy",0,0.12255609972556733
 T1_TEST_0340,"no se vaya, mm-mmm
 Camilo, mm-mmm
 Ya falta poquito para volver a verte
@@ -9678,7 +9678,7 @@ Baby, yo me muero, no te supero
 Loco por verte de nuevo
 Que de extrañarte estoy acostumbra'o Acostumbra'o
 Pero yo quiero tenerte a mi lado Mi lado
-Baby, yo me muero, no te supero Oh, no"
+Baby, yo me muero, no te supero Oh, no",1,0.5278178740462844
 T1_TEST_0341,"Me perdonas mi amor
 Por decirte la verdad a quema ropa
 Pero ya me canse
@@ -9692,7 +9692,7 @@ Ya no mirarnos a escondidas
 Quiero hacerte el amor como me venga en gana
 En la sala o en la ducha o en lo ancho de mi cama
 Y gastarnos mil noches en caricias y besos
-No importa que me dejes en los puritos huesos"
+No importa que me dejes en los puritos huesos",1,0.669381834911718
 T1_TEST_0342,"z, bebé, Trap Kingz
 Uh-uh, uh-uh
 Hoy no quiere saber del ex ¡No!
@@ -9800,7 +9800,7 @@ Yeh
 Nosotros seguimos multiplicando
 Dímelo Vi
 Haciendo plata
-Trap Kingz, bebé, Trap Kingz"
+Trap Kingz, bebé, Trap Kingz",1,0.9554734025343009
 T1_TEST_0343,"Uoh-oh-oh Jeje, yeah
 El Negrito Ojos Claro'
 Ozuna
@@ -9827,7 +9827,7 @@ Y deja que esta pista haga que te suba el traje
 Pina Records
 Dímelo Vi
 Natti Nat, Natti Nat
-La Formula"
+La Formula",1,0.6468569612961821
 T1_TEST_0344,"Te vas a sorprender
 Cuando me lo conozcas
 Te vas a enamorar
@@ -9852,7 +9852,7 @@ Por que mi corazón
 Por que mi corazón
 En eso es muy sensible
 Por que mi corazón
-Por que mi corazón en eso es muy sensible"
+Por que mi corazón en eso es muy sensible",1,0.7625623993882626
 T1_TEST_0345,"o
 Sombras caídas
 Del mismo cielo
@@ -9882,7 +9882,7 @@ Eterna guerra entre cielo e infierno
 Triste agonía en el corazón nuestro
 Almas vacías mueren por su tormento
 Este será nuestro eterno lamento
-Eterno lamento"
+Eterno lamento",0,0.12901512730424228
 T1_TEST_0346,"Real hasta la muerte
 'Tá cansa' de las malas decisione' Oh-oh, oh
 Ilusione' falsa' y lo' mal de amore' Amore', pero
@@ -9950,7 +9950,7 @@ Anuel
 Mera, dime, EQ
 Real hasta la muerte, ¿óyete, bebé?
 Esto es sencillo, ustede' van a tener que acostumbrarse a vivir la vida bajo la sombra de nosotro'
-¡Brr!"
+¡Brr!",1,0.9220978679857743
 T1_TEST_0347,"Si tengo que contar de amor pensarán que exagero
 Yo amo a una locura incurable que usa mi ropa
 No me ve defectos
@@ -9968,7 +9968,7 @@ Y ya para finalizar, porque los noto aburridos, hoy
 Cumplimos una semana, me voy porque es tarde
 Le llevo el anillo
 Abrazándonos los dos, bailamos en el boulevard
-Abrazándonos los dos, jugamos al amor"
+Abrazándonos los dos, jugamos al amor",1,0.54431236429581
 T1_TEST_0348,"Bebé
 Klave
 Ya me cansé de esta vida, mami, ¿por qué no lo ves?
@@ -9994,7 +9994,7 @@ Y es lindo que nos pase a los do’
 Pero, como el Titanic, lo nuestro se hundió
 Y ahora estoy en el océano rogando tu amor
 'Toy tomando mil pastillas para curar el dolor
-Volvé, por favor"
+Volvé, por favor",0,0.19051184004867386
 T1_TEST_0349,"-
 Te menciono a cada rato
 Mucho mas cuando no debo
@@ -10055,7 +10055,7 @@ Tu sin mi no tienes nada
 Que perder
 Pero yo perdi porque
 Me enamore
----"
+---",1,0.7521107929146201
 T1_TEST_0350,"ico
 Young Kingz, baby
 Solo, aunque te llame si me siento—
@@ -10112,7 +10112,7 @@ Young Kingz
 White House Wuh, wuh, wuh
 One World, jaja; ey-ey
 Orgánico
-Young Kingz, baby"
+Young Kingz, baby",1,0.9493491544287754
 T1_TEST_0351,"Uh, uh-uh-uh
 Uh, uh-uh-uh, uh, uh
 Hace mucho tiempo que quiero conocerte Yes
@@ -10149,7 +10149,7 @@ Lo sé porque al soñar veo tu rostro, baby
 Yep, ahora sí, bien hecho
 Yo soy y seguiré siendo La Maravilla
 La Marash Arca'
-Sentimento, Elegancia y Maldad"
+Sentimento, Elegancia y Maldad",1,0.791798771404129
 T1_TEST_0352,"d
 Kapital Music, baby
 Dayme & El High
@@ -10213,7 +10213,7 @@ Le'go
 Sky
 El Saybor
 Háblame, Ronald
-Kapital Music, baby"
+Kapital Music, baby",1,0.9645372470677378
 T1_TEST_0353,"Blanca Records
 Auh
 Ella me dice al oído lo que quiere Lo que quiere
@@ -10280,7 +10280,7 @@ Anuel
 Ozuna
 Trap Cartel
 Y esto es Casa Blanca Records
-Auh"
+Auh",1,0.9706141424946828
 T1_TEST_0354,"ás
 Del que podrán decir
 
@@ -10303,7 +10303,7 @@ Que estamos solos
 Escapémonos por necesidad
 Nos debemos tanto
 Si el amor está, no hay porqué esperar
-El donde o el cuando"
+El donde o el cuando",0,0.09148970238108664
 T1_TEST_0355,"Reggaetón, champán, -pán-pán-pán, -pán, -pán
 Reggaetón, champán, -pán-pán-pán, -pán, -pán
 Mmm, jajaja
@@ -10344,7 +10344,7 @@ Puedo ser tu puta, también tu princesa
 Y si te soy honesta, quiero que me chupes una teta
 Arriba de la mesa, Santa Clara de fresa
 Atraviesa la cabeza cuando ya la tengas tiesa
-A mí me gusta grande, me gusta bien gruesa jajaja"
+A mí me gusta grande, me gusta bien gruesa jajaja",1,0.9648056142392597
 T1_TEST_0356,"Vivo por ella sin saber
 Si la encontré o me ha encontrado
 Ya no recuerdo cómo fue
@@ -10364,7 +10364,7 @@ Vivo por ella porque va
 Dándome simpre la salida
 Porque la música es así
 Fiel y sincera de por vida
-Yo vivo per lei"
+Yo vivo per lei",0,0.12069113591749167
 T1_TEST_0357,"ntimientos que hieren
 
 Estamos amando mal y no es la primera vez
@@ -10379,7 +10379,7 @@ Y si te dejan te mueres
 No tengo con quién hablar, me siento tan lejos de él
 No sabe cuándo estoy mal, tampoco cuándo estoy bien
 Igual que en un carnaval, en donde nadie es quien es
-Vivimos con un disfraz que nos ayuda a seguir de pie"
+Vivimos con un disfraz que nos ayuda a seguir de pie",0,0.11984125696255245
 T1_TEST_0358,"Toc-toc suena en la puerta
 Dime si tú me dejas entrar
 Ey, sé que hablan tus amigas
@@ -10392,7 +10392,7 @@ Uh-uh-uh-uh
 Me encantaría poderte hablar
 Ver si podemos arreglar
 El jardín que hicimos, de donde venimos
-Pintar margaritas, sacar los racimos"
+Pintar margaritas, sacar los racimos",0,0.49553539251798034
 T1_TEST_0359,"¿De dónde sales tú?
 ¿Qué está pasando en Cádiz?
 No se ven negras tan guapas
@@ -10428,7 +10428,7 @@ Yo desamarro una noche
 El Vapor del Puerto
 De oloroso y fino lleno la bodega
 Y no quiero más que tus ojos
-Y las estrellas"
+Y las estrellas",0,0.3263001229941005
 T1_TEST_0360,"Letra de “Calentura”
 A las 12 de la mañana, baby
 Es la hora que me da con verte
@@ -10473,7 +10473,7 @@ Santana “El Nene de Oro”
 Jonniel
 Ganda
 Esto es The Golden Army
-Me entiendes"
+Me entiendes",1,0.9418603982909836
 T1_TEST_0361,"es
 Oh-oh-oh, oh-oh, oh
 Cuando yo veo batallas, Tú ves la victoria
@@ -10497,7 +10497,7 @@ Nada podrá contra el poder de nuestro Dios
 Mi Dios Poderoso, Tú vas adelante
 Nada podrá contra el poder de nuestro Dios
 Tú alumbras tinieblas, Tú ganas batallas
-Nada podrá contra el poder de nuestro Dios"
+Nada podrá contra el poder de nuestro Dios",0,0.12600165608031183
 T1_TEST_0362,"o
 Regalame una noche llena de ternura
 Y deja que mis manos acaricien tu piel
@@ -10543,7 +10543,7 @@ Tu abrazandome y yo abrazandote
 Seras para mi y yo para ti
 Aunque en la maana te alejes de mi
 Solo tu y yo en la habitacion
-Tu abrazando"
+Tu abrazando",1,0.7430601759870723
 T1_TEST_0363,"Quédate un momento así, no mires hacia mí, que no podré aguantar
 Si clavas tu mirada que me hiela el cuerpo, me ha pasado antes que no puedo hablar
 Tal vez pienses que estoy loco, y es verdad un poco, tengo que aceptar
@@ -10558,7 +10558,7 @@ Ahora tal vez lo puedas entender
 Y no te vuelvas si no quieres ver
 Que lloro por ti, que lloro sin ti
 Que ya lo entendí, que no eres para mí
-Y lloro"
+Y lloro",0,0.17372620424710264
 T1_TEST_0364,"i
 Necesito olvidar que te ame con locura
 Necesito ignorar que ignoraste mi amor
@@ -10567,7 +10567,7 @@ Para darle los besos las flores los pesos
 Que eran para ti
 Aunque me vean llorando y la gente se asombre
 Aunque me duela el alma aunque me duela todo
-Me olvidare de ti"
+Me olvidare de ti",0,0.1548907472003473
 T1_TEST_0365,"¿Qué se siente ser feliz solamente cuando tomas?
 No llenar ese vacío porque únicamente es mío
 Por eso es que te abandonan y es que siempre ha sido así
@@ -10586,7 +10586,7 @@ Solo quiero que te largues
 Te lo doy en efectivo
 Échele, mi compa, Lenin Ramírez
 Y así suena Grupo Firme, viejo
-¡Salud!"
+¡Salud!",0,0.34332986073747
 T1_TEST_0366,"Chulada de maiz prieto
 Cuanta pena a mi me das
 ¿que te apena ser morena?
@@ -10618,7 +10618,7 @@ Yo soy la raza de bronce
 Si lo mexicano es naco y lo mexicano es chido
 Entonces verdad de dios...todo o naco es chido chidoo
 Pinche malinche lo cortés
-No quita lo cuauhtémoc 4"
+No quita lo cuauhtémoc 4",1,0.6546969506510879
 T1_TEST_0367,"u cárcel y nunca saldrás
 Te vas amor
 Si así tú quieres que puedo yo hacer
@@ -10631,7 +10631,7 @@ me duele lo que tú vas a sufrir
 Pero recuerda
 Nadie es perfecto y tú lo veras
 Más de mil cosas mejores tendrás
-Pero un cariño sincero jamás"
+Pero un cariño sincero jamás",0,0.13772156209435263
 T1_TEST_0368,"r
 A la orilla de un palmar
 Yo vi de una joven bella
@@ -10644,7 +10644,7 @@ Sola vivo en el palmar
 Soy huerfanita ah!
 No tengo padre ni madre
 Ni un amigo ah!
-Que me venga a consolar"
+Que me venga a consolar",0,0.15658774488087282
 T1_TEST_0369,"Fue imposible sacar tu recuerdo, de mi mente
 Fue imposible olvidar que algún día, yo te quise
 Tanto tiempo pasó desde el día, que te fuiste
@@ -10659,7 +10659,7 @@ Después le pregunté a la luna, me dio la espalda e intento ocultarse
 Hasta la luna sabe que me amaste, hasta la luna sabe que aún me amas
 Y vuela, vuela, por otro rumbo, ve y sueña, sueña, que el mundo es tuyo
 Tu ya no puedes, volar conmigo, aunque mis sueños se irán contigo
-Tu ya no puedes, volar conmigo, aunque mis sueños se irán contigo"
+Tu ya no puedes, volar conmigo, aunque mis sueños se irán contigo",0,0.11398674428461571
 T1_TEST_0370,"s
 Ya me voy porque t ya no me quieres
 Como yo te quiero a ti
@@ -10681,7 +10681,7 @@ Adios , mi casita blanca
 La cuna de mis amores
 Al mirarte entre las flores
 Y al cantarte mis dolores
-Te doy mi postrer adios"
+Te doy mi postrer adios",0,0.14991783880036946
 T1_TEST_0371,"No puedo verte triste porque me mata
 Tu carita de pena, mi dulce amor
 Me duele tanto el llanto que tú derramas
@@ -10693,7 +10693,7 @@ Y si los muertos aman, después de muertos, amarnos más
 Si yo muero primero, es tu promesa
 Sobre de mi cadaver dejar caer
 Todo el llanto que brote de tu tristeza
-Y que todos se enteren de tu querer"
+Y que todos se enteren de tu querer",0,0.11956625242147947
 T1_TEST_0372,"Si eres pobre te humilla la gente, si eres rico te tratan muy bien
 Un amigo se metió a la mafia porque pobre ya no quiso ser
 Ahora tiene dinero de sobra, por costales le pagan al mes
@@ -10708,7 +10708,7 @@ En un Corvette se pasea tranquilo por Tijuana y Guadalajara
 Por Los Ángeles y San Francisco y también por Las Vegas, Nevada
 Por la mafia se gana dinero, pero se necesita valor
 Porque aquí no hay ningún parentesco, no se permite ningún error
-Siempre te andas rifando el pellejo con las leyes o con el patrón"
+Siempre te andas rifando el pellejo con las leyes o con el patrón",0,0.2703829919791058
 T1_TEST_0373,"r
 Amor, has decidido poner fin a nuestra historia
 Y yo no encuentro la manera de aceptarlo
@@ -10719,7 +10719,7 @@ No sabes cuanto diera, por que de mi jamas te fueras
 Voy a llorar por ti cariño mio
 Voy a extrañarte cada dia de mi existir
 Voy a llorar por ti en este olvido
-Por que me dejas amor mio a sufrir"
+Por que me dejas amor mio a sufrir",0,0.1267803469916954
 T1_TEST_0374,"¡Aú!, ¡aú!
 Burbujas de cristal y Jolly Rancher para el lean
 Burbujas de cristal y Jolly Rancher para el lean
@@ -10763,7 +10763,7 @@ No hay nadie que lo censure, tómale y mueva su booty
 Brincando en la cama y el cuarto lleno de humo
 Fume, fume, fume y ella está moviendo el culo
 Yo soy como Superman y ella es una pornstar
-Y ella es una pornstar, y toma purple drink"
+Y ella es una pornstar, y toma purple drink",1,0.9621270546527565
 T1_TEST_0375,"Vivir sin tu amor....
 Mi vida sin ti ya no es vida
 Tu amor es el aire que me hacía respirar...
@@ -10774,7 +10774,7 @@ Moriría si me dejas de querer...
 Te conozco, sé muy bien que al igual
 Que yo. Tienes ganas que otra vez
 Seamos dos...
-Vivir sin tu amor...."
+Vivir sin tu amor....",0,0.1489036368448749
 T1_TEST_0376,"Oh-eh Oh-oh-oh
 Oh-eh-eh-eh-oh Oh-oh-oh
 Oh-eh Oh-oh-oh
@@ -10802,7 +10802,7 @@ Desde que tú llegaste mi mundo está al revés
 Y contigo, solo quiero estar contigo
 Quiero detener el tiempo cuando tú me mira' y yo te miro
 Y solo contigo, solo quiero estar contigo
-Quiero detener el tiempo cuando tú me mira' y yo te miro"
+Quiero detener el tiempo cuando tú me mira' y yo te miro",0,0.400674143226227
 T1_TEST_0377,"Me gusta esa faldita, que tú siempre te pones
 Me gusta mamacita, no uses pantalones
 Con esa minifalda luces provocativa
@@ -10826,14 +10826,14 @@ A que no te la subes, a que no te la subes
 Un pedacito, un pedacito, un pedacito
 Un pedacito, que se mire la tanga
 Que se mire la tanga, que se mire la tanga
-Que se mire la tanga"
+Que se mire la tanga",1,0.9238266047689332
 T1_TEST_0378,"Solo quiero tu casa de ternura
 Vivir en su calor
 Eres el mar y la orilla segura
 Porque el único viaje es el amor
 Besos desconocidos como puertos
 Esperan bajo un cielo de mirada
-Lo demás es dolor"
+Lo demás es dolor",0,0.10385572925012972
 T1_TEST_0379,"o
 Eso que llaman amor
 Mi corazón lo sintió no más contigo
@@ -10841,7 +10841,7 @@ A nadie puedo querer
 Con nadie puedo yo estar, no más contigo
 Ya muchas bocas besé, pero también comprobé
 Que no es lo mismo, porque sin ti descubrí
-Que no me siento feliz si no es contigo"
+Que no me siento feliz si no es contigo",0,0.1362100586611073
 T1_TEST_0380,"Hoy he vuelto a escuchar
 Al silencio gritar
 Tu nombre, tu nombre
@@ -10858,7 +10858,7 @@ Y aquí estoy
 Quiero ver si por fin
 Te decides volver
 Y creer que es posible empezar
-Una vez más"
+Una vez más",0,0.09574135911475136
 T1_TEST_0381,"Quédate, aquí esta noche, será la última vez, que te lo implore
 Quédate, que más podría pasar, si él se llegara a enterar
 Lo va a tener que aceptar
@@ -10867,7 +10867,7 @@ Una nueva vida debes comenzar
 Quédate conmigo y no tengas miedo
 Se aprovecha de tu cariño y tu bondad y nunca te ha dado tu lugar
 Quédate conmigo y no tengas miedo
-Será una noche inolvidable llena de pasión, amor y delirio"
+Será una noche inolvidable llena de pasión, amor y delirio",0,0.16953923168520688
 T1_TEST_0382,"Hey, escucha las palabras de Romeo
 No sé si has cambiado de opinión y no te vas
 Si tu vuelo de las 3 cancelarás
@@ -10905,7 +10905,7 @@ Take me, take me with you
 Tomorrow, tomorrow
 Tomorrow, tomorrow, tomorrow
 You need this in your life
-Tomorrow, tomorrow"
+Tomorrow, tomorrow",0,0.20158605630152893
 T1_TEST_0383,", bebé
 Uah
 Uah, baby
@@ -10961,7 +10961,7 @@ Gaby Music
 Mera, dime, Frabian
 Los intocables, los Illuminati, bebé
 Uah
-Uah, baby"
+Uah, baby",1,0.9043526738423114
 T1_TEST_0384,"nomás, fierro, se fue
 Fierro
 Primo, bájese ya del Tsurito
@@ -10990,7 +10990,7 @@ O que aquí nos lleve el diablo
 ¡Uh!
 Que suene bonito, viejo
 Compa René, ayayai
-Así nomás, fierro, se fue"
+Así nomás, fierro, se fue",1,0.6546786306602195
 T1_TEST_0385,"Yer
 2020
 Dice
@@ -11026,7 +11026,7 @@ No existe algo más puro que lo digo y lo noto
 Letras que salen llorando desde mi corazón roto
 Como dijo Blessed si muero guarda mi foto
 Recuérdame por quien soy y no por la luz de los focos
-Esta es mi guerra sin fin, yeh"
+Esta es mi guerra sin fin, yeh",0,0.14621094482362204
 T1_TEST_0386,"a
 Letra de ''Acompáñame''
 Como caminas sin mirarme, porque no te deja tu hombre
@@ -11044,7 +11044,7 @@ Pero luego cambias de rumbo, yo te espero aquí en mi guarida
 Y nos vamos, nos escapamos, más allá de lo conocido por los seres humanos
 De la mano, conectamos y las aves nos preguntan baby como es que volamos
 Yo sé que por una aventura, no dejarás a ese caradura
-Porque él te ofrece toda su dulzura y yo solo una pieza oscura"
+Porque él te ofrece toda su dulzura y yo solo una pieza oscura",1,0.5240821051852913
 T1_TEST_0387,"ium, jaja
 Dímelo Vi
 Se preparó
@@ -11084,7 +11084,7 @@ Gaby Music
 Hi Music Hi Flow
 Hi Music Hi Flo-o-ow
 Maxium, jaja
-Dímelo Vi"
+Dímelo Vi",1,0.9182210418225651
 T1_TEST_0388,"estino, mami, muah!
 Maluma, baby
 Apenas sale el sol y tú te vas corriendo
@@ -11121,7 +11121,7 @@ Y siempre que se va, regresa a mí Maluma, baby
 No importa el qué dirán, no' gusta así Kevin ADG, Chan El Genio, RudeBoyz
 Y siempre que se va, regresa a mí El código secreto, baby
 No importa el que dirán, somo' tal para cual Ily Wonder
-Así lo quiso el destino, mami, muah!"
+Así lo quiso el destino, mami, muah!",0,0.48121613371532995
 T1_TEST_0389,"A un cuaco de linda estampa
 Le cambiaron de color
 Ganó un monton de carreras
@@ -11152,7 +11152,7 @@ Al alma y ya no quiso matarlo
 Y aquel caballo tan noble
 Con el tiempo fue sando
 Y en mis praderas y montes conmigo anda relinchando
-Don Lazaro malacara termino por regalarmelo"
+Don Lazaro malacara termino por regalarmelo",0,0.3064354373402979
 T1_TEST_0390,"¿Qué haré lejos de ti, Prenda de mi alma?
 Sin verte, sin oírte y sin hablarte
 A cada instante intentaré por olvidarte
@@ -11165,7 +11165,7 @@ Y que viva la Victoria Aispuro, pero que viva bien lejos, sí, señor
 Tal vez el cruel destino nos condena
 Mi bien, de que me olvides tengo miedo
 Mi corazón me dice ya no puedo
-No puedo mis angustias soportar"
+No puedo mis angustias soportar",0,0.11508679345475797
 T1_TEST_0391,"raga LiveGet tickets as low as $44
 Cuando tu te entregaste a mi
 Que bonito
@@ -11197,7 +11197,7 @@ Que sentimos los dos
 Que bonito
 Quien pensaba en dolor
 Quien pensaba en traicion
-Si todo era bonito"
+Si todo era bonito",0,0.11967004160235668
 T1_TEST_0392,"te lo pido
 Cásate conmigo
 El amor, el amor no se acaba
@@ -11244,7 +11244,7 @@ Cásate conmigo
 Ay, hombre
 La Industria Inc
 Nicky, Nicky, Nicky Jam
-Dímelo Silvestre"
+Dímelo Silvestre",0,0.3657564050614371
 T1_TEST_0393,"e, two, three, leggo!
 Cuando no la llamo siempre me hace reclamo'
 Discutimos, peleamos, pero llego a casa en la noche
@@ -11288,7 +11288,7 @@ Que en la calle a nadie besé
 Infinity Music, leggo Infinity
 ¿Estamo' rompiendo o no estamo', rompiendo, muchacho'?
 Okay, The Business
-One, two, three, leggo!"
+One, two, three, leggo!",1,0.7869821635268496
 T1_TEST_0394,"Rrr, rrr, rrr, rrr
 Yeh, yeh, yeh, yeh
 Yeh, yeh, yeh, yeh, yeah
@@ -11349,7 +11349,7 @@ Los de la picazón, jajaja
 Este es le Leo pa’
 Desde Puerto Rico
 Y este tu servidor
-Redimi2, man"
+Redimi2, man",0,0.3026939206275174
 T1_TEST_0395,"Si no quieres aguantar y te quieres liberar
 Una frase te diré: Sólo se vive una vez.
 Si no quieres discutir y te quieres divertir
@@ -11364,7 +11364,7 @@ Dale al cuerpo bacilón, ¡que caramba!
 Sólo se vive una vez
 Quítate la represión, ¡que caramba!
 Suelta el pelo a la pasión, ¡que caramba!
-Sólo se vive una vez"
+Sólo se vive una vez",1,0.7346062841059334
 T1_TEST_0396,"Ahuevo viejo
 Voy a manejar mi troca por la madrugada
 No alcanze a despedirme porque no pensaba
@@ -11397,7 +11397,7 @@ Recuerden al Arturillo con toda la bola
 Ya es la hora que me valla
 Tal vez no regrese pero antes que parta
 Les recuerdo que los quiero
-Me fui bien alegre montado en mi ranfla"
+Me fui bien alegre montado en mi ranfla",0,0.20782197294047675
 T1_TEST_0397,"Ella vive contigo
 Es tu amiga es tu mujer
 Es tu esposa y es tu amante
@@ -11438,7 +11438,7 @@ Corazon de leon
 Le lo...le lo..
 Es un campeon
 No tiene nada que ver pero...
-Acuerdate que todavia es tu novia"
+Acuerdate que todavia es tu novia",1,0.8922832592247235
 T1_TEST_0398,"y
 Chau adiós, me voy me voy me estoy yendo
 Me voy pero no muy lejos, me voy pero no muy lejos
@@ -11452,7 +11452,7 @@ Y recuérdame
 Y recuérdame quién sos
 Recordándonos, recordándonos
 Recordándonos los dos
-Recordándonos, recordándonos, recordando nuestro amor. Recordándonos, recordándonos, me voy"
+Recordándonos, recordándonos, recordando nuestro amor. Recordándonos, recordándonos, me voy",0,0.1097275006131321
 T1_TEST_0399,"Trenza', trenza', trenza', trenza'
 Trenza', trenza', trenza', trenza' Qué pampara
 Trenza', trenza', trenza', trenza'
@@ -11498,7 +11498,7 @@ Los Minas in the building
 'Toy ronco, baby, no' vemo' en Miami, Karol G, no te cuide'
 J Music
 Qué pampara
-¡Alegría!"
+¡Alegría!",1,0.7355155079054182
 T1_TEST_0400,".
 Piso fuerte el traicionero, piso sucio y sin chistar
 Va poniendo en la balanza, lo poco que le alcanza
@@ -11515,12 +11515,12 @@ Bien sabemos que la historia, la escriben los que ganan
 O la pueden comprar
 Recién hoy nos dimos cuenta, que el taimado otra vez
 Otra vez salió ganando, y ahora aguantando
-Tiene medio país..."
+Tiene medio país...",0,0.15147721280983587
 T1_TEST_0401,"Colombia tierra querida, himno de fe y armonía
 Cantemos, cantemos todos grito de paz y alegría
 Vivemos, siempre vivemos a nuestra patria querida
 Tu suelo es una oración y es un canto de la vida
-Tu suelo es una oración y es un canto de la vida"
+Tu suelo es una oración y es un canto de la vida",0,0.10352071789862921
 T1_TEST_0402,"Llorarás por mi...
 Cuando el día se termine
 Y no esté ya junto a ti
@@ -11532,7 +11532,7 @@ Pensarás en mí y pensarás en mí...
 No me olvidarás
 Sabes que te mientes
 Como vas a ser...
-Sin mi amor feliz"
+Sin mi amor feliz",0,0.14408805842344796
 T1_TEST_0403,"s
 Con el sombrero de lado
 Y en una gran camioneta
@@ -11569,7 +11569,7 @@ Me siento muy orgulloso
 Hoy me encuentro por aquí
 Por cuestiones del negocio
 Haciendo pacas de a mil
-En compañía de mis socios"
+En compañía de mis socios",1,0.6287916192269615
 T1_TEST_0404,"No es ninguna aberración sexual
 Pero me gusta verte andar en cueros
 El compás de tus pechos aventureros
@@ -11601,7 +11601,7 @@ Ponte loca completa
 Que verte será solo el inicio
 Antes de perder el juicio
 Aunque sea un momento
-Aunque sea un momento"
+Aunque sea un momento",1,0.9062201061768561
 T1_TEST_0405,"i gordita me vas a matar...
 ¿Gordita tú?, nah' qué va
 Llenita nomás
@@ -11628,7 +11628,7 @@ Yo en puro esqueleto me voy a quedar
 Su linda figura siempre me ha gustado
 Pues ella no es gorda, llenita nomás
 Me gusta mirarla de frente o de lado
-Pero más me gusta verla por detrás"
+Pero más me gusta verla por detrás",1,0.8403558068104149
 T1_TEST_0406,"Por las calles ya me miraron pasar 
 Mis muchachos bien cuidado me traerán 
 Caravanas a lo lejos se verán 
@@ -11658,7 +11658,7 @@ Con un pasecito estamos al 100
 Se oyen los motores de motos tronando 
 Andan por las dunas, tierra levantando 
 Me pega la brisa del mar otra vez 
-Gozar esta vida se puede una vez"
+Gozar esta vida se puede una vez",0,0.2815923947903948
 T1_TEST_0407,"SEHE
 Zorra, la verdad es que es increíble
 Por quererte hasta en lo imprevisible
@@ -11687,7 +11687,7 @@ Yo no te quise hacer daño, estoy llena de malda'
 Tú me enseñaste a querer, yo te enseñé a odiar
 Pero, baby, te lo juro, no te quiero ver mal
 No te quiero ver mal, woh-oh-oh
-No te quiero ver mal"
+No te quiero ver mal",0,0.4724554139467111
 T1_TEST_0408,"Ella no sabe cuánto la amo y que me muero por un beso
 Es muy difícil expresar lo que siento
 Yo sufro en silencio y me muero por dentro
@@ -11699,7 +11699,7 @@ Es que esa mujer me tiene loco
 Por esa mujer, si el alma me pide, se la doy
 Yo no tengo padre, solo que me queda mi madre
 Y Iry, que me quiere a mí
-Todo lo que pida, es de ella"
+Todo lo que pida, es de ella",0,0.2659664713216786
 T1_TEST_0409,"Letra de Esa Mujer
 Yo he empezado desde abajo
 Levantándome del polvo
@@ -11712,7 +11712,7 @@ Cuando yo daba la mano
 Y esa mujer
 No hay otra igual
 Gracias a ella
-Con su amor he vuelto a gritar"
+Con su amor he vuelto a gritar",0,0.2179195539174612
 T1_TEST_0410,"hacer un update
 Revol
 ¿Cuál es tu fantasía sexual? Que te la voy a cumplir
@@ -11783,7 +11783,7 @@ Yo solo quiero que te ponga' para mí
 Myke, Myke Towers, baby
 Jaja, ah
 Dile a tu novio que tiene que hacer un update
-Revol"
+Revol",1,0.9695964773484804
 T1_TEST_0411,"una razón para vivir
 Daría lo que fuera por volverte a ver
 Daría hasta mi vida y mi fusil, mis botas y mi fe
@@ -11803,7 +11803,7 @@ Porque sin ti mi vida no tiene raíz
 Ni una razón para vivir
 Eres todo lo que tengo
 Y no me quiero morir
-Sin poder otra vez"
+Sin poder otra vez",0,0.10930222750913611
 T1_TEST_0412,"Ya pronto lucirás sobre tu linda frente
 La hermosa corona de azahares
 Qué linda te verás
@@ -11825,7 +11825,7 @@ Que matas lentamente
 Yo estoy celoso de tu amor que fue mentira
 Y si el desprecio me hace odiarte ciegamente
 Maldigo la ilusión y el amor
-Mil veces lo maldigo"
+Mil veces lo maldigo",0,0.2977869839885314
 T1_TEST_0413,"Woh-oh-oh Uah, yeh
 Ozuna Prr
 Lunay, bebé
@@ -11889,7 +11889,7 @@ Dímelo, Nino
 Lo' reye' en los Billboard, ¿oíste, bebé? ¡Brr!
 Dulce Como Candy
 Nibiru
-Épico"
+Épico",1,0.9137173005257557
 T1_TEST_0414,"pamina
 La Industria Inc
 Yeah
@@ -11949,14 +11949,14 @@ Manuel Turizo
 Ra-Rauw Duro para la pared
 Myke Towers
 Dopamina
-La Industria Inc"
+La Industria Inc",1,0.9540964003901259
 T1_TEST_0415,"No me amenaces, no me amenaces
 Cuando estes decidida a buscar otra vida
 Pos agarra tu rumbo y vete
 Porque estás que te vas y te vas
 Y te vas y te vas y te vas
 Y te vas y no te has ido
-¡Y ahi'toy chiquita: esperando!"
+¡Y ahi'toy chiquita: esperando!",0,0.2184326076746844
 T1_TEST_0416,"Como una bebida, ella te intoxica, acabarás haciendo lo que ella pida
 Fuiste una presa más, para de contar todos esos corazones machucados
 De seguro uno es mío, somos uno en el montón
@@ -11968,14 +11968,14 @@ Te atrae a su guarida, luego te deja sin vida con su veneno ella tiene el contro
 Te usa y deja en un rincón, no era amor, sólo terror
 Ya somos más de un millón, somos más de un millón
 No era amor, sólo terror, ya somos más de un millón
-Somos más de un millón"
+Somos más de un millón",0,0.44715953497043354
 T1_TEST_0417,"Me muero por suplicarte que no te vayas mi vida
 Me muero por escucharte decir las cosas que nunca dirás
 Más me callo y te marchas
 Mantengo la esperanza de ser capaz algún día
 De no esconder la heridas que me duelen
 Al pensar que te voy queriendo cada día un poco más
-¿Cuánto tiempo vamos a esperar?"
+¿Cuánto tiempo vamos a esperar?",0,0.12602555593877654
 T1_TEST_0418,"A veces no pienso
 Me vuelvo tan frío y no estoy
 A veces me ausento de mis sentimientos
@@ -11997,7 +11997,7 @@ Me aferro y te quiero a morir
 Por eso, aquí adentro
 Tu estas todo el tiempo
 Viviendo del sufrimiento
-Sexo, pudor y lágrimas me da igual"
+Sexo, pudor y lágrimas me da igual",0,0.23893362404365825
 T1_TEST_0419,"iero que seas mi princesa
 Letra de Mi Princesa
 Si una vez te sentiste ilusionada
@@ -12021,7 +12021,7 @@ Chiquititas
 Si es cobarde, no te lo dijo en la cara
 Si es tan hombre, porque no te dijo nada
 Con razón eran extrañas sus caricias
-No valían nada"
+No valían nada",1,0.8444603271772073
 T1_TEST_0420,"De un sueño despertar, al hacerlo realidad
 Te veo frente a mi y no lo puedo asimilar
 Creí que te perdí, lo eres todos para mi
@@ -12035,7 +12035,7 @@ No luches mas, tu eres, tu eres para mi
 Por todo lo que di, hoy puedo al fin sentir
 Un amor que no me ciega y que me hace vibrar
 Te tengo junto a mi, y no te dejaré
-Te enredaste en mi piel, y no podrás salir"
+Te enredaste en mi piel, y no podrás salir",0,0.1238174710374759
 T1_TEST_0421,"Esque no eres tu ahora soy yo
 El que tomo la decicion
 Ya no tengo ganas de verte...
@@ -12058,7 +12058,7 @@ Soy como un buen restaurant
 Que nunca le faltan los clientes...
 Y llego el tiempo de madurar
 La verdad que weba me das...
-No quiero ya volver a verte"
+No quiero ya volver a verte",1,0.586350515758345
 T1_TEST_0422,"y
 Motherfucker! Rrrah!
 ¿Quién tú eres? Ey
@@ -12097,7 +12097,7 @@ Ask around, nigga, ask around
 The whole world knows
 Even you know, I am the one
 Who the fuck is you? Nobody
-Motherfucker! Rrrah!"
+Motherfucker! Rrrah!",1,0.743247380844857
 T1_TEST_0423,"?
 Te he de querer
 Te he de adorar
@@ -12107,7 +12107,7 @@ Más de adrede lo he de hacer
 Te lo digo y te lo cumplo
 El no abandonarte nunca
 Te lo digo y te lo cumplo
-El no amar a otra ninguna"
+El no amar a otra ninguna",0,0.23663048567643974
 T1_TEST_0424,"tickets as low as $52
 Ya no puedes hacer nada
 Por cambiarme
@@ -12164,7 +12164,7 @@ Que amarte es lo mejor
 Que puedo hacer
 Abrázame como a un ramo de rosas
 Yo te amo a ti
-Sobre todas las cosas"
+Sobre todas las cosas",0,0.2270154470244996
 T1_TEST_0425,"Que te quedarás conmigo
 Una vida entera
 Que contigo adiós invierno
@@ -12188,7 +12188,7 @@ Y por dentro lloro
 Aunque sea mentira
 Me haces sentir vivo
 Aunque es falso el aire
-Siento que respiro"
+Siento que respiro",0,0.1071761984037038
 T1_TEST_0426,"s
 Ya me canso de llorar y no amanece
 Ya no s si maldecirte o por ti rezar
@@ -12209,7 +12209,7 @@ Dios, dame fuerzas, que me estoy muriendo por irlo a buscar
 Y agarraste por tu cuenta las parrandas
 Paloma negra, paloma negra, dnde dnde andaras?
 Ya no puedo con tu honra parrandera
-Si tus caricias han de ser mias, de nadie mas"
+Si tus caricias han de ser mias, de nadie mas",0,0.3581712519193718
 T1_TEST_0427,"Qué chimba, SOG
 Ave María, mi amor
 Ave María
@@ -12249,7 +12249,7 @@ Dímelo, SOG
 Ryan Castro con SOG y Nath
 ¡Pu-pu-pum!
 Zaga
-Del ghetto, amor"
+Del ghetto, amor",1,0.8450587026585739
 T1_TEST_0428,"Checa, yeah
 Checa
 Vivo con nueve gatos y siete corderos
@@ -12299,7 +12299,7 @@ Dame mucho más de lo que ya hay
 Porque hay todo, todo
 Todo un mundo aún por explorar
 No me excuso, incluso aunque lo he tratado de ignorar
-Tengo un pedo medio bipolar y tú lo tendrías que olvidar"
+Tengo un pedo medio bipolar y tú lo tendrías que olvidar",1,0.7659810953222679
 T1_TEST_0429,"Yo no quiero llamarme
 Como me llamo...
 Yo quiero que me llamen
@@ -12315,7 +12315,7 @@ Viento serrano
 Pan áspero y moreno
 Duelo y quebranto
 Que no quiero llamarme
-Como me llamo"
+Como me llamo",0,0.14126870855970008
 T1_TEST_0430,"Ante ti me acerco hoy
 Me presento tal y como soy
 Mi pasado lleno de dolor
@@ -12336,7 +12336,7 @@ A su lado viviré, oh-ohh
 Solo a Cristo yo me rindo
 Todo se lo entrego a Él
 Para siempre en Él confío
-A su lado viviré, oh-ohh"
+A su lado viviré, oh-ohh",0,0.11158598388457304
 T1_TEST_0431,"Vamo' a ponerle un poco de música para que no se sigan confundiendo. Calle 13 no es cabrón reguetón. Calle 13 es música
 Nos fuimos con música
 No escuha'o nada interesante del reguetón ahora mismo. A nivel artistico, conceptual-mente hablando no. No tiene nada que ofrecer para mi al mundo
@@ -12425,7 +12425,7 @@ Mando Cash
 Hydro
 Lil Wizard
 This is the T, the E, the M, the P and the O
-Cabrón"
+Cabrón",1,0.7582201206812359
 T1_TEST_0432,"Solo me calma la bulla de un beat a todo volumen
 Que me incita a que construya de mí un pensamiento inmune
 A las alergias de gente que nunca piensa
@@ -12520,7 +12520,7 @@ Pero en la capacidá
 De hacerte pensá más allá de la normalidá
 Tu mentalidad no es más que el límite mediocre de una falsedad
 Que solo espera que alguien se le acople
-Te conozco bacalao, aunque te disfraces hijueputa"
+Te conozco bacalao, aunque te disfraces hijueputa",0,0.4258598260099165
 T1_TEST_0433,".
 Si nuestro amor se acaba, si nuestro amor termina
 Ya no me queda nada para vivir la vida
@@ -12531,7 +12531,7 @@ Encima me condenas sin escuchar razones
 Si terminar conmigo ya lo venias pensando
 Dejame estar contigo, aunque no este a tu lado
 Si me dejas, no me olvides por favor, nunca me olvides
-Tu sabes cuanto te quiero, que desde siempre te quise"
+Tu sabes cuanto te quiero, que desde siempre te quise",0,0.11951073320487127
 T1_TEST_0434,"El ojo de tu amor se va cerrar
 Y no se si acaso vuelva a despertar
 Yo sobrexistiré con el viejo sol
@@ -12546,7 +12546,7 @@ Besame y besame hasta sentirte
 Animal
 El hijo de una 'star' se va acostar
 Y no se si acaso quiera levantarse para crecer
-Y los llantos que ahogan su anochecer lo harán gritar"
+Y los llantos que ahogan su anochecer lo harán gritar",0,0.13204372511152723
 T1_TEST_0435,"jajaja
 Wa Wa Wa
 ¡Rochy!
@@ -12600,7 +12600,7 @@ Nata Records
 Hablamo' ahora, ñiño
 Dime tú, por abajo ha pasao' todos el mundo
 Todos el mundo cogió trote en esta vida
-Por lo meno' la gente que yo conozco"
+Por lo meno' la gente que yo conozco",1,0.7310679839937964
 T1_TEST_0436,"an que todos va bien...
 Huh, Huh. Ronnie James Dio está en la casa
 Matando al dragón, Rock and Roll...
@@ -12660,14 +12660,14 @@ Te prometo que esta vez es verdad mañana quedamos pa hablar y lo dejamos
 Mentiras de todos los colores, especialistas, artistas
 Algunos las llaman faroles
 Caemos, repetimos, y lo sabemos, estamos presos
-Y aunque sepamos que no, decimos: ya nos llamamos si eso..."
+Y aunque sepamos que no, decimos: ya nos llamamos si eso...",1,0.8078406760453227
 T1_TEST_0437,"que eres mía
 Te presumo
 Porque un verdadero amor nunca se esconde
 Porque es un gran orgullo ser tu hombre
 Te presumo
 Porque eres para mí, un gran tesoro
-Y quiero estar junto a ti de cualquier modo"
+Y quiero estar junto a ti de cualquier modo",0,0.19989778196614416
 T1_TEST_0438,"Yo sé que soy un cabrón
 Que no merezco tu perdón
 Te juro que no es mi intención
@@ -12679,7 +12679,7 @@ Otra ve' me toca ser el malo
 Si soy culpable de tu dolor
 Y por mí ahora ere' peor
 No quiere' que más nadie te hable de amor
-Pero yo—"
+Pero yo—",0,0.1988194410003401
 T1_TEST_0439,"Cuál lado ganó el partido
 No importa, dame vino
 Ya tengo el diablo metido
@@ -12690,7 +12690,7 @@ Marijuana
 El desmadre
 Y los vicios son mis padres
 Y los vicios son mis padres
-El desmadre"
+El desmadre",0,0.1570670161329341
 T1_TEST_0440,"música para capo', ¡prr!
 Esto es para todos mis compas
 Allá en los California
@@ -12751,7 +12751,7 @@ Jonniel
 El triángulo doralo
 Y a lo mexican: ¡pri-yah-yah-yah-yah-yai!
 jajaja
-Esto es música para capo', ¡prr!"
+Esto es música para capo', ¡prr!",0,0.3408087997512028
 T1_TEST_0441,"Dime para qué me quieres
 O dime que aún me amas
 Dime para qué me quieres
@@ -12783,7 +12783,7 @@ Depende a quién lo das-das-das-das
 Andas por la ciudad-dad-dad-dad-dad
 Con esa soledad-dad-dad-dad-dad
 Dice el mundo entero que el amor es primero
-Depende a quién lo das-das-das-das"
+Depende a quién lo das-das-das-das",0,0.1702141376238395
 T1_TEST_0442,"Volverán los días de ingenio
 El mundial que nunca ganaremos
 La fuerza y las noches de miedo
@@ -12804,7 +12804,7 @@ Aunque las calles se derritan
 Aunque las flores se marchiten
 Aunque pasemos de los 30
 Y las derrotas sean eternas
-Sí, que nunca hice por mí"
+Sí, que nunca hice por mí",0,0.12881764070234025
 T1_TEST_0443,"Oh, oh
 Dímelo Vi
 Eh-yeh
@@ -12854,7 +12854,7 @@ Nicky-Nicky-Nicky Jam
 Hi Music Hi Flow
 Josel Eh-yeh; oh-oh, oh-oh-oh-oh
 Tarabaraba Oh, oh
-Dímelo Vi"
+Dímelo Vi",1,0.8712304239527305
 T1_TEST_0444,"King Roker
 Trap Money
 JF
@@ -12916,7 +12916,7 @@ No soy de rogar, mas bien soy arrogante
 Ella interesada, yo el interesante
 Te aseguro que tu nunca antes has visto al Coco y menos tan brillante
 Y lo imaginabas como un espanto, pero no soy yo, hago billete y canto
-Si me muero mañana me vale verga, soy El Coco y nací para ser una leyenda"
+Si me muero mañana me vale verga, soy El Coco y nací para ser una leyenda",1,0.9382687968836337
 T1_TEST_0445,"yo a encontrar alguna vez
 
 Si acaso te volviera yo a encontrar, alguna vez
@@ -12938,7 +12938,7 @@ Imagino estas conmigo como ayer
 Mi voz que ya empieza a cantar
 Nuestra canción
 Tu canción
-Si acaso te volviera yo a encontrar alguna vez"
+Si acaso te volviera yo a encontrar alguna vez",0,0.08645814881221071
 T1_TEST_0446,"La Mente Maestra
 Hace rato que tu mirada me anda diciendo que
 Te encantaría pasar una noche llena de
@@ -12987,7 +12987,7 @@ Tanto W como Yandel, Nesty, Víctor “El Nasi”, Marioso
 Nos hemos dado la tarea de sobrepasar los niveles musicale'
 Ustedes saben ya, el capítulo de hoy se llama “La Mente Maestra”
 ¡Sube, sube! Los Líderes
-¡Hah!"
+¡Hah!",1,0.9558513039200413
 T1_TEST_0447,"o
 Igual que en tierra suelta la humedad penetra
 Asi te metes tu, poquito a poco
@@ -13009,7 +13009,7 @@ Que otro amor dejo dentro de mi
 Ya me haces falta tu como el azul al cielo
 Estoy unido a ti como el calor al fuego
 Me hiciste revivir, me diste del consuelo
-Trajiste para mi...........cariño nuevo"
+Trajiste para mi...........cariño nuevo",0,0.10585245939980908
 T1_TEST_0448,"Cuanto vacío hay en esta habitación
 Tanta pasión colgada en la pared
 Cuanta dulzura diluyéndose en el tiempo
@@ -13024,7 +13024,7 @@ Déjame llorar, déjame llorar, por ti, déjame llorar
 Cuantas nostalgias durmiendo en el desván
 He declarado mi vida en soledad
 Hago canciones de amor que nunca olvido
-Pues sobre nubes de otoño las escribo, solo"
+Pues sobre nubes de otoño las escribo, solo",0,0.14621722457762557
 T1_TEST_0449,"Ese modo de andar...
 Ese look cha... cha... cha
 Casi, casi vulgar
@@ -13053,7 +13053,7 @@ Nena deja ya de llorar
 Nena deja ya de llorar
 Nena deja ya...
 Nena deja ya...
-Nena... Nena..."
+Nena... Nena...",0,0.3567126473915548
 T1_TEST_0450,".
 Voy a brindar por tí, aqui en mi soledad
 Pensando en tu cumpleaños
@@ -13087,7 +13087,7 @@ De amor dejartelo en la boca
 Que los cumplas felíz, amada mia
 Que los cumplas felíz, eterno amor
 Que jamás el dolor, te cubra el alma
-Que los cumplas felíz y te acompañe Dios.."
+Que los cumplas felíz y te acompañe Dios..",0,0.17834306949934164
 T1_TEST_0451,"o, Wain
 Leones Con Flow
 O-O-Ovy On The Drums
@@ -13137,7 +13137,7 @@ Yeh, Paulo Londra
 Big Ligas, Lo' Mayores
 ¡Ey! Kristoman
 Dímelo, Wain
-Leones Con Flow"
+Leones Con Flow",1,0.8447907059236096
 T1_TEST_0452,"tu boca su amor
 No como yo
 No, no te vayas
@@ -13155,7 +13155,7 @@ No, no te vayas
 Aun el cafe no esta listo
 Y yo se que no has visto
 De mi lo mejor
-Espera por favor"
+Espera por favor",0,0.1142432206352843
 T1_TEST_0453,"Fuiste mía
 Sólo mía
 Mía, mía
@@ -13164,7 +13164,7 @@ Como la hierba mojada
 Lo mejor de tu vida
 Me lo he llevado yo
 Lo mejor de tu vida
-Lo he disfrutado yo"
+Lo he disfrutado yo",0,0.3173282572110483
 T1_TEST_0454,"Hey
 Oi nomas
 Y ahi venimos otra vez primo
@@ -13199,7 +13199,7 @@ Oiga sted rete bonita
 ¡ah!
 Y ella se me chiveaba
 ¿y?
-Y me movia las caderas"
+Y me movia las caderas",1,0.5891229950651865
 T1_TEST_0455,"ú
 Esta tarde vi llover
 Vi gente correr
@@ -13211,7 +13211,7 @@ Ya no sé cuanto me quieres
 Si me extrañas o me engañas
 Solo sé que vi llover
 Vi gente correr
-Y no estabas tú"
+Y no estabas tú",0,0.11398849525459136
 T1_TEST_0456,"Y ahora vamos todos a mover la colita
 A ver, a ver, a mover la colita
 Si no la mueve se le va a poner malita
@@ -13227,7 +13227,7 @@ Al ritmo de la cumbia y moviendo la colita
 Y la mueve la sirena y el caballito del mar
 Y la Mujer Maravilla al bailar con Superman
 Para que se vayan las penas y se alegre el corazón
-Vamos todos a moverla al compás de esta canción"
+Vamos todos a moverla al compás de esta canción",0,0.3394026946545843
 T1_TEST_0457,"s
 Conocí a una linda morenita
 Y la quise mucho
@@ -13252,7 +13252,7 @@ Como una flor
 Un cariño y un corazón
 Que siente y que ama
 Si no me olvidas siempre felices
-Seremos los dos"
+Seremos los dos",0,0.22174469712490916
 T1_TEST_0458,"Si estás lejos de mí vivo en la luna
 Cuando dudo me desnudas
 Y si dudas tú yo acierto por los dos
@@ -13274,7 +13274,7 @@ No querré que seas feliz
 Te voy a poner el mundo al revés
 El diablo en el cuerpo, veneno en la piel
 Yo quiero ser lo primero
-Y no lo que viene después"
+Y no lo que viene después",1,0.7362229089914132
 T1_TEST_0459,"Necesito una compañera
 Que me ame, que en verdad me quiera
 Que no tenga maldad
@@ -13286,7 +13286,7 @@ Y no puedo callar mi soledad
 Ay que soledad
 La felicidad
 Dónde esta yo la quiero encontrar
-Ay que soledad..."
+Ay que soledad...",0,0.12754655741987928
 T1_TEST_0460,"El escuadrón de la trampa
 Neutro Shorty
 Banger Boy
@@ -13336,7 +13336,7 @@ Mami no sé por qué sigues con él
 Sabiendo que el dinero ya no te llena
 Te gusta estar conmigo porque amas la velocidad
 Ustedes están retrasa'os, nosotros estamos gana'os
-Y tu marido es un pollo"
+Y tu marido es un pollo",1,0.963878687967737
 T1_TEST_0461,"Me has hecho tanta falta
 Hoy me siento tan solo
 Que me estará pasando
@@ -13344,7 +13344,7 @@ Te necesito aquí
 Pero de que manera
 Me estuve preguntando
 Yo que ni lo pensaba
-Ni me lo presentí"
+Ni me lo presentí",0,0.0913426915873111
 T1_TEST_0462,"r
 Nací en una casa de parras agrias
 De calles en multitud
@@ -13378,7 +13378,7 @@ La gente se encierra y no quiere salir
 Las calles perdieron la alegría por la desolación
 Dejate de gambetear y volvámonos
 Dejate de pelear y volvámonos
-Para mí que ha sido todo mucho menos peor"
+Para mí que ha sido todo mucho menos peor",0,0.15130467436206055
 T1_TEST_0463,".
 A partir de este momento
 Dejo de ser tu pendejo
@@ -13430,7 +13430,7 @@ Hoy no tengo compromisos
 Ya los fines tengo libres
 La que quiera que me marque al celular
 Porque a partir de ya
-Soy Soltero Disponible..."
+Soy Soltero Disponible...",1,0.9161497538834833
 T1_TEST_0464,".
 Pidan lo que quieran
 De lo mejor que puedan
@@ -13442,7 +13442,7 @@ Yo seguire tirado
 Y empezara a amanecer
 Envalsamado su historia
 Su lengua no era entendible
-Sino el sendero es muy largo..."
+Sino el sendero es muy largo...",0,0.10513201873352158
 T1_TEST_0465,"y
 Vi como todo se desplomaba
 Un presagio de la tragedia
@@ -13456,7 +13456,7 @@ Enceguecida sacrificaste, mutilaste nuestro futuro
 Abrazare este hermoso dolor
 Me fundiré con el
 El sol no brilla hoy para mi
-El sol no brilla hoy"
+El sol no brilla hoy",0,0.09561605034843687
 T1_TEST_0466,"Nombre: “Mi alma está asombrada, mi Dios Creador, Escritor e inmensamente Grande”
 Sinfonía Celestial Nº 62 en Mi menor con variación popurrí Sfa. Nº 47
 Capítulo 9
@@ -13549,7 +13549,7 @@ No rehúses hoy hacerlo, sí, seño…r
 Hazlo ahora, hazlo ahora por favo…r
 Pronto, pronto será tarde…
 El tiempo ya habrá pasado…
-Todos los Derechos Reservados © 2021"
+Todos los Derechos Reservados © 2021",0,0.4572154165402102
 T1_TEST_0467,"Hola, bebé, contéstame, te estoy llamando
 Quiero pasar un rato bien rico con usted
 Te extraño ynecesito verte
@@ -13667,7 +13667,7 @@ Dile, J
 J. Anthon
 The Business
 Cartel Records
-Dímelo Ganda"
+Dímelo Ganda",1,0.9682897247837265
 T1_TEST_0468,"Dicen tus palabras que me escondes algo
 Lo sé cuando esos ojos se te van llenando
 Sabes que si lloras gana mi debilidad
@@ -13680,7 +13680,7 @@ Tú te resbalas de mi piel
 Porque ya tus lágrimas no me mojan
 De perdonarte me cansé
 No vuelvo a amarte
-Hoy soy impermeable"
+Hoy soy impermeable",0,0.17602979000670613
 T1_TEST_0469,"tromoney, Retromoney
 41 de fiebre
 Ando prendí'o
@@ -13741,7 +13741,7 @@ I amma pull-up ey, ya estás muerto yeah!
 Tú no vendes no, ni un concierto ah
 Tengo el toque
 Fuma esto
-'tamo' en trap life, todo el día puesto'"
+'tamo' en trap life, todo el día puesto'",1,0.9542436192029835
 T1_TEST_0470,"Cuando El Amor Se Acaba y no hay mas pasion
 Llega la soledad que invade el corazon
 Uno se siente tan triste
@@ -13753,7 +13753,7 @@ Me dejaste tan vacio
 Tu cariño no era mio
 Ya cansado de luchar mi corazon
 Yo te di lo que soy...
-No lo supiste ver..."
+No lo supiste ver...",0,0.10654878137734823
 T1_TEST_0471,"I to the N to the G
 Ingratax, mami
 Yeah
@@ -13800,7 +13800,7 @@ Perro tacaño-caño-caño-caño-caño-caño
 Perro ta—, Perro tacaño-caño-caño
 Perro tacaño-caño-caño
 Perro tacaño-caño-caño
-Perro tacaño-caño-caño"
+Perro tacaño-caño-caño",1,0.7044548017954254
 T1_TEST_0472,"lgo en ti, algo en ti
 Quand tu, quand tu me prends dans tes bras
 Quand je regarde dans tes yeux
@@ -13827,7 +13827,7 @@ Desde la redondez que tienen tus labios
 Al olor de tu pelo, al color de tu piel
 No pienses que te irás y me voy a resignar
 Eres lo mejor que me ha pasado
-Entre lo mundano y lo sagrado y aún más"
+Entre lo mundano y lo sagrado y aún más",0,0.1688429794105448
 T1_TEST_0473,".
 Ando borracho mas lo bueno es que no caigo
 Pues me sostiene la fuerza del orgullo
@@ -13841,7 +13841,7 @@ Cuando en las noches te decia que te queria
 Era mentira nomas te fui tanteando
 Soy golondrina que el espacio va cruzando
 Nunca en la vida en jaula me veran
-Copa tras copa..."
+Copa tras copa...",0,0.20138081214040082
 T1_TEST_0474,"Yo, ¿Quién llama?
 ¿Qué dices manin, como va?, ¿Todo bien o qué?
 Yeh, ¿qué pasa Ander? Si manito, estaba aquí en casa tira'o
@@ -13893,7 +13893,7 @@ Arranca mi friend y vamos para el destino que se va a preparar bien
 Toda la noche esperando dile que ando y no puedo más
 Regálame una mirada un beso y una oportunidad
 Dile que no lo soporto, ya no me corto, pero te voy a robar
-Dile que vamos de fiesta, dile que venga que vamos a reventar"
+Dile que vamos de fiesta, dile que venga que vamos a reventar",1,0.894341745408083
 T1_TEST_0475,"on el medio
 Con el palo
 La negra no quiere, no quiere bailar
@@ -13928,7 +13928,7 @@ Con el medio
 Con el palo
 Con la punta
 Con el medio
-Con el palo"
+Con el palo",0,0.43414209393516806
 T1_TEST_0476,"No hay mensajes de mi amor
 Esa niña ya cambió
 No supe ni cómo fue
@@ -13951,7 +13951,7 @@ Pensé todo estaba bien
 Pero creo que así no fue
 Si de mí todo entregué
 Y siempre me han pagado mal
-El cora que te regalé lo dejaste en mi casa"
+El cora que te regalé lo dejaste en mi casa",0,0.18228291875295177
 T1_TEST_0477,"Ay, qué cosas de la vida
 Desde niño batallé
 Caminando paso a paso
@@ -13979,7 +13979,7 @@ Me gusta tratarlas bien
 Ya me voy, ya me despido, saben que nunca me olvido
 Y la gente que me aprecia saben tienen a un amigo
 El respeto y el talento siempre me han sobresalido
-Por eso nunca ando solo, me acompañan mis amigos"
+Por eso nunca ando solo, me acompañan mis amigos",0,0.13553072781565093
 T1_TEST_0478,"Otra vez este animal mostrando estilo por la selva
 Sonando en cada bombo, en cada piano, en cada cuerda
 Disfrutaré mi libertad hasta cuando la pierda
@@ -14011,14 +14011,14 @@ Traigo rimas como droga para toda la multitu'
 A mí no me gana, no, un warrior de México
 Hasta Argentina llega mi piquete, igual como en Cutral Có
 Esta va para mis locos que andan moviendo el coco
-De los que sacan adelante a la familia, ese soy yo"
+De los que sacan adelante a la familia, ese soy yo",0,0.48369744762117417
 T1_TEST_0479,"n
 
 ¡Pibes Chorros!
 La colcha de tu hermana, ya no quiere más
 Está muy usada y rota por demás
 Se la ve muy sucia y con muy mal olor
-No le falta cariño, pero le falta jabón"
+No le falta cariño, pero le falta jabón",0,0.33002214259209656
 T1_TEST_0480,"Damas y caballero', ¡e’to es má' que un royal rumble! Remix!
 jajaja Ah
 Tú ere’ un pariguayo Qué mácula
@@ -14177,7 +14177,7 @@ Mundialmente
 Con lo' tiguere' que son de lo' paíse' que son
 ¡El Ma-yor!
 Eh, Leo RD y El Jay produciendo
-Diablo, qué maldito remix"
+Diablo, qué maldito remix",1,0.910902978583889
 T1_TEST_0481,"Yo te extrañaré, tenlo por seguro
 Fueron tanto bellos y malos momentos
 Que vivimos juntos
@@ -14196,7 +14196,7 @@ Donde puedo descansar
 La vida es polvo
 Puede esparcirse en un momento
 Nada traiste, nada te llevaras
-Solo lo que había adentro"
+Solo lo que había adentro",0,0.08952041951857181
 T1_TEST_0482,"Canto al pie de tu ventana para que sepas que te quiero
 Tú a mí no me quieres nada, pero yo por ti me muero
 Dicen que ando muy errado, que despierte de mis sueños
@@ -14210,7 +14210,7 @@ Y aunque no tengo fortuna, me querrás poquito a poco
 Yo sé que hay muchas mujeres y que sobra quien me quiera
 Pero ninguna me importa, solo pienso en ti, morena
 Mi corazón te ha escogido y llorar no quiero verlo
-El pobre mucho ha sufrido, ahora tienes que quererlo"
+El pobre mucho ha sufrido, ahora tienes que quererlo",0,0.3660205650594273
 T1_TEST_0483,"¿Qué haces si te digo que te quiero
 Que por robarte un beso yo me muero?
 ¿Qué haces si te pido que encontremos un camino
@@ -14229,7 +14229,7 @@ Ya no sé qué hacer, me desespero
 Cuando estás con alguien y te veo
 Sabiendo hasta los huesos que a ti yo pertenezco
 Y que yo debo ser tu complemento
-Una oportunidad"
+Una oportunidad",0,0.19282676308151925
 T1_TEST_0484,"Y esta va para toda la bola de envidiosos
 Ahija, ¿de qué se murieron los quemados?
 Siguen ladrando los perros
@@ -14268,7 +14268,7 @@ Las quitaré del camino
 Y a los que en verdad me aprecian
 Aquí tienen a un amigo
 Ya les canté este corrido
-A todos mis enemigos"
+A todos mis enemigos",0,0.20221875279185558
 T1_TEST_0485,"r
 Que bonita chuparrosa
 La que acaba de bolar
@@ -14286,7 +14286,7 @@ Otros besitos me diera
 Buela buela chuparrosa
 Y no dejes de bolar
 Anda dile a mi amorcito
-Que ya no me haga esperar"
+Que ya no me haga esperar",0,0.4851209042922787
 T1_TEST_0486,"Barrios bajos
 Donde yo crecí, no me enseñaron modales
 Me enseñaron a siempre chingarle
@@ -14317,7 +14317,7 @@ Si tengo silla en el cielo o en el infierno
 Salgo de casa me dirigo al callejón
 Ahí me esperan es donde controlo yo
 Aquí es donde me despido
-La vida es corta disfruté a mis amigos"
+La vida es corta disfruté a mis amigos",0,0.22692090546180316
 T1_TEST_0487,"Hoy me despierto con el alma hecha pedazos
 Hoy me despido sin querer decir adiós
 Vete despacio para no sentir tus pasos
@@ -14336,7 +14336,7 @@ Ya no podría soportar tanto dolor
 Sé que te está faltando el aire y en minutos te me vas
 La impotencia de perderte me está comiendo el alma ya
 Sé que te está faltando el aire y en minutos te me vas
-Sé que es tu último suspiro, ya que mañana no estarás"
+Sé que es tu último suspiro, ya que mañana no estarás",0,0.11643170198164701
 T1_TEST_0488,"He contado mil historias muchos las identifican
 Pero en ninguna de todas he sido el protagonista
 Si ustedes me lo permiten les voy a contar la mía
@@ -14367,7 +14367,7 @@ Es cierto le he batallado y eso es lo que mas me gusta
 Tengo gente que me aprecia y donde quiera me saludan
 Una familia me espera y la pobreza no me asusta
 Y mientras dios me de licencia
-Seguirán mis travesuras"
+Seguirán mis travesuras",0,0.16780451700024138
 T1_TEST_0489,"Bryant Ma
 El Myron
 Millo Gang
@@ -14417,7 +14417,7 @@ Mi casa parece un dispense de weed
 Y a la' mami' le' damo' milk como a los Quik
 Lo' palo' en madera, como los que usaba Osama Bin
 Salimo' a cazar, flow Myers en Halloween
-Te vemo' y te vamo' a tumbar como a la' torre' twin"
+Te vemo' y te vamo' a tumbar como a la' torre' twin",1,0.7440881787527374
 T1_TEST_0490,".
 Voy a cantar unos barsos qe
 Le compuse a un amigo no puedo
@@ -14442,7 +14442,7 @@ Y su celular
 Ya con esta me despido ya lo dise aqel refran no hay chapo qe sea bravo
 No se vallan a enrredar y al qe no
 Le guste eso qe no lo vaya a
-Anunciar..."
+Anunciar...",0,0.3629035270765333
 T1_TEST_0491,"a-ra pa-pa-ra ri-ra-ra
 Siento pena
 Pena porque te quise de veras
@@ -14471,7 +14471,7 @@ Volverás Pa-pa-ra ri-ra-ra pa-pa-ra ri-ra-ra Otra vez
 Yo lo sé Pa-pa-ra ri-ra-ra pa-pa-ra ri-ra-ra Dime que
 Volverás Pa-pa-ra ri-ra-ra pa-pa-ra ri-ra-ra Otra vez
 Yo lo sé Pa-pa-ra ri-ra-ra pa-pa-ra ri-ra-ra Dime qué
-Volverás... Pa-pa-ra ri-ra-ra pa-pa-ra ri-ra-ra"
+Volverás... Pa-pa-ra ri-ra-ra pa-pa-ra ri-ra-ra",0,0.37768789543701287
 T1_TEST_0492,"Atencion Señores besame la mano mijo que llego el pesado un tal fulano, el Padrino
 Gozadera total Fulanito Presente
 En el 85, Fulanito quiere ser rico
@@ -14503,7 +14503,7 @@ Cayo fulano al ser herido
 Sangrando, pidiéndole perdón a dios por todos sus pecados que hizo
 Y quedó muerto con respeto, poder y dinero
 Fulano, eres nada más que un cuento
-La leyenda El Padrino"
+La leyenda El Padrino",1,0.6837695346153082
 T1_TEST_0493,"uien pueda
 Oye, son una amenaza
 En Navidad fui invitado
@@ -14554,7 +14554,7 @@ Después te dicen: Señora, ¿tiene aspirina?
 Tírenlos para bajo que son un peligro arriba
 Que esa trulla, es peligrosa
 ¡Para fuera, para la calle!
-Tírenlos para bajo que son un peligro arriba"
+Tírenlos para bajo que son un peligro arriba",1,0.6006200878068199
 T1_TEST_0494,"nunca terminar, yeh
 Yeh-eh Ah
 Yeh-eh
@@ -14601,12 +14601,12 @@ Eh-eh, eh-eh
 Gaby Music
 Eh-eh, eh-eh
 Eh-eh, eh-eh
-Para nunca terminar, yeh"
+Para nunca terminar, yeh",1,0.8384238803354848
 T1_TEST_0495,"o
 Quien eres tú
 Que de repente apareciste en mi vida
 Haciendo revivir la ilusión perdida
-Que hace ya tiempo adormecio dentro de mi"
+Que hace ya tiempo adormecio dentro de mi",0,0.11520768302821065
 T1_TEST_0496,"cielo
 Ay quién te dijo eso?
 Quién te dijo que yo me olvide de ti
@@ -14625,7 +14625,7 @@ Si me falta un pedazo de cielo
 ¿ay quién te dijo eso?
 Y supieras que estoy desperado
 Como un pez que se ahoga en su propio mar
-¿quién te dijo eso?"
+¿quién te dijo eso?",0,0.18321191934923237
 T1_TEST_0497,"Ruge la mar embravecida
 Rompe la ola desde el horizonte
 Brilla el verde azul del gran caribe
@@ -14674,7 +14674,7 @@ Si lo ven que viene palo al Tiburón
 Hay que dar la cara y darla con valor
 Si lo ven que viene palo al Tiburón
 Para que no se coma nuestra hermana El Salvador
-¡Guapea Colón!"
+¡Guapea Colón!",0,0.14913118065200112
 T1_TEST_0498,"Delirando, obsesionado, con cerebro imaginario y dosis de locura
 Veo cosas absurdas, guárdame el secreto
 En mi hombro hay un diablito que me agobia
@@ -14698,7 +14698,7 @@ Viendo cada paso que tú des sin un motivo, amada mía
 Let us go
 The one and only Santana
 So nasty
-Okay"
+Okay",0,0.3329207605151858
 T1_TEST_0499,"Perdona si te hago llorar
 Perdona si te hago sufrir
 Pero es que no está en mis manos
@@ -14722,7 +14722,7 @@ Yo seguía de ti enamorada
 Te brindé la mejor de las suertes
 Me propuse no hablarte ni verte
 Y hoy que has vuelto ya ves solo hay nada
-Ya no puedo ni puedo quererte"
+Ya no puedo ni puedo quererte",0,0.14360728556116995
 T1_TEST_0500,"r
 Vuelve
 Por favor como estés como sea
@@ -14773,7 +14773,7 @@ Decidido a aceptar lo que sea
 Tu has ganado
 Ya lo ves que sin ti
 Soy un hombre acabado
-Sin ganas de vivir"
+Sin ganas de vivir",1,0.5886438208626499
 T1_TEST_0501,"yah
 Duars Entertainment
 Ra-Rauw
@@ -14820,7 +14820,7 @@ Trap Cartel
 Dímelo, Yampi
 Dímelo, Colla
 Mr. Naisgai, yah
-Duars Entertainment"
+Duars Entertainment",1,0.7609771978502299
 T1_TEST_0502,"Volaron los pavorreales
 Rumbo a la sierra mojada
 Mataron a Lucio Vásquez
@@ -14844,7 +14844,7 @@ Otro le clavó un puñal
 Le diеron dos puñaladas
 De la espalda al corazón
 Como le dijo su madrе
-Lo mataron a traición"
+Lo mataron a traición",0,0.4330278236485139
 T1_TEST_0503,"Acuérdate de Acapulco, de aquellas noches
 María Bonita, María del alma
 Acuérdate que en la playa
@@ -14868,7 +14868,7 @@ Como el que hiciste que en mí brotara
 Lo traigo lleno de flores
 Para dejarlo como una ofrenda bajo tus plantas
 Recíbelo emocionada y júrame que no mientes
-Porque te sientes idolatrada"
+Porque te sientes idolatrada",0,0.3983523191162424
 T1_TEST_0504,"No hace falta que me quites la mirada
 Para que entienda que ya no queda nada
 Aquella luna que antes nos bailaba
@@ -14887,7 +14887,7 @@ Tengo contados todos los besos que nos damos
 Y tú fugitiva, andas perdida en otro lado
 Yo no quiero caricias de otros labios
 No quiero tus manos en otras manos
-Porque yo quiero que volvamos a intentarlo"
+Porque yo quiero que volvamos a intentarlo",0,0.37621768493796165
 T1_TEST_0505,"Por el amor de una mujer
 Jugué con fuego sin saber
 Que era yo quien me quemaba
@@ -14907,11 +14907,11 @@ Podré olvidar un día
 Hoy me siento triste
 Pero pronto cambiaré
 Y prometo no acordarme nunca
-Del ayer"
+Del ayer",0,0.14432774232079376
 T1_TEST_0506,"Permite que el sol
 Te tome todo el día
 Deja que una flor
-Te llene de caricias"
+Te llene de caricias",0,0.25560695975155495
 T1_TEST_0507,"Vengo a terminar contigo, te platicaré mi pena
 No quiero ser más tu burla, mucho menos tu condena
 Ya tarde te darás cuenta lo grande de nuestro amor
@@ -14919,7 +14919,7 @@ Y vas a querer remediarlo, tan solo con pedir perdón
 ¿Cómo pude enamorarme de ti?
 ¿Cómo pude quererte tanto?
 Tú solo me haces sufrir
-Y me desprecias a cada rato"
+Y me desprecias a cada rato",0,0.1921405930752089
 T1_TEST_0508,"Ojalá que esto dure un montón, un montón
 Porque todavía no me cansé de vos, de yo
 Y si querés una película podemos ver
@@ -14937,7 +14937,7 @@ Mirando el techo
 Me gusta que si hay algo que
 También te jode me lo digas hoy
 No quiero esperar al día de mañana
-Para pedir perdón por un error que es mío"
+Para pedir perdón por un error que es mío",1,0.5196602128906033
 T1_TEST_0509,"Con el atardecer
 Me ire de aqui
 Me ire sin ti
@@ -14954,7 +14954,7 @@ De que por mi puedas llorar
 Mejor sera partir
 Prefiero asi que hacerte mal
 Yo se que sufrire
-Mi nave cruzara un mar de soledad"
+Mi nave cruzara un mar de soledad",0,0.1418065054136569
 T1_TEST_0510,"o
 Un monton de recuerdos ingratos, una carta que no se ha leido
 Un retrato tirado en el suelo y en mi mano una copa de vino
@@ -14965,7 +14965,7 @@ Mucho olvido, dolor y traiciones y en mis ojos el llanto sincero
 No podre ya seguirte los pasos, tu camino es mas largo que el mio
 Tu te vas a buscar otros brazos, yo me quedo a cumplir mi destino
 No habrire para nada tu carta ni sabre lo que me hayas escrito
-En un marco pondre tu retrato y en mi mano otra copa de vino"
+En un marco pondre tu retrato y en mi mano otra copa de vino",0,0.12097892902113551
 T1_TEST_0511,"D-Note Is On The Beat
 The Beatllionare
 My time to love is here
@@ -15018,7 +15018,7 @@ En el nombre del Padre, del Hijo y del Espíritu Santo
 No soy partícipe de la violencia, pero el que se meta volará en canto'
 Aún recuerdo los consejos de mi vieja, que me los decía en llanto
 Que la misma isla de la muerte es la que llaman hoy en día la isla del encanto
-Atentamente, The Beatllionare y La Ma Coelho"
+Atentamente, The Beatllionare y La Ma Coelho",1,0.732784242987065
 T1_TEST_0512,"Yo'
 jajaja
 Daddy
@@ -15106,7 +15106,7 @@ La mejor producción de nuevos talentos Nesty
 Esta es la producción donde todo' los grande' exponente' del género del Reggaetón se unen Nely para apoyar lo nuevo
 Esta es la Sangre Nueva Tainy
 Bones
-La nueva generación del Reggaetón"
+La nueva generación del Reggaetón",1,0.8646997982160427
 T1_TEST_0513,"Vivo de tres animales que quiero como a mi vida
 Con ellos gano dinero y ni les compro comida
 Son animales muy finos
@@ -15130,7 +15130,7 @@ Ven dinero y se les van los ojos
 Dicen que mis animales van a a acabar con la gente
 Pero no es obligación que se les pongan enfrente
 Mis animales son bravos
-Si no saben torear pues no le entren"
+Si no saben torear pues no le entren",0,0.3069442676821664
 T1_TEST_0514,"Vaya, mira qué pinta
 Eres una niña muy guarra, ¿verdad?
 Sí, sí, tú lo que quieres es que te den, eso es lo que buscas
@@ -15197,7 +15197,7 @@ Rubia de bote, chocho morenote
 Se que te conviene el bueno, pero te pone el malote
 Mienten a la cara y narran como las creéis
 Todas tienen un mejor amigo y resulta que es gay
-¡Biatch! ¡Biatch!"
+¡Biatch! ¡Biatch!",1,0.9379191712745972
 T1_TEST_0515,"iveGet tickets as low as $39
 Había un cargamento de trescientos kilos
 Que los migras atoraron
@@ -15222,7 +15222,7 @@ A amoniaco y acetona
 Una pobre madre ansiosa espera
 A los tres de Zacatecas
 Tal vez con m canto se entere algún día
-Que se Hayan tras de las rejas"
+Que se Hayan tras de las rejas",0,0.1977951094073413
 T1_TEST_0516,"Checa quién volvió, loco
 Hey, si me ven las mujeres en la calle, dicen: Papi, ven-ven
 Hey, si me ven los cabrones en la barrio, dicen: Quiúbole, wey
@@ -15258,7 +15258,7 @@ Que se alteran cuando queman, moviendo la cadera con mis rolas
 Hola, chulas, lo que quieran, si se lo dije a Julieta, se lo digo a la más buena
 Hey, si Janet me watcha por la calle, dice: Babo, ven-ven
 Checa a este cabrón, salió mejor que tu vibrador
-¿Apoco no, chiquita?, eso grita que me excitas, mami bonita"
+¿Apoco no, chiquita?, eso grita que me excitas, mami bonita",1,0.9005018933837846
 T1_TEST_0517,".
 No se que te abran contado
 Que vienes tan decidido
@@ -15271,7 +15271,7 @@ Por que me amargan la vidaaa
 No me presumas costones
 Ni tampoco de muchacho
 Lastima de pantalones
-Tu eres puro BATO GACHOOOO..."
+Tu eres puro BATO GACHOOOO...",1,0.7424978473615251
 T1_TEST_0518,"Candela
 Wuh
 En invierno tu calor yo fui Di que sí
@@ -15308,7 +15308,7 @@ Dame otra, otra, otra
 Ja
 
 Otra noche, Nayalibe
-Arroyo"
+Arroyo",0,0.4709813917424417
 T1_TEST_0519,"o
 Olvidar es más difícil que vivir
 Pero más urgente
@@ -15328,7 +15328,7 @@ Ya no puedo contener todo lo que he guardado
 Aquí dentro
 Somos el fuego
 Somos la aseguradora de incendios
-Cada momento que pasa soy mucho más completo"
+Cada momento que pasa soy mucho más completo",0,0.09723687174406657
 T1_TEST_0520,"Aquel dia en que la vi
 Me enamore completamente de ella
 Yo senti en mi corazon
@@ -15344,7 +15344,7 @@ La mas bonitas de todas
 La que mi vida ha cambiado
 Esa ers tu jovencita
 De boca chiquita
-Y de pelo dorado"
+Y de pelo dorado",1,0.562253296455907
 T1_TEST_0521,"Mami, tú ere' exclusiva, te voy a robar
 Sedúceme, mi dama
 Si me permite, la pue'o enamorar hasta mañana
@@ -15368,7 +15368,7 @@ Na-na-nadie como yo te va a complacer
 Te voy a hacer mi mujer, le doy gracia' a Dio' por el poderla aquí tener
 Muy bien la voy a atender y despué' me va a querer
 Co-Co-Como te quiero dar, yo sé que tú quiere' jugar
-Da-Da-Dale, vamo' a jugar La plata vamo' a gastar"
+Da-Da-Dale, vamo' a jugar La plata vamo' a gastar",1,0.9480764482239896
 T1_TEST_0522,"r un álbum por cada mes
 Yeah, dame un break
 Got-Got it on Smash
@@ -15397,7 +15397,7 @@ Llega la manada si hago una llamada
 Me gustan las babie' con cara' de mala', vieron el Milano y se quedaron gaga’
 Toa' las mujere' al ver la llegada se mojaron a nivel de vaguada
 Me gusta llevarme a la más bellaca, no me importa si no es la más adecuada
-Los secretos como el dinero se guardan, saben que soy yo cuando ven toa' las guagua'"
+Los secretos como el dinero se guardan, saben que soy yo cuando ven toa' las guagua'",1,0.8369364552403514
 T1_TEST_0523,"Señoras y señores
 Bienvenidos al perreo intenso 2020, ¿o es 2021?
 You heard?
@@ -15483,7 +15483,7 @@ Sigue-Sigue para alante , nunca para atrás
 Este año
 Sigue-Sigue para alante , nunca para atrás
 Este año
-Vengo acabando, vengo acabando, ey"
+Vengo acabando, vengo acabando, ey",1,0.9537680791204783
 T1_TEST_0524,"Siento vergüenza al oír
 Lo que han dicho
 Las niñas de mi
@@ -15522,7 +15522,7 @@ Pa-pa-ya
 Pa-ru-ru-pa-ya
 Pa-pa-pa-ya
 Pa-ru-ru-pa-ya-pa
-Lo juro-o"
+Lo juro-o",0,0.4848302354300398
 T1_TEST_0525,"Voy a hacer de cuenta que no exististe
 Tú de mí olvida que un día me viste
 Ya lo ves, los dos nos equivocamos
@@ -15537,7 +15537,7 @@ Que haré, por ti, mi viaje sin boleto
 Y en la distancia, siempre serás mi eterno amor secreto
 Porque entre nosotros
 No hay distancia ni tiempo ni espacio
-Será siempre eterno nuestro amor"
+Será siempre eterno nuestro amor",0,0.11274131075006902
 T1_TEST_0526,"Barrunto en mi corazón, presentimiento
 De que pronto llegará la separación
 Si ayer fué felicidad, hoy es tristeza
@@ -15553,7 +15553,7 @@ Lala lala, rala lala
 Lala lala, rala lala
 La, lala, lalala
 ¡Y vuelve otra vez!
-I know my people"
+I know my people",0,0.13200731314046016
 T1_TEST_0527,"Baby, you understand me now
 If sometimes you see that I’m mad
 Doncha know no one alive can always be an angel?
@@ -15638,4 +15638,4 @@ Mera dime Father, bebote, la P...
 Le pauto a todos los míos, ay bendito cabrón jaja ¿qué pasó?
 Dimelo Asu
 Tamo aquí en la Sin Arena ¿oite?
-jajaja"
+jajaja",1,0.9348202918791368

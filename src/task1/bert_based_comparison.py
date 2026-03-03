@@ -10,6 +10,8 @@ from dataclasses import dataclass, field
 from typing import Optional
 import pandas as pd
 import torch
+import numpy as np
+from sklearn.metrics import f1_score
 from datasets import Dataset
 from pysentimiento.preprocessing import preprocess_tweet
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
@@ -82,6 +84,23 @@ def compute_metrics(pred):
         "recall": round(recall, 4),
     }
 
+def find_best_threshold(true_labels, probs, step=0.01):
+    thresholds = np.arange(0.0, 1.0 + step, step)
+    best_thr = 0.5
+    best_f1 = 0.0
+
+    true_labels = np.array(true_labels)
+    probs = np.array(probs)
+
+    for thr in thresholds:
+        preds = (probs >= thr).astype(int)
+        f1 = f1_score(true_labels, preds, average="macro", zero_division=0.0)
+
+        if f1 > best_f1:
+            best_f1 = f1
+            best_thr = thr
+
+    return round(best_thr, 3), round(best_f1, 4)
 
 def make_tokenize_fn(tokenizer, cfg: ModelConfig):
     """Factoría de funciones de tokenización, evita bug de closure."""
@@ -217,7 +236,34 @@ for name, cfg in MODEL_CONFIGS.items():
         )
 
         trainer.train()
+        # Standard evaluation (argmax / threshold=0.5)
         metrics = trainer.evaluate()
+    
+
+        # ─────────────────────────────────────────
+        # Collect validation probabilities
+        # ─────────────────────────────────────────
+        pred_output = trainer.predict(val_tok)
+
+        logits = pred_output.predictions
+        probs = torch.softmax(torch.tensor(logits), dim=-1)[:, 1].numpy()
+        true_labels = pred_output.label_ids
+
+        # ─────────────────────────────────────────
+        # Threshold sweep on validation
+        # ─────────────────────────────────────────
+        best_thr, best_f1 = find_best_threshold(true_labels, probs)
+
+        print(f"    🔎 Mejor threshold validación: {best_thr}")
+        print(f"    🔎 Macro-F1 con threshold óptimo: {best_f1}")
+
+        # Recompute metrics using optimal threshold
+        opt_preds = (probs >= best_thr).astype(int)
+
+        precision, recall, f1_opt, _ = precision_recall_fscore_support(
+            true_labels, opt_preds, average="macro", zero_division=0.0
+        )
+        acc_opt = accuracy_score(true_labels, opt_preds)
 
         os.makedirs(model_save_path, exist_ok=True)
         trainer.save_model(model_save_path)
@@ -226,12 +272,13 @@ for name, cfg in MODEL_CONFIGS.items():
 
         results_list.append({
             "Modelo": name,
-            "F1-Macro": metrics["eval_f1_macro"],
-            "Accuracy": metrics["eval_accuracy"],
-            "Precision": metrics["eval_precision"],
-            "Recall": metrics["eval_recall"],
+            "F1-Macro": f1_opt,
+            "Accuracy": acc_opt,
+            "Precision": precision,
+            "Recall": recall,
+            "Best-Threshold": best_thr,
         })
-        print(f"✓ {name}: F1={metrics['eval_f1_macro']:.4f}")
+        print(f"✓ {name}: F1={f1_opt:.4f}")
 
     except Exception as e:
         print(f"✗ Error con {name}: {e}")

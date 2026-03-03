@@ -35,49 +35,58 @@ def _normalize_lyric_text(text: str) -> str:
     return text
 
 
-def remove_redundant_lyrics(model: SentenceTransformer, text: str, threshold: float = 0.82) -> str:
+def remove_redundant_lyrics(model: SentenceTransformer, text: str, threshold: float = 0.82, line_threshold: float = 0.95) -> str:
     """
-    Optimized for Spanglish lyrics and nuanced semantic redundancy using E5-Large.
+    Deduplicate lyrics hierarchically:
+    1. Stanza-level (split by double newlines)
+    2. Line-level within each stanza
     """
     if not text.strip():
         return ""
 
-    # 1. Structural cleaning
-    lines = text.split("\n\n")
-    # Remove square-bracket markers: [Chorus], [Verse 1], etc.
-    lines = [re.sub(r'\[.*?\]', '', line).strip() for line in lines]
-    # Remove parenthesised STRUCTURAL labels only: (Coro), (Verso 2), (Chorus)...
-    lines = [_STRUCTURAL_LABELS_RE.sub('', line).strip() for line in lines]
-    # Strip parenthesis and double-quote characters but keep their content:
-    # "(puta madre)" → "puta madre", '"yeah baby"' → "yeah baby"
-    lines = [re.sub(r'[()"]', '', line).strip() for line in lines]
-    # Apply light unicode/punctuation normalization
-    lines = [_normalize_lyric_text(line) for line in lines]
-    # Drop empty lines and very short noise (single characters/grunts)
-    lines = [line for line in lines if len(line) > 2]
+    # --- Preprocessing: clean and split stanzas ---
+    stanzas = text.split("\n\n")
+    clean_stanzas = []
+    for stanza in stanzas:
+        lines = [re.sub(r'\[.*?\]', '', line).strip() for line in stanza.split("\n")]
+        lines = [_STRUCTURAL_LABELS_RE.sub('', line).strip() for line in lines]
+        lines = [re.sub(r'[()"]', '', line).strip() for line in lines]
+        lines = [_normalize_lyric_text(line) for line in lines if len(line) > 2]
+        if lines:
+            clean_stanzas.append(lines)
 
-    if not lines:
+    if not clean_stanzas:
         return ""
 
-    # 2. Prepare for embedding (E5 models require the "passage: " prefix)
-    processed_lines = [f"passage: {preprocess_tweet(line)}" for line in lines]
+    # --- Embed first stanza for stanza-level comparison ---
+    kept_stanzas = [clean_stanzas[0]]
+    stanza_embeddings = [model.encode([f"passage: {preprocess_tweet(line)}" for line in clean_stanzas[0]], convert_to_tensor=True).mean(dim=0)]
 
-    # 3. Embedding generation
-    embeddings = model.encode(processed_lines, convert_to_tensor=True)
+    for i in range(1, len(clean_stanzas)):
+        current_embedding = model.encode([f"passage: {preprocess_tweet(line)}" for line in clean_stanzas[i]], convert_to_tensor=True).mean(dim=0)
+        similarities = [util.cos_sim(current_embedding, s_emb) for s_emb in stanza_embeddings]
+        if max([sim.item() for sim in similarities]) < threshold:
+            kept_stanzas.append(clean_stanzas[i])
+            stanza_embeddings.append(current_embedding)
 
-    kept_indices = [0]  # Always keep the first block
+    # --- Line-level deduplication within each kept stanza ---
+    final_stanzas = []
+    for stanza in kept_stanzas:
+        if len(stanza) == 1:
+            final_stanzas.append(stanza)
+            continue
+        kept_lines = [stanza[0]]  # always keep first line
+        line_embs = [model.encode(f"passage: {preprocess_tweet(stanza[0])}", convert_to_tensor=True)]
+        for line in stanza[1:]:
+            current_emb = model.encode(f"passage: {preprocess_tweet(line)}", convert_to_tensor=True)
+            similarities = [util.cos_sim(current_emb, l_emb) for l_emb in line_embs]
+            if max([sim.item() for sim in similarities]) < line_threshold:
+                kept_lines.append(line)
+                line_embs.append(current_emb)
+        final_stanzas.append(kept_lines)
 
-    for i in range(1, len(processed_lines)):
-        # Compare against all already-kept blocks
-        similarities = util.cos_sim(embeddings[i], embeddings[kept_indices])
-        # Keep only if it contributes new meaning
-        if torch.max(similarities).item() < threshold:
-            kept_indices.append(i)
-
-    # 4. Return ORIGINAL lines (not processed_lines) so slang, spelling and
-    # offensive terms remain intact for the downstream classifier
-    return "\n".join([lines[idx] for idx in kept_indices])
-
+    # --- Return reconstructed lyrics with original text ---
+    return ".\n\n".join([".\n".join(stanza) for stanza in final_stanzas])
 
 
 if __name__ == "__main__":

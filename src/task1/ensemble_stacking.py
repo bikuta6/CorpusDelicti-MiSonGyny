@@ -26,7 +26,7 @@ MODELS_DIR = "../../models/task1/ensemble"
 TRAIN_FILE = "../../data/task1/processed_train.csv"
 STACKER_OUTPUT = "../../models/task1/ensemble/stacker.pkl"
 MAX_LEN = 512
-N_FOLDS = 5
+N_FOLDS = 3
 BATCH_SIZE = 32  # Para inferencia batched
 
 MODEL_MAP = {
@@ -93,7 +93,7 @@ def train_stacker():
 
     # 1. Cargar datos
     df = pd.read_csv(TRAIN_FILE)
-    df["label"] = df["label"].map({"NM": 0, "M": 1}) if df["label"].dtype == object else df["label"]
+    df["label"] = df["label"].map({"NM": 0, "M": 1})
     texts = df["lyrics"].tolist()
     y = df["label"].values
 
