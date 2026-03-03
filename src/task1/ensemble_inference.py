@@ -61,14 +61,14 @@ def predict_ensemble(texts: list[str], stacker_path: str = STACKER_PATH) -> np.n
     for m_idx, model_name in enumerate(model_names):
         print(f">>> Inferencia: {model_name}")
         fold_probs_list = []
-
+        max_len_model = 512 if model_name != "Robertuito" else 128  # Por si no se guardó, usar 512 por defecto
         for fold in range(n_folds):
             ckpt_path = os.path.join(MODELS_DIR, model_name, f"fold_{fold}")
             model = AutoModelForSequenceClassification.from_pretrained(ckpt_path).to(device)
             model.eval()
             tokenizer = AutoTokenizer.from_pretrained(ckpt_path)
 
-            probs = get_predictions_batched(texts, model, tokenizer, max_len)
+            probs = get_predictions_batched(texts, model, tokenizer, max_len=max_len_model, batch_size=BATCH_SIZE)
             fold_probs_list.append(probs)
 
             del model, tokenizer

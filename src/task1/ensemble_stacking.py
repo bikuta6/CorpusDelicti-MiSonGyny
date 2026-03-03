@@ -10,6 +10,7 @@ import pandas as pd
 import numpy as np
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import f1_score, classification_report
+from pysentimiento.preprocessing import preprocess_tweet
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 from tqdm import tqdm
 import joblib
@@ -31,7 +32,7 @@ BATCH_SIZE = 32  # Para inferencia batched
 
 MODEL_MAP = {
     "DistilBETO": "dccuchile/distilbert-base-spanish-uncased",
-    "XLM-R": "xlm-roberta-base",
+    "Robertuito": "pysentimiento/robertuito-base-uncased",
     "MarIA": "IsGarrido/roberta-base-bne",
 }
 
@@ -68,6 +69,9 @@ def get_predictions_batched(
 
     for i in range(0, len(texts), batch_size):
         batch_texts = texts[i : i + batch_size]
+        # if robertuito, aplicar preprocesamiento específico
+        if "robertuito" in model.config._name_or_path.lower():
+            batch_texts = [preprocess_tweet(t) for t in batch_texts]
         inputs = tokenizer(
             batch_texts,
             return_tensors="pt",
@@ -117,9 +121,9 @@ def train_stacker():
 
             # Textos de validación de este fold
             val_texts = [texts[i] for i in val_idx]
-
+            max_len = MAX_LEN if model_name != "Robertuito" else 128  # Robertuito tiene max_len=128
             # Predicciones batched
-            probs = get_predictions_batched(val_texts, model, tokenizer)
+            probs = get_predictions_batched(val_texts, model, tokenizer, max_len=max_len, batch_size=BATCH_SIZE)
             X_oof[val_idx, m_idx * 2 : m_idx * 2 + 2] = probs
 
             f1 = f1_score(y[val_idx], probs.argmax(axis=1), average="macro")

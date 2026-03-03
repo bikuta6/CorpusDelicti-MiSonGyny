@@ -40,7 +40,7 @@ N_FOLDS = 3
 
 
 # Top 3 modelos según tabla_paper_test.csv
-models_names = ["DistilBETO", "XLM-R", "MarIA"]
+models_names = ["DistilBETO", "Robertuito", "MarIA"]
 MODELS_TO_TRAIN: dict[str, ModelConfig] = {name: MODEL_CONFIGS[name] for name in models_names}
 
 # ─────────────────────────────────────────────────────────────
