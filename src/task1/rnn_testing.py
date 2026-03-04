@@ -414,9 +414,10 @@ def train_model(
         optimizer, start_factor=0.1, end_factor=1.0, total_iters=warmup_epochs
     )
     plateau_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-        optimizer, mode="max", factor=0.5, patience=2
+        optimizer, mode="min", factor=0.5, patience=2
     )
 
+    best_val_loss = float("inf")
     best_val_f1 = -1.0
     best_metrics = {}
     patience_counter = 0
@@ -432,7 +433,7 @@ def train_model(
         if epoch <= warmup_epochs:
             warmup_scheduler.step()
         else:
-            plateau_scheduler.step(val_metrics["f1_macro"])
+            plateau_scheduler.step(val_metrics["loss"])
 
         print(
             f"  Epoch {epoch:3d}/{cfg.epochs} | "
@@ -442,14 +443,15 @@ def train_model(
             f"val_acc={val_metrics['accuracy']:.4f}"
         )
 
-        if val_metrics["f1_macro"] > best_val_f1:
+        if val_metrics["loss"] < best_val_loss:
+            best_val_loss = val_metrics["loss"]
             best_val_f1 = val_metrics["f1_macro"]
             best_metrics = {**val_metrics}
             patience_counter = 0
             # Guardar checkpoint en disco
             torch.save(model.state_dict(), checkpoint_path)
             print(f"  💾 Checkpoint guardado → {checkpoint_path.name} "
-                  f"(val_f1={best_val_f1:.4f})")
+                  f"(val_loss={best_val_loss:.4f}, val_f1={best_val_f1:.4f})")
         else:
             patience_counter += 1
             if patience_counter >= cfg.patience:
@@ -459,7 +461,7 @@ def train_model(
 
     # Restaurar mejor modelo desde disco
     model.load_state_dict(torch.load(checkpoint_path, map_location=device))
-    print(f"  ✓  Mejor val F1-macro: {best_val_f1:.4f} "
+    print(f"  ✓  Mejor val_loss: {best_val_loss:.4f} | val_f1: {best_val_f1:.4f} "
           f"(cargado desde {checkpoint_path.name})")
     return best_metrics
 
@@ -480,7 +482,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--data_path", type=str,
                         default="../../data/task1/processed_train.csv")
     parser.add_argument("--test_path", type=str,
-                        default="../../data/task1/test.csv")
+                        default="../../data/task1/processed_test.csv")
     parser.add_argument("--test_labels_path", type=str,
                         default="../../data/task1/test_labels.csv")
     parser.add_argument("--results_file", type=str,
