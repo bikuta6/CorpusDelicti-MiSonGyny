@@ -15,7 +15,7 @@ from pysentimiento.preprocessing import preprocess_tweet
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 from tqdm import tqdm
 import joblib
-from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import StratifiedKFold, train_test_split
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from utils import set_seed, DEFAULT_SEED
@@ -28,7 +28,7 @@ MODELS_DIR = "../../models/task1/ensemble"
 TRAIN_FILE = "../../data/task1/processed_train.csv"
 STACKER_OUTPUT = "../../models/task1/ensemble/stacker.pkl"
 MAX_LEN = 512
-N_FOLDS = 3
+N_FOLDS = 1
 BATCH_SIZE = 32  # Para inferencia batched
 
 MODEL_MAP = {
@@ -111,12 +111,19 @@ def train_stacker():
     n_models = len(MODEL_MAP)
     X_oof = np.zeros((len(df), n_models * 2))  # 2 logits por modelo
 
-    skf = StratifiedKFold(n_splits=N_FOLDS, shuffle=True, random_state=SEED)
+    if N_FOLDS == 1:
+        _train_idx, _val_idx = train_test_split(
+            range(len(texts)), test_size=0.2, random_state=SEED, stratify=y
+        )
+        fold_splits = [(_train_idx, _val_idx)]
+    else:
+        skf = StratifiedKFold(n_splits=N_FOLDS, shuffle=True, random_state=SEED)
+        fold_splits = list(skf.split(texts, y))
 
     for m_idx, (model_name, _) in enumerate(MODEL_MAP.items()):
         print(f"\n>>> Generando OOF para: {model_name}")
 
-        for fold, (_, val_idx) in enumerate(skf.split(texts, y)):
+        for fold, (_, val_idx) in enumerate(fold_splits):
             print(f"   Fold {fold + 1}/{N_FOLDS}...", end=" ")
 
             try:
@@ -143,10 +150,14 @@ def train_stacker():
             torch.cuda.empty_cache()
             gc.collect()
 
-    # 3. Verificar que no hay filas sin predicciones
-    zero_rows = np.all(X_oof == 0, axis=1).sum()
+    # 3. Restrict to rows that actually have OOF predictions
+    has_pred = ~np.all(X_oof == 0, axis=1)
+    zero_rows = (~has_pred).sum()
     if zero_rows > 0:
-        print(f"\n⚠️  {zero_rows} filas sin predicciones OOF")
+        print(f"\n⚠️  {zero_rows} filas sin predicciones OOF (excluidas del stacker)")
+    X_stacker = X_oof[has_pred]
+    y_stacker = y[has_pred]
+    print(f"  Stacker trained on {has_pred.sum()} OOF samples")
 
     # 4. Entrenar meta-modelo
     print(f"\n{'─'*40}")
@@ -157,18 +168,18 @@ def train_stacker():
         max_iter=1000,
         C=1.0,
     )
-    stacker.fit(X_oof, y)
+    stacker.fit(X_stacker, y_stacker)
 
     # 5. Evaluación OOF del stacker
-    oof_preds = stacker.predict(X_oof)
-    oof_f1 = f1_score(y, oof_preds, average="macro")
+    oof_preds = stacker.predict(X_stacker)
+    oof_f1 = f1_score(y_stacker, oof_preds, average="macro")
 
     print(f"\n{'='*60}")
     print(f"RESULTADO STACKING OOF")
     print(f"F1-Macro OOF: {oof_f1:.4f}")
     print(f"{'='*60}")
     print("\nClassification Report (OOF):")
-    print(classification_report(y, oof_preds, target_names=["NM", "M"]))
+    print(classification_report(y_stacker, oof_preds, target_names=["NM", "M"]))
 
     # 6. Mostrar pesos aprendidos
     print("Pesos del meta-modelo (sobre logits):")

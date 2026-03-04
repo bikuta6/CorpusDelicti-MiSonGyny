@@ -32,7 +32,7 @@ from trainer import WeightedTrainer
 SEED = DEFAULT_SEED
 set_seed(SEED)
 
-DATA_PATH = "../../data/task1/processed_train.csv"
+DATA_PATH = "../../data/task1/augmented_processed_train.csv"
 RESULTS_FILE = "../../results/task1/tabla_paper.csv"
 SAVE_DIR = "../../models/task1/comparison"
 
@@ -51,25 +51,58 @@ df["label"] = df["label"].map({"NM": 0, "M": 1})
 print(f"Dataset cargado: {len(df)} canciones")
 print(f"Distribución original:\n{df['label'].value_counts()}")
 
-train_df, val_df = train_test_split(
-    df, test_size=0.2, random_state=SEED, stratify=df["label"]
-)
+if "augmentation" in df.columns:
+    originals_df = df[df["augmentation"] == "original"].copy()
+    augmented_df = df[df["augmentation"] != "original"].copy()
+    print(f"[Anti-leakage] Originals: {len(originals_df)} | Augmented: {len(augmented_df)}")
+
+    # Build a Series mapping unique_id -> label for stratification
+    # Augmented samples share the same ID as their originals
+    id_to_label = originals_df.drop_duplicates("id").set_index("id")["label"]
+    unique_ids = id_to_label.index.to_numpy()
+    stratify_labels = id_to_label.loc[unique_ids].to_numpy()
+
+    train_ids, val_ids = train_test_split(
+        unique_ids, test_size=0.2, random_state=SEED,
+        stratify=stratify_labels
+    )
+    train_ids_set = set(train_ids)
+    val_ids_set = set(val_ids)
+
+    # Validation: only original samples whose ID is in val_ids
+    val_df = originals_df[originals_df["id"].isin(val_ids_set)].copy()
+
+    # Train: original samples with train IDs + augmented whose ID is in train_ids only
+    train_originals = originals_df[originals_df["id"].isin(train_ids_set)]
+    train_augmented = augmented_df[augmented_df["id"].isin(train_ids_set)]
+    train_df = pd.concat([train_originals, train_augmented], ignore_index=True).sample(
+        frac=1, random_state=SEED
+    )
+
+    print(f"  Train size (originals + augmented): {len(train_df)} | Val size (originals only): {len(val_df)}")
+    print(f"  Train augmentation distribution:\n{train_df['augmentation'].value_counts()}")
+    leaked = train_df[(train_df["augmentation"] != "original") & (train_df["id"].isin(val_ids_set))]
+    print(f"  Augmented samples with val ID in train: {len(leaked)} (should be 0)")
+else:
+    train_df, val_df = train_test_split(
+        df, test_size=0.2, random_state=SEED, stratify=df["label"]
+    )
+
+# Compute class weights from original training samples only
+train_originals_labels = train_df[train_df["augmentation"] == "original"]["label"] if "augmentation" in df.columns else train_df["label"]
+n_pos = (train_originals_labels == 1).sum()
+n_neg = (train_originals_labels == 0).sum()
+total = n_neg + n_pos
+w0 = total / (2 * n_neg)
+w1 = total / (2 * n_pos)
+weights_tensor = torch.tensor([w0, w1]).float()
+print(f"Desbalance: Neg={n_neg}, Pos={n_pos} -> Peso clase 0: {w0:.2f}, clase 1: {w1:.2f}")
 
 train_ds = Dataset.from_pandas(
     train_df.rename(columns={"lyrics": "text"}), preserve_index=False
 )
 val_ds = Dataset.from_pandas(
     val_df.rename(columns={"lyrics": "text"}), preserve_index=False
-)
-
-n_pos = sum(df["label"] == 1)
-n_neg = sum(df["label"] == 0)
-total = n_neg + n_pos
-w0 = total / (2 * n_neg)
-w1 = total / (2 * n_pos)
-weights_tensor = torch.tensor([w0, w1]).float()
-print(
-    f"Desbalance: Neg={n_neg}, Pos={n_pos} -> Peso clase 0: {w0:.2f}, clase 1: {w1:.2f}"
 )
 
 # ─────────────────────────────────────────────────────────────
@@ -228,8 +261,6 @@ device = torch.device(
 print(f"--- INICIANDO COMPARATIVA EN {device.type.upper()} ---")
 
 for name, cfg in MODEL_CONFIGS.items():
-    if name != "DistilBETO":
-        continue
     print(f"\n{'='*50}")
     print(f">>> Evaluando: {name} ({cfg.model_id})")
     print(

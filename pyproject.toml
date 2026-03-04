@@ -9,7 +9,6 @@ dependencies = [
     "bitsandbytes>=0.49.2",
     "datasets>=2.14.0",
     "deep-translator>=1.11.4",
-    "fasttext>=0.9.3",
     "huggingface-hub>=1.4.1",
     "joblib>=1.5.3",
     "langdetect>=1.0.9",

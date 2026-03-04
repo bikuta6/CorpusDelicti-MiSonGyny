@@ -8,7 +8,7 @@ import sys
 import torch
 import pandas as pd
 import numpy as np
-from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import StratifiedKFold, train_test_split
 from sklearn.metrics import f1_score, precision_recall_fscore_support, accuracy_score
 from transformers import (
     AutoTokenizer,
@@ -33,7 +33,7 @@ set_seed(SEED)
 # --- CONFIGURACIÓN ---
 TRAIN_FILE = "../../data/task1/processed_train.csv"
 SAVE_DIR = "../../models/task1/ensemble"
-N_FOLDS = 3
+N_FOLDS = 1
 
 # ─────────────────────────────────────────────────────────────
 # CONFIGURACIÓN POR MODELO (top 3 de la comparativa)
@@ -126,7 +126,15 @@ print(
     f"\n--- DISPOSITIVO: {torch.cuda.get_device_name(0) if device.type == 'cuda' else 'CPU'} ---"
 )
 
-skf = StratifiedKFold(n_splits=N_FOLDS, shuffle=True, random_state=SEED)
+if N_FOLDS == 1:
+    _train_idx, _val_idx = train_test_split(
+        range(len(texts)), test_size=0.2, random_state=SEED, stratify=labels
+    )
+    fold_splits = [(_train_idx, _val_idx)]
+else:
+    skf = StratifiedKFold(n_splits=N_FOLDS, shuffle=True, random_state=SEED)
+    fold_splits = list(skf.split(texts, labels))
+
 fold_results = []
 
 for model_name, cfg in MODELS_TO_TRAIN.items():
@@ -136,7 +144,7 @@ for model_name, cfg in MODELS_TO_TRAIN.items():
 
     model_f1_scores = []
 
-    for fold, (train_idx, val_idx) in enumerate(skf.split(texts, labels)):
+    for fold, (train_idx, val_idx) in enumerate(fold_splits):
         print(f"\n   --- Fold {fold+1}/{N_FOLDS} ---")
         set_seed(SEED)  # Reset seed cada fold para reproducibilidad
 
