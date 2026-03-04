@@ -2,6 +2,7 @@
 Inferencia del Ensemble: Promedia los 5 folds de cada modelo
 y usa el meta-modelo stacker para la predicción final.
 """
+
 import os
 import sys
 import torch
@@ -12,7 +13,7 @@ from transformers import AutoTokenizer, AutoModelForSequenceClassification
 from sklearn.metrics import f1_score, classification_report
 import joblib
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from utils import set_seed, DEFAULT_SEED
 
 SEED = DEFAULT_SEED
@@ -22,7 +23,11 @@ MODELS_DIR = "../../models/task1/ensemble"
 STACKER_PATH = "../../models/task1/ensemble/stacker.pkl"
 BATCH_SIZE = 32
 
-device = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
+device = torch.device(
+    "cuda"
+    if torch.cuda.is_available()
+    else "mps" if torch.backends.mps.is_available() else "cpu"
+)
 
 
 @torch.no_grad()
@@ -32,8 +37,11 @@ def get_logits_batched(texts, model, tokenizer, max_len=512, batch_size=BATCH_SI
     for i in range(0, len(texts), batch_size):
         batch_texts = texts[i : i + batch_size]
         inputs = tokenizer(
-            batch_texts, return_tensors="pt",
-            padding=True, truncation=True, max_length=max_len,
+            batch_texts,
+            return_tensors="pt",
+            padding=True,
+            truncation=True,
+            max_length=max_len,
         ).to(device)
         outputs = model(**inputs)
         logits = outputs.logits.cpu().numpy()
@@ -44,7 +52,7 @@ def get_logits_batched(texts, model, tokenizer, max_len=512, batch_size=BATCH_SI
 def predict_ensemble(texts: list[str], stacker_path: str = STACKER_PATH) -> np.ndarray:
     """
     Genera predicciones del ensemble completo.
-    
+
     Returns:
         np.ndarray: Labels predichas (0 o 1)
     """
@@ -62,14 +70,20 @@ def predict_ensemble(texts: list[str], stacker_path: str = STACKER_PATH) -> np.n
     for m_idx, model_name in enumerate(model_names):
         print(f">>> Inferencia: {model_name}")
         fold_logits_list = []
-        max_len_model = 512 if model_name != "Robertuito" else 128  # Por si no se guardó, usar 512 por defecto
+        max_len_model = (
+            512 if model_name != "Robertuito" else 128
+        )  # Por si no se guardó, usar 512 por defecto
         for fold in range(n_folds):
             ckpt_path = os.path.join(MODELS_DIR, model_name, f"fold_{fold}")
-            model = AutoModelForSequenceClassification.from_pretrained(ckpt_path).to(device)
+            model = AutoModelForSequenceClassification.from_pretrained(ckpt_path).to(
+                device
+            )
             model.eval()
             tokenizer = AutoTokenizer.from_pretrained(ckpt_path)
 
-            logits = get_logits_batched(texts, model, tokenizer, max_len=max_len_model, batch_size=BATCH_SIZE)
+            logits = get_logits_batched(
+                texts, model, tokenizer, max_len=max_len_model, batch_size=BATCH_SIZE
+            )
             fold_logits_list.append(logits)
 
             del model, tokenizer

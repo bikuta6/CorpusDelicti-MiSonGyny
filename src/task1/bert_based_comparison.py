@@ -25,7 +25,7 @@ from transformers import (
 )
 from bert_model_configs import ModelConfig, MODEL_CONFIGS
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from utils import set_seed, DEFAULT_SEED
 from trainer import WeightedTrainer
 
@@ -55,8 +55,12 @@ train_df, val_df = train_test_split(
     df, test_size=0.2, random_state=SEED, stratify=df["label"]
 )
 
-train_ds = Dataset.from_pandas(train_df.rename(columns={"lyrics": "text"}), preserve_index=False)
-val_ds = Dataset.from_pandas(val_df.rename(columns={"lyrics": "text"}), preserve_index=False)
+train_ds = Dataset.from_pandas(
+    train_df.rename(columns={"lyrics": "text"}), preserve_index=False
+)
+val_ds = Dataset.from_pandas(
+    val_df.rename(columns={"lyrics": "text"}), preserve_index=False
+)
 
 n_pos = sum(df["label"] == 1)
 n_neg = sum(df["label"] == 0)
@@ -64,11 +68,14 @@ total = n_neg + n_pos
 w0 = total / (2 * n_neg)
 w1 = total / (2 * n_pos)
 weights_tensor = torch.tensor([w0, w1]).float()
-print(f"Desbalance: Neg={n_neg}, Pos={n_pos} -> Peso clase 0: {w0:.2f}, clase 1: {w1:.2f}")
+print(
+    f"Desbalance: Neg={n_neg}, Pos={n_pos} -> Peso clase 0: {w0:.2f}, clase 1: {w1:.2f}"
+)
 
 # ─────────────────────────────────────────────────────────────
 # FUNCIONES AUXILIARES
 # ─────────────────────────────────────────────────────────────
+
 
 def compute_metrics(pred):
     labels = pred.label_ids
@@ -83,6 +90,7 @@ def compute_metrics(pred):
         "precision": round(precision, 4),
         "recall": round(recall, 4),
     }
+
 
 def find_best_threshold(true_labels, probs, step=0.01):
     thresholds = np.arange(0.0, 1.0 + step, step)
@@ -102,13 +110,18 @@ def find_best_threshold(true_labels, probs, step=0.01):
 
     return round(best_thr, 3), round(best_f1, 4)
 
+
 def make_tokenize_fn(tokenizer, cfg: ModelConfig):
     """Factoría de funciones de tokenización, evita bug de closure."""
+
     def tokenize_fn(batch):
         texts = batch["text"]
         if cfg.use_pysentimiento_preprocess:
             texts = [preprocess_tweet(t, lang="es") for t in texts]
-        return tokenizer(texts, padding="max_length", truncation=True, max_length=cfg.max_len)
+        return tokenizer(
+            texts, padding="max_length", truncation=True, max_length=cfg.max_len
+        )
+
     return tokenize_fn
 
 
@@ -119,17 +132,18 @@ def load_model_with_config(model_id: str, cfg: ModelConfig, device: torch.device
       - BERT/RoBERTa: classifier_dropout, hidden_dropout_prob, attention_probs_dropout_prob
       - DistilBERT:   seq_classif_dropout, dropout, attention_dropout
     """
-    
 
     # Detectar arquitectura antes de cargar el modelo completo
     arch_config = AutoConfig.from_pretrained(model_id)
-    arch = type(arch_config).__name__  # e.g. "BertConfig", "RobertaConfig", "DistilBertConfig"
+    arch = type(
+        arch_config
+    ).__name__  # e.g. "BertConfig", "RobertaConfig", "DistilBertConfig"
 
     if "DistilBert" in arch:
         # DistilBERT usa nombres distintos
         dropout_kwargs = {
-            "seq_classif_dropout": cfg.classifier_dropout,   # Capa de clasificación final
-            "dropout": cfg.hidden_dropout_prob,              # Dropout general
+            "seq_classif_dropout": cfg.classifier_dropout,  # Capa de clasificación final
+            "dropout": cfg.hidden_dropout_prob,  # Dropout general
             "attention_dropout": cfg.attention_probs_dropout_prob,  # Dropout en atención
         }
     else:
@@ -153,13 +167,23 @@ def load_model_with_config(model_id: str, cfg: ModelConfig, device: torch.device
     cfg_loaded = model.config
     print(f"    [Dropout verificado]")
     if "DistilBert" in arch:
-        print(f"      seq_classif_dropout : {getattr(cfg_loaded, 'seq_classif_dropout', 'N/A')}")
+        print(
+            f"      seq_classif_dropout : {getattr(cfg_loaded, 'seq_classif_dropout', 'N/A')}"
+        )
         print(f"      dropout             : {getattr(cfg_loaded, 'dropout', 'N/A')}")
-        print(f"      attention_dropout   : {getattr(cfg_loaded, 'attention_dropout', 'N/A')}")
+        print(
+            f"      attention_dropout   : {getattr(cfg_loaded, 'attention_dropout', 'N/A')}"
+        )
     else:
-        print(f"      classifier_dropout          : {getattr(cfg_loaded, 'classifier_dropout', 'N/A')}")
-        print(f"      hidden_dropout_prob         : {getattr(cfg_loaded, 'hidden_dropout_prob', 'N/A')}")
-        print(f"      attention_probs_dropout_prob: {getattr(cfg_loaded, 'attention_probs_dropout_prob', 'N/A')}")
+        print(
+            f"      classifier_dropout          : {getattr(cfg_loaded, 'classifier_dropout', 'N/A')}"
+        )
+        print(
+            f"      hidden_dropout_prob         : {getattr(cfg_loaded, 'hidden_dropout_prob', 'N/A')}"
+        )
+        print(
+            f"      attention_probs_dropout_prob: {getattr(cfg_loaded, 'attention_probs_dropout_prob', 'N/A')}"
+        )
     # ────────────────────────────────────────────────────────────────
 
     return model.to(device)
@@ -190,30 +214,49 @@ def make_training_args(cfg: ModelConfig, checkpoints_path: str) -> TrainingArgum
         gradient_checkpointing=False,
     )
 
+
 # ─────────────────────────────────────────────────────────────
 # LOOP PRINCIPAL
 # ─────────────────────────────────────────────────────────────
 
 results_list = []
-device = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
+device = torch.device(
+    "cuda"
+    if torch.cuda.is_available()
+    else "mps" if torch.backends.mps.is_available() else "cpu"
+)
 print(f"--- INICIANDO COMPARATIVA EN {device.type.upper()} ---")
 
 for name, cfg in MODEL_CONFIGS.items():
-    if name != "DistilBETO":  
+    if name != "DistilBETO":
         continue
     print(f"\n{'='*50}")
     print(f">>> Evaluando: {name} ({cfg.model_id})")
-    print(f"    lr={cfg.learning_rate}, dropout_cls={cfg.classifier_dropout}, max_len={cfg.max_len}")
+    print(
+        f"    lr={cfg.learning_rate}, dropout_cls={cfg.classifier_dropout}, max_len={cfg.max_len}"
+    )
     print(f"{'='*50}")
 
     try:
         tokenizer = AutoTokenizer.from_pretrained(cfg.model_id)
 
         tokenize_fn = make_tokenize_fn(tokenizer, cfg)
-        train_tok = train_ds.map(tokenize_fn, batched=True, remove_columns=["text"], load_from_cache_file=False)
-        val_tok = val_ds.map(tokenize_fn, batched=True, remove_columns=["text"], load_from_cache_file=False)
+        train_tok = train_ds.map(
+            tokenize_fn,
+            batched=True,
+            remove_columns=["text"],
+            load_from_cache_file=False,
+        )
+        val_tok = val_ds.map(
+            tokenize_fn,
+            batched=True,
+            remove_columns=["text"],
+            load_from_cache_file=False,
+        )
         train_tok = train_tok.rename_column("label", "labels")
-        val_tok = val_tok.rename_column("labels" if "labels" in val_tok.column_names else "label", "labels")
+        val_tok = val_tok.rename_column(
+            "labels" if "labels" in val_tok.column_names else "label", "labels"
+        )
         train_tok.set_format("torch")
         val_tok.set_format("torch")
 
@@ -234,13 +277,16 @@ for name, cfg in MODEL_CONFIGS.items():
             loss_type=cfg.loss_type,
             focal_gamma=cfg.focal_gamma,
             focal_alpha=None,
-            callbacks=[EarlyStoppingCallback(early_stopping_patience=cfg.early_stopping_patience)],
+            callbacks=[
+                EarlyStoppingCallback(
+                    early_stopping_patience=cfg.early_stopping_patience
+                )
+            ],
         )
 
         trainer.train()
         # Standard evaluation (argmax / threshold=0.5)
         metrics = trainer.evaluate()
-    
 
         # ─────────────────────────────────────────
         # Collect validation probabilities
@@ -272,23 +318,32 @@ for name, cfg in MODEL_CONFIGS.items():
         tokenizer.save_pretrained(model_save_path)
         print(f"Modelo guardado en: {model_save_path}")
 
-        results_list.append({
-            "Modelo": name,
-            "F1-Macro": f1_opt,
-            "Accuracy": acc_opt,
-            "Precision": precision,
-            "Recall": recall,
-            "Best-Threshold": best_thr,
-        })
+        results_list.append(
+            {
+                "Modelo": name,
+                "F1-Macro": f1_opt,
+                "Accuracy": acc_opt,
+                "Precision": precision,
+                "Recall": recall,
+                "Best-Threshold": best_thr,
+            }
+        )
         print(f"✓ {name}: F1={f1_opt:.4f}")
 
     except Exception as e:
         print(f"✗ Error con {name}: {e}")
-        import traceback; traceback.print_exc()
-        results_list.append({
-            "Modelo": name, "F1-Macro": None,
-            "Accuracy": None, "Precision": None, "Recall": None,
-        })
+        import traceback
+
+        traceback.print_exc()
+        results_list.append(
+            {
+                "Modelo": name,
+                "F1-Macro": None,
+                "Accuracy": None,
+                "Precision": None,
+                "Recall": None,
+            }
+        )
 
     finally:
         for var in ["trainer", "model", "tokenizer", "train_tok", "val_tok"]:

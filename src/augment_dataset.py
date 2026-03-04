@@ -24,6 +24,7 @@ BACKTRANSLATION_PAIRS = {
 # Paper: https://arxiv.org/abs/2108.13230
 # ══════════════════════════════════════════════════════════════════════════════
 
+
 def aeda_augment(text: str, insert_ratio: float = 0.15, seed: int = None) -> str:
     """Insert random punctuation marks into a text at random positions, preserving line breaks."""
     if seed is not None:
@@ -49,17 +50,24 @@ def aeda_augment(text: str, insert_ratio: float = 0.15, seed: int = None) -> str
 # Back-translation
 # ══════════════════════════════════════════════════════════════════════════════
 
+
 def _load_backtranslation_pipeline(pair: str):
     """Lazy-load the two Marian translation models for a language pair."""
     try:
         import torch
         from transformers import MarianMTModel, MarianTokenizer
     except ImportError:
-        raise SystemExit("transformers and sentencepiece are required for back-translation. "
-                         "Install with: pip install transformers sentencepiece")
+        raise SystemExit(
+            "transformers and sentencepiece are required for back-translation. "
+            "Install with: pip install transformers sentencepiece"
+        )
 
     fwd_model_name, bwd_model_name = BACKTRANSLATION_PAIRS[pair]
-    device = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
+    device = torch.device(
+        "cuda"
+        if torch.cuda.is_available()
+        else "mps" if torch.backends.mps.is_available() else "cpu"
+    )
 
     print(f"  Loading forward model  : {fwd_model_name}")
     fwd_tok = MarianTokenizer.from_pretrained(fwd_model_name)
@@ -72,10 +80,15 @@ def _load_backtranslation_pipeline(pair: str):
     return (fwd_tok, fwd_mdl), (bwd_tok, bwd_mdl)
 
 
-def _marian_translate_batch(texts: list[str], tokenizer, model, max_length: int = 512) -> list[str]:
+def _marian_translate_batch(
+    texts: list[str], tokenizer, model, max_length: int = 512
+) -> list[str]:
     """Translate a batch of strings with a Marian model."""
     import torch
-    inputs = tokenizer(texts, return_tensors="pt", truncation=True, max_length=max_length, padding=True).to(model.device)
+
+    inputs = tokenizer(
+        texts, return_tensors="pt", truncation=True, max_length=max_length, padding=True
+    ).to(model.device)
     with torch.no_grad():
         output_ids = model.generate(**inputs, max_length=max_length)
     return [tokenizer.decode(ids, skip_special_tokens=True) for ids in output_ids]
@@ -91,14 +104,18 @@ def backtranslate(text: str, fwd_pipe, bwd_pipe, max_length: int = 512) -> str:
 
     lines = text.splitlines()
     # Separate non-empty lines (to be translated) from empty ones (preserved as-is)
-    indices, non_empty = zip(*[(i, l) for i, l in enumerate(lines) if l.strip()]) if any(l.strip() for l in lines) else ([], [])
+    indices, non_empty = (
+        zip(*[(i, l) for i, l in enumerate(lines) if l.strip()])
+        if any(l.strip() for l in lines)
+        else ([], [])
+    )
 
     if not non_empty:
         return text
 
     try:
         interim = _marian_translate_batch(list(non_empty), fwd_tok, fwd_mdl, max_length)
-        back    = _marian_translate_batch(interim, bwd_tok, bwd_mdl, max_length)
+        back = _marian_translate_batch(interim, bwd_tok, bwd_mdl, max_length)
     except Exception:
         back = list(non_empty)  # fallback: keep originals
 
@@ -113,6 +130,7 @@ def backtranslate(text: str, fwd_pipe, bwd_pipe, max_length: int = 512) -> str:
 # Main augmentation loop
 # ══════════════════════════════════════════════════════════════════════════════
 
+
 def augment_file(
     input_csv: Path,
     output_csv: Path,
@@ -126,7 +144,9 @@ def augment_file(
 ):
     df = pd.read_csv(input_csv)
     if text_col not in df.columns:
-        raise SystemExit(f"Column '{text_col}' not found. Available: {list(df.columns)}")
+        raise SystemExit(
+            f"Column '{text_col}' not found. Available: {list(df.columns)}"
+        )
 
     # Optionally augment only the minority class
     if minority_only and label_col:
@@ -144,13 +164,19 @@ def augment_file(
     fwd_pipe = bwd_pipe = None
     if method in ("bt", "both"):
         if bt_pair not in BACKTRANSLATION_PAIRS:
-            raise SystemExit(f"Unknown bt-pair '{bt_pair}'. Choose from: {list(BACKTRANSLATION_PAIRS)}")
+            raise SystemExit(
+                f"Unknown bt-pair '{bt_pair}'. Choose from: {list(BACKTRANSLATION_PAIRS)}"
+            )
         print(f"Loading back-translation models for pair '{bt_pair}'...")
         fwd_pipe, bwd_pipe = _load_backtranslation_pipeline(bt_pair)
 
     new_rows = []
     for _ in range(n_augments):
-        for _, row in tqdm(source_df.iterrows(), total=len(source_df), desc=f"Augmenting (pass {_ + 1}/{n_augments})"):
+        for _, row in tqdm(
+            source_df.iterrows(),
+            total=len(source_df),
+            desc=f"Augmenting (pass {_ + 1}/{n_augments})",
+        ):
             text = str(row[text_col])
             augmented_texts = []
 
@@ -191,24 +217,55 @@ def augment_file(
 # CLI
 # ══════════════════════════════════════════════════════════════════════════════
 
+
 def main():
-    p = argparse.ArgumentParser(description="Data augmentation for lyrics datasets (AEDA / back-translation)")
-    p.add_argument("input_csv",                 help="Path to (preprocessed) input CSV")
-    p.add_argument("--output",                  help="Output CSV path (default: augmented_{name} in same folder)")
-    p.add_argument("--text-col",  default="lyrics",  help="Name of the text column")
-    p.add_argument("--label-col", default="label",      help="Name of the label column (used with --minority-only)")
-    p.add_argument("--method",    default="aeda",    choices=["aeda", "bt", "both"],
-                   help="Augmentation method: aeda | bt (back-translation) | both")
-    p.add_argument("--bt-pair",   default="es-en",   choices=list(BACKTRANSLATION_PAIRS),
-                   help="Language pair for back-translation")
-    p.add_argument("--aeda-ratio", type=float, default=0.15,
-                   help="Fraction of words to insert punctuation into (AEDA)")
-    p.add_argument("--n-augments", type=int,   default=1,
-                   help="Number of augmented copies to generate per sample")
-    p.add_argument("--minority-only", action="store_true",
-                   help="Only augment samples belonging to the minority class")
-    p.add_argument("--task",      default=None,
-                   help="Resolve input under data/<task>/ if file not found directly")
+    p = argparse.ArgumentParser(
+        description="Data augmentation for lyrics datasets (AEDA / back-translation)"
+    )
+    p.add_argument("input_csv", help="Path to (preprocessed) input CSV")
+    p.add_argument(
+        "--output", help="Output CSV path (default: augmented_{name} in same folder)"
+    )
+    p.add_argument("--text-col", default="lyrics", help="Name of the text column")
+    p.add_argument(
+        "--label-col",
+        default="label",
+        help="Name of the label column (used with --minority-only)",
+    )
+    p.add_argument(
+        "--method",
+        default="aeda",
+        choices=["aeda", "bt", "both"],
+        help="Augmentation method: aeda | bt (back-translation) | both",
+    )
+    p.add_argument(
+        "--bt-pair",
+        default="es-en",
+        choices=list(BACKTRANSLATION_PAIRS),
+        help="Language pair for back-translation",
+    )
+    p.add_argument(
+        "--aeda-ratio",
+        type=float,
+        default=0.15,
+        help="Fraction of words to insert punctuation into (AEDA)",
+    )
+    p.add_argument(
+        "--n-augments",
+        type=int,
+        default=1,
+        help="Number of augmented copies to generate per sample",
+    )
+    p.add_argument(
+        "--minority-only",
+        action="store_true",
+        help="Only augment samples belonging to the minority class",
+    )
+    p.add_argument(
+        "--task",
+        default=None,
+        help="Resolve input under data/<task>/ if file not found directly",
+    )
 
     args = p.parse_args()
 

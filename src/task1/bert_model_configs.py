@@ -5,12 +5,13 @@ from typing import Optional
 @dataclass
 class ModelConfig:
     """Configuración de arquitectura y entrenamiento para un modelo."""
+
     model_id: str
 
     # --- Arquitectura del clasificador ---
-    classifier_dropout: float = 0.1         # Dropout en la capa de clasificación final
+    classifier_dropout: float = 0.1  # Dropout en la capa de clasificación final
     attention_probs_dropout_prob: float = 0.1  # Dropout en atención (BERT/RoBERTa)
-    hidden_dropout_prob: float = 0.1        # Dropout en capas ocultas (BERT/RoBERTa)
+    hidden_dropout_prob: float = 0.1  # Dropout en capas ocultas (BERT/RoBERTa)
 
     # --- Tokenización ---
     max_len: int = 512
@@ -28,28 +29,29 @@ class ModelConfig:
     early_stopping_patience: int = 3
     optim: str = "adamw_torch_fused"  # "adamw_torch" o "adamw_hf"
 
-
     # --- Focal Loss ---
-    loss_type: str = "focal" # "standard", "weighted" o "focal"
+    loss_type: str = "focal"  # "standard", "weighted" o "focal"
     focal_gamma: float = 2.0
     focal_alpha: Optional[float] = None
 
     # --- Carga del modelo ---
-    ignore_mismatched_sizes: bool = False   # True para modelos con cabeza de clasificación preentrenada
+    ignore_mismatched_sizes: bool = (
+        False  # True para modelos con cabeza de clasificación preentrenada
+    )
 
 
 MODEL_CONFIGS: dict[str, ModelConfig] = {
     "DistilBETO": ModelConfig(
         model_id="dccuchile/distilbert-base-spanish-uncased",
-        classifier_dropout=0.1,          
+        classifier_dropout=0.1,
         attention_probs_dropout_prob=0.1,
         hidden_dropout_prob=0.1,
         max_len=512,
-        learning_rate=1e-5,                    
+        learning_rate=1e-5,
     ),
     "BETO": ModelConfig(
         model_id="dccuchile/bert-base-spanish-wwm-cased",
-        classifier_dropout=0.1,          
+        classifier_dropout=0.1,
         attention_probs_dropout_prob=0.1,
         hidden_dropout_prob=0.1,
         max_len=512,
@@ -69,15 +71,15 @@ MODEL_CONFIGS: dict[str, ModelConfig] = {
         attention_probs_dropout_prob=0.1,
         hidden_dropout_prob=0.1,
         max_len=512,
-        learning_rate=1e-5,         # XLM-R es más sensible a lr altos
+        learning_rate=1e-5,  # XLM-R es más sensible a lr altos
     ),
     "Robertuito": ModelConfig(
         model_id="pysentimiento/robertuito-base-uncased",
-        classifier_dropout=0.2,          # ↑ más regularización
+        classifier_dropout=0.2,  # ↑ más regularización
         attention_probs_dropout_prob=0.1,
         hidden_dropout_prob=0.1,
-        max_len=128,                # Tweets → contexto corto
+        max_len=128,  # Tweets → contexto corto
         use_pysentimiento_preprocess=True,
-        learning_rate=1e-5,              # ↑ ligeramente más alto
+        learning_rate=1e-5,  # ↑ ligeramente más alto
     ),
 }

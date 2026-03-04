@@ -21,7 +21,7 @@ from transformers import AutoTokenizer, AutoModelForSequenceClassification, Auto
 from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from utils import set_seed, DEFAULT_SEED
 from bert_model_configs import MODEL_CONFIGS, ModelConfig
 
@@ -32,13 +32,13 @@ set_seed(SEED)
 # CONFIGURACIÓN
 # ─────────────────────────────────────────────────────────────
 
-TEST_LYRICS_PATH  = "../../data/task1/processed_test.csv"
-TEST_LABELS_PATH  = "../../data/task1/test_labels.csv"
-MODELS_DIR        = "../../models/task1/comparison"
-RESULTS_FILE      = "../../results/task1/tabla_paper_test.csv"
-BEST_THRESHOLDS_PATH      = "../../results/task1/tabla_paper.csv"
-BATCH_SIZE        = 32
-ID2LABEL          = {0: "NM", 1: "M"}
+TEST_LYRICS_PATH = "../../data/task1/processed_test.csv"
+TEST_LABELS_PATH = "../../data/task1/test_labels.csv"
+MODELS_DIR = "../../models/task1/comparison"
+RESULTS_FILE = "../../results/task1/tabla_paper_test.csv"
+BEST_THRESHOLDS_PATH = "../../results/task1/tabla_paper.csv"
+BATCH_SIZE = 32
+ID2LABEL = {0: "NM", 1: "M"}
 
 # max_len y pysentimiento_preprocess por modelo
 # Deben coincidir con lo usado en entrenamiento
@@ -72,6 +72,7 @@ true_labels = df["label"].tolist()
 # ─────────────────────────────────────────────────────────────
 # FUNCIÓN DE INFERENCIA
 # ─────────────────────────────────────────────────────────────
+
 
 def run_inference(
     model_path: str,
@@ -113,11 +114,7 @@ def run_inference(
         encodings["input_ids"],
         encodings["attention_mask"],
         # token_type_ids solo existe en BERT, no en DistilBERT/RoBERTa
-        *(
-            [encodings["token_type_ids"]]
-            if "token_type_ids" in encodings
-            else []
-        ),
+        *([encodings["token_type_ids"]] if "token_type_ids" in encodings else []),
     )
     loader = DataLoader(dataset, batch_size=BATCH_SIZE)
 
@@ -126,14 +123,14 @@ def run_inference(
 
     with torch.no_grad():
         for batch in tqdm(loader, desc="  Inferencia", leave=False):
-            input_ids      = batch[0].to(device)
+            input_ids = batch[0].to(device)
             attention_mask = batch[1].to(device)
             kwargs = {"input_ids": input_ids, "attention_mask": attention_mask}
             if len(batch) == 3:
                 kwargs["token_type_ids"] = batch[2].to(device)
 
             outputs = model(**kwargs)
-            probs   = torch.softmax(outputs.logits, dim=-1)
+            probs = torch.softmax(outputs.logits, dim=-1)
             prob_M = probs[:, 1]
             preds = (prob_M >= threshold).long()
             all_preds.extend(preds.cpu().tolist())
@@ -144,26 +141,33 @@ def run_inference(
         true_labels, all_preds, average="macro", zero_division=0.0
     )
     acc = accuracy_score(true_labels, all_preds)
-    cm  = confusion_matrix(true_labels, all_preds)
+    cm = confusion_matrix(true_labels, all_preds)
 
-    print(f"\n  {classification_report(true_labels, all_preds, target_names=['NM','M'])}")
+    print(
+        f"\n  {classification_report(true_labels, all_preds, target_names=['NM','M'])}"
+    )
     print(f"  Confusion matrix:\n{cm}\n")
 
     return {
-        "F1-Macro":  round(f1, 4),
-        "Accuracy":  round(acc, 4),
+        "F1-Macro": round(f1, 4),
+        "Accuracy": round(acc, 4),
         "Precision": round(precision, 4),
-        "Recall":    round(recall, 4),
-        "preds":     all_preds,
-        "probs_M":   all_probs,
+        "Recall": round(recall, 4),
+        "preds": all_preds,
+        "probs_M": all_probs,
     }
+
 
 # ─────────────────────────────────────────────────────────────
 # LOOP PRINCIPAL
 # ─────────────────────────────────────────────────────────────
 
 results_list = []
-device = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
+device = torch.device(
+    "cuda"
+    if torch.cuda.is_available()
+    else "mps" if torch.backends.mps.is_available() else "cpu"
+)
 print(f"\n--- INICIANDO INFERENCIA EN TEST ({device}) ---\n")
 
 for name, inf_cfg in MODEL_INFERENCE_CFG.items():
@@ -175,10 +179,15 @@ for name, inf_cfg in MODEL_INFERENCE_CFG.items():
 
     if not Path(model_path).exists():
         print(f"  ⚠ Modelo no encontrado en {model_path}, saltando.")
-        results_list.append({
-            "Modelo": name, "F1-Macro": None,
-            "Accuracy": None, "Precision": None, "Recall": None,
-        })
+        results_list.append(
+            {
+                "Modelo": name,
+                "F1-Macro": None,
+                "Accuracy": None,
+                "Precision": None,
+                "Recall": None,
+            }
+        )
         continue
 
     try:
@@ -195,24 +204,33 @@ for name, inf_cfg in MODEL_INFERENCE_CFG.items():
         # Guardar predicciones individuales por modelo
         pred_path = os.path.join(MODELS_DIR, name, "test_predictions.csv")
         df_preds = df[["id", "label"]].copy()
-        df_preds["pred"]   = metrics.pop("preds")
+        df_preds["pred"] = metrics.pop("preds")
         df_preds["prob_M"] = metrics.pop("probs_M")
-        df_preds["pred_label"]  = df_preds["pred"].map(ID2LABEL)
-        df_preds["true_label"]  = df_preds["label"].map(ID2LABEL)
+        df_preds["pred_label"] = df_preds["pred"].map(ID2LABEL)
+        df_preds["true_label"] = df_preds["label"].map(ID2LABEL)
         df_preds["correct"] = df_preds["pred"] == df_preds["label"]
         df_preds.to_csv(pred_path, index=False)
         print(f"  Predicciones guardadas en: {pred_path}")
 
         results_list.append({"Modelo": name, **metrics})
-        print(f"  ✓ {name}: F1={metrics['F1-Macro']:.4f} | Acc={metrics['Accuracy']:.4f}")
+        print(
+            f"  ✓ {name}: F1={metrics['F1-Macro']:.4f} | Acc={metrics['Accuracy']:.4f}"
+        )
 
     except Exception as e:
         print(f"  ✗ Error con {name}: {e}")
-        import traceback; traceback.print_exc()
-        results_list.append({
-            "Modelo": name, "F1-Macro": None,
-            "Accuracy": None, "Precision": None, "Recall": None,
-        })
+        import traceback
+
+        traceback.print_exc()
+        results_list.append(
+            {
+                "Modelo": name,
+                "F1-Macro": None,
+                "Accuracy": None,
+                "Precision": None,
+                "Recall": None,
+            }
+        )
 
     finally:
         gc.collect()

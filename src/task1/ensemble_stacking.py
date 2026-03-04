@@ -2,6 +2,7 @@
 Ensemble Stacking: Meta-modelo con predicciones Out-of-Fold.
 Combina DistilBETO + XLM-R + MarIA usando Regresión Logística.
 """
+
 import os
 import sys
 import torch
@@ -16,7 +17,7 @@ from tqdm import tqdm
 import joblib
 from sklearn.model_selection import StratifiedKFold
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from utils import set_seed, DEFAULT_SEED
 
 SEED = DEFAULT_SEED
@@ -36,7 +37,11 @@ MODEL_MAP = {
     "MarIA": "IsGarrido/roberta-base-bne",
 }
 
-device = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
+device = torch.device(
+    "cuda"
+    if torch.cuda.is_available()
+    else "mps" if torch.backends.mps.is_available() else "cpu"
+)
 
 
 def load_trained_model(model_name: str, fold: int):
@@ -122,9 +127,13 @@ def train_stacker():
 
             # Textos de validación de este fold
             val_texts = [texts[i] for i in val_idx]
-            max_len = MAX_LEN if model_name != "Robertuito" else 128  # Robertuito tiene max_len=128
+            max_len = (
+                MAX_LEN if model_name != "Robertuito" else 128
+            )  # Robertuito tiene max_len=128
             # Logits batched (sin softmax, para que ambas dims sean informativas)
-            logits = get_logits_batched(val_texts, model, tokenizer, max_len=max_len, batch_size=BATCH_SIZE)
+            logits = get_logits_batched(
+                val_texts, model, tokenizer, max_len=max_len, batch_size=BATCH_SIZE
+            )
             X_oof[val_idx, m_idx * 2 : m_idx * 2 + 2] = logits
 
             f1 = f1_score(y[val_idx], logits.argmax(axis=1), average="macro")
@@ -190,4 +199,5 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"\n❌ ERROR: {e}")
         import traceback
+
         traceback.print_exc()

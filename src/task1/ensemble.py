@@ -2,6 +2,7 @@
 Ensemble K-Fold: Entrena los 3 mejores modelos con Cross-Validation
 para después hacer stacking con meta-modelo.
 """
+
 import os
 import sys
 import torch
@@ -21,7 +22,7 @@ from dataclasses import dataclass
 from typing import Optional
 from bert_model_configs import ModelConfig, MODEL_CONFIGS
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from utils import set_seed, DEFAULT_SEED
 from trainer import WeightedTrainer
 
@@ -41,7 +42,9 @@ N_FOLDS = 3
 
 # Top 3 modelos según tabla_paper_test.csv
 models_names = ["DistilBETO", "Robertuito", "MarIA"]
-MODELS_TO_TRAIN: dict[str, ModelConfig] = {name: MODEL_CONFIGS[name] for name in models_names}
+MODELS_TO_TRAIN: dict[str, ModelConfig] = {
+    name: MODEL_CONFIGS[name] for name in models_names
+}
 
 # ─────────────────────────────────────────────────────────────
 # CARGA DE DATOS
@@ -66,6 +69,7 @@ print(f"Pesos: clase 0={w0:.2f}, clase 1={w1:.2f}")
 # ─────────────────────────────────────────────────────────────
 # FUNCIONES AUXILIARES
 # ─────────────────────────────────────────────────────────────
+
 
 def load_model_with_config(model_id: str, cfg: ModelConfig, device: torch.device):
     """Carga modelo con dropouts según arquitectura."""
@@ -113,8 +117,14 @@ def compute_metrics(pred):
 # LOOP PRINCIPAL: K-FOLD POR MODELO
 # ─────────────────────────────────────────────────────────────
 
-device = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
-print(f"\n--- DISPOSITIVO: {torch.cuda.get_device_name(0) if device.type == 'cuda' else 'CPU'} ---")
+device = torch.device(
+    "cuda"
+    if torch.cuda.is_available()
+    else "mps" if torch.backends.mps.is_available() else "cpu"
+)
+print(
+    f"\n--- DISPOSITIVO: {torch.cuda.get_device_name(0) if device.type == 'cuda' else 'CPU'} ---"
+)
 
 skf = StratifiedKFold(n_splits=N_FOLDS, shuffle=True, random_state=SEED)
 fold_results = []
@@ -131,14 +141,18 @@ for model_name, cfg in MODELS_TO_TRAIN.items():
         set_seed(SEED)  # Reset seed cada fold para reproducibilidad
 
         # Crear datasets
-        train_df_fold = pd.DataFrame({
-            "text": [texts[i] for i in train_idx],
-            "label": [labels[i] for i in train_idx],
-        })
-        val_df_fold = pd.DataFrame({
-            "text": [texts[i] for i in val_idx],
-            "label": [labels[i] for i in val_idx],
-        })
+        train_df_fold = pd.DataFrame(
+            {
+                "text": [texts[i] for i in train_idx],
+                "label": [labels[i] for i in train_idx],
+            }
+        )
+        val_df_fold = pd.DataFrame(
+            {
+                "text": [texts[i] for i in val_idx],
+                "label": [labels[i] for i in val_idx],
+            }
+        )
 
         train_ds = Dataset.from_pandas(train_df_fold, preserve_index=False)
         val_ds = Dataset.from_pandas(val_df_fold, preserve_index=False)
@@ -154,8 +168,12 @@ for model_name, cfg in MODELS_TO_TRAIN.items():
                 max_length=cfg.max_len,
             )
 
-        train_ds = train_ds.map(tokenize, batched=True, remove_columns=["text"], load_from_cache_file=False)
-        val_ds = val_ds.map(tokenize, batched=True, remove_columns=["text"], load_from_cache_file=False)
+        train_ds = train_ds.map(
+            tokenize, batched=True, remove_columns=["text"], load_from_cache_file=False
+        )
+        val_ds = val_ds.map(
+            tokenize, batched=True, remove_columns=["text"], load_from_cache_file=False
+        )
 
         # Cargar modelo
         model = load_model_with_config(cfg.model_id, cfg, device)
@@ -196,7 +214,11 @@ for model_name, cfg in MODELS_TO_TRAIN.items():
             loss_type=cfg.loss_type,
             focal_gamma=cfg.focal_gamma,
             focal_alpha=None,
-            callbacks=[EarlyStoppingCallback(early_stopping_patience=cfg.early_stopping_patience)],
+            callbacks=[
+                EarlyStoppingCallback(
+                    early_stopping_patience=cfg.early_stopping_patience
+                )
+            ],
         )
 
         trainer.train()
@@ -220,12 +242,14 @@ for model_name, cfg in MODELS_TO_TRAIN.items():
     mean_f1 = np.mean(model_f1_scores)
     std_f1 = np.std(model_f1_scores)
     print(f"\n   >>> {model_name}: F1-Macro = {mean_f1:.4f} ± {std_f1:.4f}")
-    fold_results.append({
-        "Modelo": model_name,
-        "F1-Macro (mean)": round(mean_f1, 4),
-        "F1-Macro (std)": round(std_f1, 4),
-        "Folds": model_f1_scores,
-    })
+    fold_results.append(
+        {
+            "Modelo": model_name,
+            "F1-Macro (mean)": round(mean_f1, 4),
+            "F1-Macro (std)": round(std_f1, 4),
+            "Folds": model_f1_scores,
+        }
+    )
 
 # ─────────────────────────────────────────────────────────────
 # RESUMEN FINAL

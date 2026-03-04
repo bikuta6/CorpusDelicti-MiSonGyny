@@ -5,6 +5,7 @@ from typing import Optional, Union
 @dataclass
 class LLMConfig:
     """Configuración de arquitectura y entrenamiento para un LLM con QLoRA."""
+
     model_id: str
 
     # --- Tokenización ---
@@ -42,7 +43,7 @@ LLM_CONFIGS: dict[str, LLMConfig] = {
         max_len=1024,
         lora_r=8,
         lora_alpha=16,
-                target_modules=["q_proj", "k_proj", "v_proj", "o_proj"],
+        target_modules=["q_proj", "k_proj", "v_proj", "o_proj"],
         per_device_train_batch_size=1,
         gradient_accumulation_steps=16,
         learning_rate=1e-4,
@@ -61,7 +62,7 @@ LLM_CONFIGS: dict[str, LLMConfig] = {
         warmup_ratio=0.1,
         lr_scheduler_type="cosine",
     ),
-        "Llama-3.2-1B": LLMConfig(
+    "Llama-3.2-1B": LLMConfig(
         model_id="meta-llama/Llama-3.2-1B",
         max_len=1024,
         lora_r=8,
@@ -92,8 +93,8 @@ LLM_CONFIGS: dict[str, LLMConfig] = {
         lora_r=8,
         lora_alpha=16,
         target_modules=["q_proj", "k_proj", "v_proj", "o_proj"],
-        per_device_train_batch_size = 4,
-        gradient_accumulation_steps = 2,
+        per_device_train_batch_size=4,
+        gradient_accumulation_steps=2,
         learning_rate=1e-4,
         warmup_ratio=0.1,
         lr_scheduler_type="cosine",
@@ -110,5 +111,4 @@ LLM_CONFIGS: dict[str, LLMConfig] = {
         warmup_ratio=0.06,
         lr_scheduler_type="cosine",
     ),
-
 }

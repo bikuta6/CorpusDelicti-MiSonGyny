@@ -16,16 +16,12 @@ from transformers import (
     TrainingArguments,
     AutoModelForSequenceClassification,
     EarlyStoppingCallback,
-    BitsAndBytesConfig
+    BitsAndBytesConfig,
 )
-from peft import (
-    LoraConfig,
-    get_peft_model,
-    prepare_model_for_kbit_training
-)
+from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
 
 # Añadimos la carpeta padre al path para poder importar utils y trainer
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from utils import set_seed, DEFAULT_SEED
 from trainer import WeightedTrainer
 from llm_model_configs import LLMConfig, LLM_CONFIGS
@@ -41,7 +37,6 @@ RESULTS_FILE = "../../results/task1/tabla_paper_llms.csv"
 SAVE_DIR = "../../models/task1/comparison_llm"
 
 
-
 # --- CARGA DE DATOS ---
 print(f"Cargando datos desde {DATA_PATH}...")
 df = pd.read_csv(DATA_PATH)
@@ -51,8 +46,12 @@ train_df, val_df = train_test_split(
     df, test_size=0.2, random_state=SEED, stratify=df["label"]
 )
 # column lyrics -> text, label -> label
-train_ds = Dataset.from_pandas(train_df.rename(columns={"lyrics": "text", "label": "label"}), preserve_index=False)
-val_ds = Dataset.from_pandas(val_df.rename(columns={"lyrics": "text", "label": "label"}), preserve_index=False)
+train_ds = Dataset.from_pandas(
+    train_df.rename(columns={"lyrics": "text", "label": "label"}), preserve_index=False
+)
+val_ds = Dataset.from_pandas(
+    val_df.rename(columns={"lyrics": "text", "label": "label"}), preserve_index=False
+)
 
 # Calcular pesos para clase desbalanceada
 n_pos = sum(df["label"] == 1)
@@ -61,19 +60,23 @@ total = n_neg + n_pos
 w0 = total / (2 * n_neg)
 w1 = total / (2 * n_pos)
 weights_tensor = torch.tensor([w0, w1]).float()
-print(f"Desbalance: Neg={n_neg}, Pos={n_pos} -> Peso clase 0: {w0:.2f}, clase 1: {w1:.2f}")
+print(
+    f"Desbalance: Neg={n_neg}, Pos={n_pos} -> Peso clase 0: {w0:.2f}, clase 1: {w1:.2f}"
+)
 
 
 def compute_metrics(pred):
     """Calcula métricas para evaluación"""
     labels = pred.label_ids
     # En modelos PEFT de clasificación, logits a veces viene encapsulado.
-    logits = pred.predictions[0] if isinstance(pred.predictions, tuple) else pred.predictions
+    logits = (
+        pred.predictions[0] if isinstance(pred.predictions, tuple) else pred.predictions
+    )
     preds = logits.argmax(-1)
-    
+
     precision, recall, f1, _ = precision_recall_fscore_support(
-            labels, preds, average="macro", zero_division=0.0
-        )
+        labels, preds, average="macro", zero_division=0.0
+    )
     acc = accuracy_score(labels, preds)
     return {
         "accuracy": round(acc, 4),
@@ -82,41 +85,50 @@ def compute_metrics(pred):
         "recall": round(recall, 4),
     }
 
+
 def make_tokenize_fn(tokenizer, max_len: int):
     """
     Factoría de funciones de tokenización.
     Evita el bug de closure en bucles Python.
     """
+
     def tokenize_fn(batch):
         return tokenizer(
-            batch["text"],
-            padding="max_length",
-            truncation=True,
-            max_length=max_len
+            batch["text"], padding="max_length", truncation=True, max_length=max_len
         )
+
     return tokenize_fn
 
-results_list = []
-device = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
 
-print(f"--- INICIANDO COMPARATIVA LLM EN {torch.cuda.get_device_name(0) if device.type == 'cuda' else 'CPU'} ---")
+results_list = []
+device = torch.device(
+    "cuda"
+    if torch.cuda.is_available()
+    else "mps" if torch.backends.mps.is_available() else "cpu"
+)
+
+print(
+    f"--- INICIANDO COMPARATIVA LLM EN {torch.cuda.get_device_name(0) if device.type == 'cuda' else 'CPU'} ---"
+)
 
 for name, cfg in LLM_CONFIGS.items():
-    if name[-2:] in  {"7B", "8B"}:
+    if name[-2:] in {"7B", "8B"}:
         continue
     model_id = cfg.model_id
     print(f"\n{'='*50}")
     print(f">>> Evaluando: {name} ({model_id})")
     print(f"    lr={cfg.learning_rate}, max_len={cfg.max_len}, lora_r={cfg.lora_r}")
     print(f"{'='*50}")
-    
+
     try:
         # 1. Configuración de Cuantización a 4-bit (Obligatorio para 12GB VRAM)
         bnb_config = BitsAndBytesConfig(
             load_in_4bit=True,
             bnb_4bit_use_double_quant=True,
             bnb_4bit_quant_type="nf4",
-            bnb_4bit_compute_dtype=torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float16
+            bnb_4bit_compute_dtype=(
+                torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float16
+            ),
         )
 
         # 2. Tokenizador
@@ -125,30 +137,44 @@ for name, cfg in LLM_CONFIGS.items():
         if tokenizer.pad_token is None:
             tokenizer.pad_token = tokenizer.eos_token
             tokenizer.pad_token_id = tokenizer.eos_token_id
-        
+
         # 3. Función de tokenización (Sin smart truncate, pasamos el texto completo)
         tokenize_fn = make_tokenize_fn(tokenizer, cfg.max_len)
-        
+
         # 4. Tokenizar datasets
-        train_tok = train_ds.map(tokenize_fn, batched=True, remove_columns=["text"], load_from_cache_file=False)
-        val_tok = val_ds.map(tokenize_fn, batched=True, remove_columns=["text"], load_from_cache_file=False)
+        train_tok = train_ds.map(
+            tokenize_fn,
+            batched=True,
+            remove_columns=["text"],
+            load_from_cache_file=False,
+        )
+        val_tok = val_ds.map(
+            tokenize_fn,
+            batched=True,
+            remove_columns=["text"],
+            load_from_cache_file=False,
+        )
         train_tok = train_tok.rename_column("label", "labels")
-        val_tok = val_tok.rename_column("labels" if "labels" in val_tok.column_names else "label", "labels")
+        val_tok = val_tok.rename_column(
+            "labels" if "labels" in val_tok.column_names else "label", "labels"
+        )
         train_tok.set_format("torch")
         val_tok.set_format("torch")
-        
+
         # 5. Crear modelo base cuantizado
         model = AutoModelForSequenceClassification.from_pretrained(
             model_id,
             num_labels=2,
             quantization_config=bnb_config,
-            device_map={"": 0}, # Forza a cargar todo en la GPU 0 para evitar conflictos con Trainer
+            device_map={
+                "": 0
+            },  # Forza a cargar todo en la GPU 0 para evitar conflictos con Trainer
             problem_type="single_label_classification",
-            attn_implementation="sdpa"
+            attn_implementation="sdpa",
         )
         # Asignar explícitamente el token de padding a la configuración del modelo
         model.config.pad_token_id = tokenizer.pad_token_id
-        
+
         # 6. Preparar para LoRA
         model = prepare_model_for_kbit_training(model)
         lora_config = LoraConfig(
@@ -157,7 +183,7 @@ for name, cfg in LLM_CONFIGS.items():
             target_modules=cfg.target_modules,
             lora_dropout=cfg.lora_dropout,
             bias=cfg.lora_bias,
-            task_type="SEQ_CLS"
+            task_type="SEQ_CLS",
         )
         model = get_peft_model(model, lora_config)
         model.print_trainable_parameters()
@@ -186,7 +212,7 @@ for name, cfg in LLM_CONFIGS.items():
             report_to="none",
             gradient_checkpointing=cfg.gradient_checkpointing,
         )
-        
+
         # 8. Instanciar tu Trainer personalizado
         trainer = WeightedTrainer(
             model=model,
@@ -197,45 +223,53 @@ for name, cfg in LLM_CONFIGS.items():
             loss_type=cfg.loss_type,
             focal_gamma=cfg.focal_gamma,
             focal_alpha=None,
-            callbacks=[EarlyStoppingCallback(early_stopping_patience=cfg.early_stopping_patience)],
+            callbacks=[
+                EarlyStoppingCallback(
+                    early_stopping_patience=cfg.early_stopping_patience
+                )
+            ],
         )
-        
+
         # 9. Entrenar y evaluar
         trainer.train()
         metrics = trainer.evaluate()
-        
-        results_list.append({
-            "Modelo": name,
-            "F1-Macro": metrics["eval_f1_macro"],
-            "Accuracy": metrics["eval_accuracy"],
-            "Precision": metrics["eval_precision"],
-            "Recall": metrics["eval_recall"],
-        })
-        
+
+        results_list.append(
+            {
+                "Modelo": name,
+                "F1-Macro": metrics["eval_f1_macro"],
+                "Accuracy": metrics["eval_accuracy"],
+                "Precision": metrics["eval_precision"],
+                "Recall": metrics["eval_recall"],
+            }
+        )
+
         print(f"✓ {name}: F1={metrics['eval_f1_macro']:.4f}")
 
         # Guardar adaptadores LoRA + tokenizador
         model_save_path = os.path.join(SAVE_DIR, name)
         os.makedirs(model_save_path, exist_ok=True)
-        model.save_pretrained(model_save_path)   # Solo guarda los pesos LoRA
+        model.save_pretrained(model_save_path)  # Solo guarda los pesos LoRA
         tokenizer.save_pretrained(model_save_path)
         print(f"Modelo guardado en: {model_save_path}")
-        
+
     except Exception as e:
         print(f"✗ Error con {name}: {e}")
-        results_list.append({
-            "Modelo": name,
-            "F1-Macro": None,
-            "Accuracy": None,
-            "Precision": None,
-            "Recall": None,
-        })
-        
+        results_list.append(
+            {
+                "Modelo": name,
+                "F1-Macro": None,
+                "Accuracy": None,
+                "Precision": None,
+                "Recall": None,
+            }
+        )
+
     finally:
         # Limpieza de Memoria Rigurosa (Vital para poder entrenar el segundo modelo)
-        if 'trainer' in locals():
+        if "trainer" in locals():
             del trainer
-        if 'model' in locals():
+        if "model" in locals():
             del model
         gc.collect()
         torch.cuda.empty_cache()
