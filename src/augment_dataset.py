@@ -25,18 +25,24 @@ BACKTRANSLATION_PAIRS = {
 # ══════════════════════════════════════════════════════════════════════════════
 
 def aeda_augment(text: str, insert_ratio: float = 0.15, seed: int = None) -> str:
-    """Insert random punctuation marks into a text at random positions."""
+    """Insert random punctuation marks into a text at random positions, preserving line breaks."""
     if seed is not None:
         random.seed(seed)
-    words = text.split()
-    if not words:
-        return text
-    n_inserts = max(1, int(len(words) * insert_ratio))
-    for _ in range(n_inserts):
-        pos = random.randint(0, len(words) - 1)
-        punct = random.choice(AEDA_PUNCTS)
-        words[pos] = words[pos] + punct
-    return " ".join(words)
+    lines = text.split("\n")
+    augmented_lines = []
+    for line in lines:
+        words = line.split(" ")
+        non_empty = [w for w in words if w]
+        if not non_empty:
+            augmented_lines.append(line)
+            continue
+        n_inserts = max(1, int(len(non_empty) * insert_ratio))
+        for _ in range(n_inserts):
+            pos = random.randint(0, len(words) - 1)
+            punct = random.choice(AEDA_PUNCTS)
+            words[pos] = words[pos] + punct
+        augmented_lines.append(" ".join(words))
+    return "\n".join(augmented_lines)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -44,37 +50,62 @@ def aeda_augment(text: str, insert_ratio: float = 0.15, seed: int = None) -> str
 # ══════════════════════════════════════════════════════════════════════════════
 
 def _load_backtranslation_pipeline(pair: str):
-    """Lazy-load the two translation pipelines for a language pair."""
+    """Lazy-load the two Marian translation models for a language pair."""
     try:
-        from transformers import pipeline as hf_pipeline
+        import torch
+        from transformers import MarianMTModel, MarianTokenizer
     except ImportError:
-        raise SystemExit("transformers is required for back-translation. Install with: pip install transformers sentencepiece")
+        raise SystemExit("transformers and sentencepiece are required for back-translation. "
+                         "Install with: pip install transformers sentencepiece")
 
-    fwd_model, bwd_model = BACKTRANSLATION_PAIRS[pair]
-    print(f"  Loading forward model  : {fwd_model}")
-    fwd = hf_pipeline("translation", model=fwd_model, device=-1)
-    print(f"  Loading backward model : {bwd_model}")
-    bwd = hf_pipeline("translation", model=bwd_model, device=-1)
-    return fwd, bwd
+    fwd_model_name, bwd_model_name = BACKTRANSLATION_PAIRS[pair]
+    device = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
+
+    print(f"  Loading forward model  : {fwd_model_name}")
+    fwd_tok = MarianTokenizer.from_pretrained(fwd_model_name)
+    fwd_mdl = MarianMTModel.from_pretrained(fwd_model_name).to(device)
+
+    print(f"  Loading backward model : {bwd_model_name}")
+    bwd_tok = MarianTokenizer.from_pretrained(bwd_model_name)
+    bwd_mdl = MarianMTModel.from_pretrained(bwd_model_name).to(device)
+
+    return (fwd_tok, fwd_mdl), (bwd_tok, bwd_mdl)
+
+
+def _marian_translate_batch(texts: list[str], tokenizer, model, max_length: int = 512) -> list[str]:
+    """Translate a batch of strings with a Marian model."""
+    import torch
+    inputs = tokenizer(texts, return_tensors="pt", truncation=True, max_length=max_length, padding=True).to(model.device)
+    with torch.no_grad():
+        output_ids = model.generate(**inputs, max_length=max_length)
+    return [tokenizer.decode(ids, skip_special_tokens=True) for ids in output_ids]
 
 
 def backtranslate(text: str, fwd_pipe, bwd_pipe, max_length: int = 512) -> str:
-    """Translate text forward then back to obtain a paraphrase."""
+    """Translate text forward then back to obtain a paraphrase (batched per text)."""
     if not text.strip():
         return text
-    # Split into chunks to respect model max length
+
+    fwd_tok, fwd_mdl = fwd_pipe
+    bwd_tok, bwd_mdl = bwd_pipe
+
     lines = text.splitlines()
-    translated_lines = []
-    for line in lines:
-        if not line.strip():
-            translated_lines.append(line)
-            continue
-        try:
-            interim = fwd_pipe(line, max_length=max_length)[0]["translation_text"]
-            back   = bwd_pipe(interim, max_length=max_length)[0]["translation_text"]
-            translated_lines.append(back)
-        except Exception:
-            translated_lines.append(line)   # fallback: keep original
+    # Separate non-empty lines (to be translated) from empty ones (preserved as-is)
+    indices, non_empty = zip(*[(i, l) for i, l in enumerate(lines) if l.strip()]) if any(l.strip() for l in lines) else ([], [])
+
+    if not non_empty:
+        return text
+
+    try:
+        interim = _marian_translate_batch(list(non_empty), fwd_tok, fwd_mdl, max_length)
+        back    = _marian_translate_batch(interim, bwd_tok, bwd_mdl, max_length)
+    except Exception:
+        back = list(non_empty)  # fallback: keep originals
+
+    # Rebuild lines in original order
+    translated_lines = list(lines)
+    for i, translated in zip(indices, back):
+        translated_lines[i] = translated
     return "\n".join(translated_lines)
 
 
@@ -148,7 +179,11 @@ def augment_file(
     output_csv.parent.mkdir(parents=True, exist_ok=True)
     combined.to_csv(output_csv, index=False)
     print(f"\nOriginal rows : {len(df)}")
+    print("Class imbalance before augmentation:")
+    print(df.groupby("label").size())
     print(f"Augmented rows: {len(aug_df)}")
+    print("Class imbalance after augmentation:")
+    print(combined.groupby("label").size())
     print(f"Total rows    : {len(combined)}")
 
 
@@ -161,7 +196,7 @@ def main():
     p.add_argument("input_csv",                 help="Path to (preprocessed) input CSV")
     p.add_argument("--output",                  help="Output CSV path (default: augmented_{name} in same folder)")
     p.add_argument("--text-col",  default="lyrics",  help="Name of the text column")
-    p.add_argument("--label-col", default=None,      help="Name of the label column (used with --minority-only)")
+    p.add_argument("--label-col", default="label",      help="Name of the label column (used with --minority-only)")
     p.add_argument("--method",    default="aeda",    choices=["aeda", "bt", "both"],
                    help="Augmentation method: aeda | bt (back-translation) | both")
     p.add_argument("--bt-pair",   default="es-en",   choices=list(BACKTRANSLATION_PAIRS),

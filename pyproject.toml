@@ -17,6 +17,7 @@ dependencies = [
     "peft>=0.18.1",
     "protobuf>=6.33.5",
     "pysentimiento>=0.7.3",
+    "sacremoses>=0.1.1",
     "scikit-learn>=1.2.0",
     "scipy>=1.10.0",
     "sentence-transformers>=5.2.3",
