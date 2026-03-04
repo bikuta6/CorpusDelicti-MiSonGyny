@@ -31,6 +31,7 @@ Uso:
     --val_size         Fracción de validación       (default: 0.2)
     --pooling          Estrategia de pooling        (default: max_mean)
                        Opciones: max | mean | max_mean | attention
+    --label_smoothing  Label smoothing en la pérdida (default: 0.1)
     --seed             Semilla de reproducibilidad  (default: 42)
 """
 
@@ -303,11 +304,7 @@ class RNNClassifier(nn.Module):
 
         self.dropout = nn.Dropout(dropout)
         self.norm = nn.LayerNorm(pooled_size)
-        # Capa oculta intermedia para mayor capacidad
-        hidden_fc = pooled_size // 2
-        self.fc = nn.Linear(pooled_size, hidden_fc)
-        self.act = nn.GELU()
-        self.classifier = nn.Linear(hidden_fc, num_classes)
+        self.classifier = nn.Linear(pooled_size, num_classes)
 
     def forward(self, input_ids: torch.Tensor) -> torch.Tensor:
         # input_ids: (batch, seq_len)
@@ -328,8 +325,6 @@ class RNNClassifier(nn.Module):
             raise ValueError(f"Pooling desconocido: '{self.pooling}'")
 
         x = self.norm(pooled)
-        x = self.dropout(x)
-        x = self.act(self.fc(x))
         logits = self.classifier(self.dropout(x))
         return logits
 
@@ -402,11 +397,16 @@ def train_model(
     cfg: argparse.Namespace,
     device: torch.device,
     model_name: str,
+    checkpoint_path: Path,
 ) -> dict:
     """
-    Entrena el modelo con early-stopping y devuelve las métricas del mejor epoch.
+    Entrena el modelo con early-stopping, guarda el mejor checkpoint en disco
+    y devuelve las métricas del mejor epoch.
     """
-    criterion = FocalLoss(gamma=2.0, alpha=None, is_multilabel=False).to(device)
+    criterion = nn.CrossEntropyLoss(
+        weight=cfg.class_weights.to(device),
+        label_smoothing=cfg.label_smoothing,
+    )
     optimizer = torch.optim.AdamW(model.parameters(), lr=cfg.lr, weight_decay=1e-2)
     # Warmup lineal las primeras 2 épocas, luego ReduceLROnPlateau
     warmup_epochs = 2
@@ -446,8 +446,10 @@ def train_model(
             best_val_f1 = val_metrics["f1_macro"]
             best_metrics = {**val_metrics}
             patience_counter = 0
-            # Guardar pesos del mejor modelo en memoria
-            best_state = {k: v.clone() for k, v in model.state_dict().items()}
+            # Guardar checkpoint en disco
+            torch.save(model.state_dict(), checkpoint_path)
+            print(f"  💾 Checkpoint guardado → {checkpoint_path.name} "
+                  f"(val_f1={best_val_f1:.4f})")
         else:
             patience_counter += 1
             if patience_counter >= cfg.patience:
@@ -455,9 +457,10 @@ def train_model(
                       f"(sin mejora en {cfg.patience} epochs)")
                 break
 
-    # Restaurar mejor modelo
-    model.load_state_dict(best_state)
-    print(f"  ✓  Mejor val F1-macro: {best_val_f1:.4f}")
+    # Restaurar mejor modelo desde disco
+    model.load_state_dict(torch.load(checkpoint_path, map_location=device))
+    print(f"  ✓  Mejor val F1-macro: {best_val_f1:.4f} "
+          f"(cargado desde {checkpoint_path.name})")
     return best_metrics
 
 
@@ -485,7 +488,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--embedding_dim", type=int, default=300)
     parser.add_argument("--hidden_size",   type=int, default=256)
     parser.add_argument("--num_layers",    type=int, default=2)
-    parser.add_argument("--dropout",       type=float, default=0.3)
+    parser.add_argument("--dropout",       type=float, default=0.5)
     parser.add_argument("--batch_size",    type=int, default=32)
     parser.add_argument("--epochs",        type=int, default=30)
     parser.add_argument("--patience",      type=int, default=5)
@@ -498,6 +501,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--pooling",       type=str, default="max_mean",
                         choices=["max", "mean", "max_mean", "attention"],
                         help="Estrategia de pooling temporal")
+    parser.add_argument("--label_smoothing", type=float, default=0.1,
+                        help="Label smoothing en CrossEntropyLoss (0 = sin smoothing)")
     parser.add_argument("--seed",          type=int, default=DEFAULT_SEED)
     return parser.parse_args()
 
@@ -587,8 +592,15 @@ def main():
     print("  ENTRENAMIENTO")
     print(f"{'═'*60}")
 
+    # Directorio para checkpoints
+    ckpt_dir = Path(cfg.results_file).parent / "rnn_checkpoints"
+    ckpt_dir.mkdir(parents=True, exist_ok=True)
+
     results = []
-    criterion_eval = FocalLoss(gamma=2.0, alpha=None, is_multilabel=False).to(device)
+    criterion_eval = nn.CrossEntropyLoss(
+        weight=cfg.class_weights.to(device),
+        label_smoothing=cfg.label_smoothing,
+    )
 
     for mcfg in model_configs:
         set_seed(cfg.seed)  # Reproducibilidad por modelo
@@ -610,9 +622,12 @@ def main():
         n_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
         print(f"\n  Modelo: {mcfg['name']}  |  Parámetros entrenables: {n_params:,}")
 
+        # Ruta del checkpoint para este modelo
+        ckpt_path = ckpt_dir / f"{mcfg['name']}_best.pt"
+
         # Entrenamiento
         best_val = train_model(
-            model, train_loader, val_loader, cfg, device, mcfg["name"]
+            model, train_loader, val_loader, cfg, device, mcfg["name"], ckpt_path
         )
 
         # Evaluación en test
