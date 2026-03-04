@@ -195,10 +195,12 @@ def make_training_args(cfg: ModelConfig, checkpoints_path: str) -> TrainingArgum
 # ─────────────────────────────────────────────────────────────
 
 results_list = []
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-print(f"--- INICIANDO COMPARATIVA EN {torch.cuda.get_device_name(0) if device.type == 'cuda' else 'CPU'} ---")
+device = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
+print(f"--- INICIANDO COMPARATIVA EN {device.type.upper()} ---")
 
 for name, cfg in MODEL_CONFIGS.items():
+    if name != "DistilBETO":  
+        continue
     print(f"\n{'='*50}")
     print(f">>> Evaluando: {name} ({cfg.model_id})")
     print(f"    lr={cfg.learning_rate}, dropout_cls={cfg.classifier_dropout}, max_len={cfg.max_len}")

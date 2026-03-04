@@ -32,7 +32,7 @@ MIN_CHUNK_TOKENS = 30  # Mínimo de tokens por ventana
 # Opciones: "max", "mean", "weighted", "top_k"
 AGGREGATION_STRATEGY = "weighted"  
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
 
 # Diccionario para saber qué arquitectura base cargar según el nombre de la carpeta
 MODEL_MAP = {

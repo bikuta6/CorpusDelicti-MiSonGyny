@@ -22,12 +22,13 @@ MODELS_DIR = "../../models/task1/ensemble"
 STACKER_PATH = "../../models/task1/ensemble/stacker.pkl"
 BATCH_SIZE = 32
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
 
 
 @torch.no_grad()
-def get_predictions_batched(texts, model, tokenizer, max_len=512, batch_size=BATCH_SIZE):
-    all_probs = []
+def get_logits_batched(texts, model, tokenizer, max_len=512, batch_size=BATCH_SIZE):
+    """Devuelve logits crudos (sin softmax) de shape (N, 2)."""
+    all_logits = []
     for i in range(0, len(texts), batch_size):
         batch_texts = texts[i : i + batch_size]
         inputs = tokenizer(
@@ -35,9 +36,9 @@ def get_predictions_batched(texts, model, tokenizer, max_len=512, batch_size=BAT
             padding=True, truncation=True, max_length=max_len,
         ).to(device)
         outputs = model(**inputs)
-        probs = torch.softmax(outputs.logits, dim=-1).cpu().numpy()
-        all_probs.append(probs)
-    return np.vstack(all_probs)
+        logits = outputs.logits.cpu().numpy()
+        all_logits.append(logits)
+    return np.vstack(all_logits)
 
 
 def predict_ensemble(texts: list[str], stacker_path: str = STACKER_PATH) -> np.ndarray:
@@ -60,7 +61,7 @@ def predict_ensemble(texts: list[str], stacker_path: str = STACKER_PATH) -> np.n
 
     for m_idx, model_name in enumerate(model_names):
         print(f">>> Inferencia: {model_name}")
-        fold_probs_list = []
+        fold_logits_list = []
         max_len_model = 512 if model_name != "Robertuito" else 128  # Por si no se guardó, usar 512 por defecto
         for fold in range(n_folds):
             ckpt_path = os.path.join(MODELS_DIR, model_name, f"fold_{fold}")
@@ -68,16 +69,16 @@ def predict_ensemble(texts: list[str], stacker_path: str = STACKER_PATH) -> np.n
             model.eval()
             tokenizer = AutoTokenizer.from_pretrained(ckpt_path)
 
-            probs = get_predictions_batched(texts, model, tokenizer, max_len=max_len_model, batch_size=BATCH_SIZE)
-            fold_probs_list.append(probs)
+            logits = get_logits_batched(texts, model, tokenizer, max_len=max_len_model, batch_size=BATCH_SIZE)
+            fold_logits_list.append(logits)
 
             del model, tokenizer
             torch.cuda.empty_cache()
             gc.collect()
 
-        # Promedio de los N folds
-        avg_probs = np.mean(fold_probs_list, axis=0)
-        X_meta[:, m_idx * 2 : m_idx * 2 + 2] = avg_probs
+        # Promedio de logits de los N folds
+        avg_logits = np.mean(fold_logits_list, axis=0)
+        X_meta[:, m_idx * 2 : m_idx * 2 + 2] = avg_logits
 
     # Meta-modelo predice
     predictions = stacker.predict(X_meta)

@@ -97,7 +97,7 @@ def make_tokenize_fn(tokenizer, max_len: int):
     return tokenize_fn
 
 results_list = []
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
 
 print(f"--- INICIANDO COMPARATIVA LLM EN {torch.cuda.get_device_name(0) if device.type == 'cuda' else 'CPU'} ---")
 

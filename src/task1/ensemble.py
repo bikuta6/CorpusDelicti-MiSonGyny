@@ -113,7 +113,7 @@ def compute_metrics(pred):
 # LOOP PRINCIPAL: K-FOLD POR MODELO
 # ─────────────────────────────────────────────────────────────
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
 print(f"\n--- DISPOSITIVO: {torch.cuda.get_device_name(0) if device.type == 'cuda' else 'CPU'} ---")
 
 skf = StratifiedKFold(n_splits=N_FOLDS, shuffle=True, random_state=SEED)

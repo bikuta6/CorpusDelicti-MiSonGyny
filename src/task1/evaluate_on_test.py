@@ -163,7 +163,7 @@ def run_inference(
 # ─────────────────────────────────────────────────────────────
 
 results_list = []
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
 print(f"\n--- INICIANDO INFERENCIA EN TEST ({device}) ---\n")
 
 for name, inf_cfg in MODEL_INFERENCE_CFG.items():

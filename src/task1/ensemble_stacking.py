@@ -36,7 +36,7 @@ MODEL_MAP = {
     "MarIA": "IsGarrido/roberta-base-bne",
 }
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
 
 
 def load_trained_model(model_name: str, fold: int):
@@ -55,7 +55,7 @@ def load_trained_model(model_name: str, fold: int):
 
 
 @torch.no_grad()
-def get_predictions_batched(
+def get_logits_batched(
     texts: list[str],
     model,
     tokenizer,
@@ -63,9 +63,10 @@ def get_predictions_batched(
     batch_size: int = BATCH_SIZE,
 ) -> np.ndarray:
     """
-    Inferencia batched eficiente. Devuelve (N, 2) con probabilidades.
+    Inferencia batched eficiente. Devuelve (N, 2) con logits crudos
+    (sin softmax) para que el meta-modelo aproveche ambas dimensiones.
     """
-    all_probs = []
+    all_logits = []
 
     for i in range(0, len(texts), batch_size):
         batch_texts = texts[i : i + batch_size]
@@ -80,10 +81,10 @@ def get_predictions_batched(
             max_length=max_len,
         ).to(device)
         outputs = model(**inputs)
-        probs = torch.softmax(outputs.logits, dim=-1).cpu().numpy()
-        all_probs.append(probs)
+        logits = outputs.logits.cpu().numpy()
+        all_logits.append(logits)
 
-    return np.vstack(all_probs)
+    return np.vstack(all_logits)
 
 
 def train_stacker():
@@ -103,7 +104,7 @@ def train_stacker():
 
     # 2. Generar predicciones OOF
     n_models = len(MODEL_MAP)
-    X_oof = np.zeros((len(df), n_models * 2))  # 2 probs por modelo
+    X_oof = np.zeros((len(df), n_models * 2))  # 2 logits por modelo
 
     skf = StratifiedKFold(n_splits=N_FOLDS, shuffle=True, random_state=SEED)
 
@@ -122,11 +123,11 @@ def train_stacker():
             # Textos de validación de este fold
             val_texts = [texts[i] for i in val_idx]
             max_len = MAX_LEN if model_name != "Robertuito" else 128  # Robertuito tiene max_len=128
-            # Predicciones batched
-            probs = get_predictions_batched(val_texts, model, tokenizer, max_len=max_len, batch_size=BATCH_SIZE)
-            X_oof[val_idx, m_idx * 2 : m_idx * 2 + 2] = probs
+            # Logits batched (sin softmax, para que ambas dims sean informativas)
+            logits = get_logits_batched(val_texts, model, tokenizer, max_len=max_len, batch_size=BATCH_SIZE)
+            X_oof[val_idx, m_idx * 2 : m_idx * 2 + 2] = logits
 
-            f1 = f1_score(y[val_idx], probs.argmax(axis=1), average="macro")
+            f1 = f1_score(y[val_idx], logits.argmax(axis=1), average="macro")
             print(f"F1={f1:.4f}")
 
             del model, tokenizer
@@ -161,10 +162,10 @@ def train_stacker():
     print(classification_report(y, oof_preds, target_names=["NM", "M"]))
 
     # 6. Mostrar pesos aprendidos
-    print("Pesos del meta-modelo:")
+    print("Pesos del meta-modelo (sobre logits):")
     for i, model_name in enumerate(MODEL_MAP.keys()):
         w_neg, w_pos = stacker.coef_[0][i * 2], stacker.coef_[0][i * 2 + 1]
-        print(f"  {model_name}: w_NM={w_neg:.3f}, w_M={w_pos:.3f}")
+        print(f"  {model_name}: w_logit_NM={w_neg:.3f}, w_logit_M={w_pos:.3f}")
 
     # 7. Guardar
     os.makedirs(os.path.dirname(STACKER_OUTPUT), exist_ok=True)
