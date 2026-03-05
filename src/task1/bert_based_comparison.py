@@ -28,11 +28,12 @@ from bert_model_configs import ModelConfig, MODEL_CONFIGS
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from utils import set_seed, DEFAULT_SEED
 from trainer import WeightedTrainer
+from augmentation_utils import LyricsAugmentor
 
 SEED = DEFAULT_SEED
 set_seed(SEED)
 
-DATA_PATH = "../../data/task1/augmented_processed_train.csv"
+DATA_PATH = "../../data/task1/processed_train.csv"
 RESULTS_FILE = "../../results/task1/tabla_paper.csv"
 SAVE_DIR = "../../models/task1/comparison"
 
@@ -97,6 +98,33 @@ w0 = total / (2 * n_neg)
 w1 = total / (2 * n_pos)
 weights_tensor = torch.tensor([w0, w1]).float()
 print(f"Desbalance: Neg={n_neg}, Pos={n_pos} -> Peso clase 0: {w0:.2f}, clase 1: {w1:.2f}")
+# Using beto tokenizer WITHOUT truncation to get real token length stats on original training samples
+tokenizer_beto = AutoTokenizer.from_pretrained(MODEL_CONFIGS["BETO"].model_id)
+train_originals_texts = (
+    train_df[train_df["augmentation"] == "original"]["lyrics"].tolist()
+    if "augmentation" in df.columns
+    else train_df["lyrics"].tolist()
+)
+tokenized_lengths = tokenizer_beto(
+    train_originals_texts,
+    padding=False,
+    truncation=False,
+)
+tokenized_lengths = [len(t) for t in tokenized_lengths["input_ids"]]
+print(
+    f"Tokenized length stats (BETO, no truncation, original train samples): "
+    f"mean={np.mean(tokenized_lengths):.1f}, std={np.std(tokenized_lengths):.1f}, "
+    f"median={int(np.median(tokenized_lengths))}, "
+    f"p95={int(np.percentile(tokenized_lengths, 95))}, "
+    f"max={max(tokenized_lengths)}"
+)
+
+augmentor = LyricsAugmentor()
+train_df = augmentor.augment_dataframe(
+    train_df, 
+    minority_label=1, 
+    multiplier=2  # Genera 2 versiones nuevas por cada canción de odio original
+)
 
 train_ds = Dataset.from_pandas(
     train_df.rename(columns={"lyrics": "text"}), preserve_index=False
@@ -145,15 +173,59 @@ def find_best_threshold(true_labels, probs, step=0.01):
 
 
 def make_tokenize_fn(tokenizer, cfg: ModelConfig):
-    """Factoría de funciones de tokenización, evita bug de closure."""
+    """Tokenization with smart head+tail truncation."""
 
     def tokenize_fn(batch):
         texts = batch["text"]
+
         if cfg.use_pysentimiento_preprocess:
             texts = [preprocess_tweet(t, lang="es") for t in texts]
-        return tokenizer(
-            texts, padding="max_length", truncation=True, max_length=cfg.max_len
+
+        tokenized = tokenizer(
+            texts,
+            add_special_tokens=True,
+            truncation=False,
+            padding=False,
         )
+
+        max_len = cfg.max_len
+        input_ids = []
+        attention_mask = []
+
+        for ids in tokenized["input_ids"]:
+
+            if len(ids) <= max_len:
+                pad_len = max_len - len(ids)
+
+                padded = ids + [tokenizer.pad_token_id] * pad_len
+                mask = [1] * len(ids) + [0] * pad_len
+
+            else:
+                cls_token = ids[0]
+                sep_token = ids[-1]
+
+                content = ids[1:-1]
+
+                head_len = int((max_len - 2) * 0.75)
+                tail_len = (max_len - 2) - head_len
+
+                truncated = (
+                    [cls_token]
+                    + content[:head_len]
+                    + content[-tail_len:]
+                    + [sep_token]
+                )
+
+                padded = truncated
+                mask = [1] * max_len
+
+            input_ids.append(padded)
+            attention_mask.append(mask)
+
+        return {
+            "input_ids": input_ids,
+            "attention_mask": attention_mask,
+        }
 
     return tokenize_fn
 
@@ -179,6 +251,25 @@ def load_model_with_config(model_id: str, cfg: ModelConfig, device: torch.device
             "dropout": cfg.hidden_dropout_prob,  # Dropout general
             "attention_dropout": cfg.attention_probs_dropout_prob,  # Dropout en atención
         }
+        print(f"    Arquitectura detectada: {arch} → kwargs: {list(dropout_kwargs.keys())}")
+        model = AutoModelForSequenceClassification.from_pretrained(
+            cfg.model_id,
+            num_labels=2,
+            ignore_mismatched_sizes=cfg.ignore_mismatched_sizes,
+            **dropout_kwargs,
+        )
+    elif "DebertaV2" in arch or "Deberta" in arch:
+        # DeBERTa v2 no acepta dropout ni num_labels como kwargs; todo va en el config
+        arch_config.num_labels = 2
+        arch_config.hidden_dropout_prob = cfg.hidden_dropout_prob
+        arch_config.attention_probs_dropout_prob = cfg.attention_probs_dropout_prob
+        arch_config.cls_dropout = cfg.classifier_dropout  # nombre correcto en DeBERTa v2
+        print(f"    Arquitectura detectada: {arch} → config attrs: hidden_dropout_prob, attention_probs_dropout_prob, cls_dropout")
+        model = AutoModelForSequenceClassification.from_pretrained(
+            cfg.model_id,
+            config=arch_config,
+            ignore_mismatched_sizes=cfg.ignore_mismatched_sizes,
+        )
     else:
         # BERT, RoBERTa, XLM-R, MarIA, Robertuito
         dropout_kwargs = {
@@ -186,15 +277,13 @@ def load_model_with_config(model_id: str, cfg: ModelConfig, device: torch.device
             "hidden_dropout_prob": cfg.hidden_dropout_prob,
             "attention_probs_dropout_prob": cfg.attention_probs_dropout_prob,
         }
-
-    print(f"    Arquitectura detectada: {arch} → kwargs: {list(dropout_kwargs.keys())}")
-
-    model = AutoModelForSequenceClassification.from_pretrained(
-        cfg.model_id,
-        num_labels=2,
-        ignore_mismatched_sizes=cfg.ignore_mismatched_sizes,
-        **dropout_kwargs,
-    )
+        print(f"    Arquitectura detectada: {arch} → kwargs: {list(dropout_kwargs.keys())}")
+        model = AutoModelForSequenceClassification.from_pretrained(
+            cfg.model_id,
+            num_labels=2,
+            ignore_mismatched_sizes=cfg.ignore_mismatched_sizes,
+            **dropout_kwargs,
+        )
 
     # ── Verificación de dropouts aplicados ──────────────────────────
     cfg_loaded = model.config
@@ -206,6 +295,16 @@ def load_model_with_config(model_id: str, cfg: ModelConfig, device: torch.device
         print(f"      dropout             : {getattr(cfg_loaded, 'dropout', 'N/A')}")
         print(
             f"      attention_dropout   : {getattr(cfg_loaded, 'attention_dropout', 'N/A')}"
+        )
+    elif "DebertaV2" in arch or "Deberta" in arch:
+        print(
+            f"      cls_dropout                 : {getattr(cfg_loaded, 'cls_dropout', 'N/A')}"
+        )
+        print(
+            f"      hidden_dropout_prob         : {getattr(cfg_loaded, 'hidden_dropout_prob', 'N/A')}"
+        )
+        print(
+            f"      attention_probs_dropout_prob: {getattr(cfg_loaded, 'attention_probs_dropout_prob', 'N/A')}"
         )
     else:
         print(

@@ -19,7 +19,7 @@ MODELS_TO_CHECK = {
     "XLM-R": "xlm-roberta-base",  # Clásico multilingual
     "mDeBERTa": "microsoft/mdeberta-v3-base",  # SOTA multilingual
     "Robertuito": "pysentimiento/robertuito-base-uncased",  # Especializado en slang en español
-    "LongFormer": "markussagen/xlm-roberta-longformer-base-4096",  # Para textos largos (canciones)
+    "LongFormer": "Buzzeitor/longformer-base-4096-bne-es",  # Para textos largos (canciones)
     # "Qwen-2.5-7B": "Qwen/Qwen2.5-7B",
     # "Llama-3-8B": "meta-llama/Meta-Llama-3-8B",
 }
