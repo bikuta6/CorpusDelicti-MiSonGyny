@@ -31,7 +31,7 @@ class ModelConfig:
 
     # --- Focal Loss ---
     loss_type: str = "focal"  # "standard", "weighted" o "focal"
-    focal_gamma: float = 2.0
+    focal_gamma: float = 3.0
     focal_alpha: Optional[float] = None
 
     # --- Carga del modelo ---

@@ -45,18 +45,19 @@ def remove_redundant_lyrics(
     Deduplicate lyrics hierarchically:
     1. Stanza-level (split by double newlines)
     2. Line-level within each stanza
+    3. Format output with semantic punctuation (commas and periods)
     """
     if not text.strip():
         return ""
 
     # --- Preprocessing: clean and split stanzas ---
     stanzas = text.split("\n\n")
-    clean_stanzas = []
+    clean_stanzas =[]
     for stanza in stanzas:
         lines = [re.sub(r"\[.*?\]", "", line).strip() for line in stanza.split("\n")]
-        lines = [_STRUCTURAL_LABELS_RE.sub("", line).strip() for line in lines]
+        lines =[_STRUCTURAL_LABELS_RE.sub("", line).strip() for line in lines]
         lines = [re.sub(r'[()"]', "", line).strip() for line in lines]
-        lines = [_normalize_lyric_text(line) for line in lines if len(line) > 2]
+        lines =[_normalize_lyric_text(line) for line in lines if len(line) > 2]
         if lines:
             clean_stanzas.append(lines)
 
@@ -70,7 +71,7 @@ def remove_redundant_lyrics(
     all_stanza_embs = model.encode(all_stanza_texts, convert_to_tensor=True)
 
     kept_stanzas = [clean_stanzas[0]]
-    kept_stanza_embs = [all_stanza_embs[0]]
+    kept_stanza_embs =[all_stanza_embs[0]]
 
     for i in range(1, len(clean_stanzas)):
         current_embedding = all_stanza_embs[i]
@@ -81,27 +82,48 @@ def remove_redundant_lyrics(
             kept_stanza_embs.append(current_embedding)
 
     # --- Line-level deduplication within each kept stanza ---
-    final_stanzas = []
+    final_stanzas =[]
     for stanza in kept_stanzas:
         if len(stanza) == 1:
             final_stanzas.append(stanza)
             continue
 
-        preprocessed = [f"passage: {preprocess_tweet(line)}" for line in stanza]
+        preprocessed =[f"passage: {preprocess_tweet(line)}" for line in stanza]
         all_embs = model.encode(preprocessed, convert_to_tensor=True)  # batch encode
 
         kept_lines = [stanza[0]]
-        kept_embs = [all_embs[0]]
+        kept_embs =[all_embs[0]]
         for idx, line in enumerate(stanza[1:], start=1):
             current_emb = all_embs[idx]
-            similarities = [util.cos_sim(current_emb, l_emb) for l_emb in kept_embs]
+            similarities =[util.cos_sim(current_emb, l_emb) for l_emb in kept_embs]
             if max([sim.item() for sim in similarities]) < line_threshold:
                 kept_lines.append(line)
                 kept_embs.append(current_emb)
         final_stanzas.append(kept_lines)
 
-    # --- Return reconstructed lyrics with original text ---
-    return "\n\n".join(["\n".join(stanza) for stanza in final_stanzas])
+    # --- Return reconstructed lyrics with semantic formatting ---
+    formatted_stanzas =[]
+    for stanza in final_stanzas:
+        if not stanza:
+            continue
+            
+        # 1. El primer verso mantiene su capitalización original
+        processed_lines = [stanza[0]]
+        
+        # 2. Siguientes versos: minúscula en la primera letra
+        for line in stanza[1:]:
+            if line: # check de seguridad
+                formatted_line = line[0].lower() + line[1:]
+                processed_lines.append(formatted_line)
+                
+        # 3. Unimos los versos de la misma estrofa con comas
+        formatted_stanzas.append(", ".join(processed_lines))
+
+    if not formatted_stanzas:
+        return ""
+        
+    # 4. Unimos las estrofas con puntos y agregamos el punto final
+    return ". ".join(formatted_stanzas) + "."
 
 
 if __name__ == "__main__":
