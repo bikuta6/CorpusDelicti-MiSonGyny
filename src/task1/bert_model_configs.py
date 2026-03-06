@@ -20,7 +20,7 @@ class ModelConfig:
     # --- Entrenamiento ---
     learning_rate: float = 2e-5
     per_device_train_batch_size: int = 16
-    gradient_accumulation_steps: int = 1
+    gradient_accumulation_steps: int = 2
     num_train_epochs: int = 10
     weight_decay: float = 0.01
     warmup_ratio: float = 0.1
@@ -82,7 +82,6 @@ MODEL_CONFIGS: dict[str, ModelConfig] = {
         use_pysentimiento_preprocess=True,
         learning_rate=2e-5,  # ↑ ligeramente más alto
     ),
-
     "LongFormer": ModelConfig(
         model_id="mrm8488/longformer-base-4096-spanish", # or  Buzzeitor/longformer-base-4096-bne-es
         classifier_dropout=0.1,
