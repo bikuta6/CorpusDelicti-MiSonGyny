@@ -3,27 +3,29 @@ Inferencia y evaluación en test con los modelos entrenados.
 Genera una tabla comparativa con métricas por modelo.
 """
 
+import gc
 import os
 import sys
-import gc
 from pathlib import Path
+
 import pandas as pd
 import torch
 from datasets import Dataset
 from pysentimiento.preprocessing import preprocess_tweet
 from sklearn.metrics import (
     accuracy_score,
-    precision_recall_fscore_support,
-    confusion_matrix,
     classification_report,
+    confusion_matrix,
+    precision_recall_fscore_support,
 )
-from transformers import AutoTokenizer, AutoModelForSequenceClassification, AutoConfig
 from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
+from transformers import AutoConfig, AutoModelForSequenceClassification, AutoTokenizer
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from utils import set_seed, DEFAULT_SEED
 from bert_model_configs import MODEL_CONFIGS, ModelConfig
+
+from utils import DEFAULT_SEED, set_seed
 
 SEED = DEFAULT_SEED
 set_seed(SEED)
@@ -39,6 +41,7 @@ RESULTS_FILE = "../../results/task1/tabla_paper_test.csv"
 BEST_THRESHOLDS_PATH = "../../results/task1/tabla_paper.csv"
 BATCH_SIZE = 32
 ID2LABEL = {0: "NM", 1: "M"}
+CHUNK_STRIDE = 256  # Overlap between chunks
 
 # max_len y pysentimiento_preprocess por modelo
 # Deben coincidir con lo usado en entrenamiento
@@ -70,6 +73,92 @@ print(f"Distribución test:\n{df['label'].value_counts()}")
 true_labels = df["label"].tolist()
 
 # ─────────────────────────────────────────────────────────────
+# CHUNKING HELPERS
+# ─────────────────────────────────────────────────────────────
+
+
+def chunk_tokens(token_ids: list[int], max_len: int, stride: int) -> list[list[int]]:
+    """
+    Split token_ids into overlapping chunks.
+    Each chunk includes CLS at start and SEP at end.
+    """
+    if len(token_ids) <= max_len:
+        return [token_ids]
+
+    cls_token = token_ids[0]
+    sep_token = token_ids[-1]
+    content = token_ids[1:-1]  # Remove CLS and SEP
+
+    chunks = []
+    content_max = max_len - 2  # Reserve space for CLS and SEP
+
+    for start in range(0, len(content), stride):
+        chunk_content = content[start : start + content_max]
+        chunk = [cls_token] + chunk_content + [sep_token]
+        chunks.append(chunk)
+
+        # Stop if we've covered all content
+        if start + content_max >= len(content):
+            break
+
+    return chunks
+
+
+def get_chunked_probability(
+    text: str,
+    tokenizer,
+    model,
+    max_len: int,
+    stride: int,
+    device: torch.device,
+    use_pysentimiento_preprocess: bool = False,
+) -> float:
+    """
+    Get probability for class M using sliding window with max pooling.
+    Returns single probability (max across all chunks).
+    """
+    if use_pysentimiento_preprocess:
+        text = preprocess_tweet(text, lang="es")
+
+    # Tokenize without truncation
+    encoding = tokenizer(
+        text,
+        add_special_tokens=True,
+        truncation=False,
+        padding=False,
+        return_tensors=None,
+    )
+    token_ids = encoding["input_ids"]
+
+    # Create chunks
+    chunks = chunk_tokens(token_ids, max_len, stride)
+
+    # Process all chunks
+    chunk_probs = []
+    for chunk in chunks:
+        # Pad to max_len
+        pad_len = max_len - len(chunk)
+        input_ids = chunk + [tokenizer.pad_token_id] * pad_len
+        attention_mask = [1] * len(chunk) + [0] * pad_len
+
+        # Create tensors
+        input_ids_tensor = torch.tensor([input_ids], device=device)
+        attention_mask_tensor = torch.tensor([attention_mask], device=device)
+
+        # Inference
+        with torch.no_grad():
+            outputs = model(
+                input_ids=input_ids_tensor, attention_mask=attention_mask_tensor
+            )
+            probs = torch.softmax(outputs.logits, dim=-1)
+            prob_M = probs[0, 1].item()
+            chunk_probs.append(prob_M)
+
+    # Max pooling across chunks
+    return max(chunk_probs)
+
+
+# ─────────────────────────────────────────────────────────────
 # FUNCIÓN DE INFERENCIA
 # ─────────────────────────────────────────────────────────────
 
@@ -84,7 +173,7 @@ def run_inference(
     threshold: float = 0.5,
 ) -> dict:
     """
-    Carga un modelo guardado, ejecuta inferencia en batch y devuelve métricas.
+    Carga un modelo guardado, ejecuta inferencia con sliding window chunking y devuelve métricas.
     """
     print(f"  Cargando tokenizador y modelo desde: {model_path}")
     tokenizer = AutoTokenizer.from_pretrained(model_path)
@@ -94,47 +183,28 @@ def run_inference(
 
     # Verificar arquitectura para log
     arch = type(AutoConfig.from_pretrained(model_path)).__name__
-    print(f"  Arquitectura: {arch} | max_len={max_len}")
-
-    # Preprocesar textos si es necesario
-    if use_pysentimiento_preprocess:
-        texts = [preprocess_tweet(t, lang="es") for t in texts]
-
-    # Tokenizar todo de golpe
-    encodings = tokenizer(
-        texts,
-        padding="max_length",
-        truncation=True,
-        max_length=max_len,
-        return_tensors="pt",
+    print(
+        f"  Arquitectura: {arch} | max_len={max_len} | chunking enabled with stride={CHUNK_STRIDE}"
     )
-
-    # Crear DataLoader para inferencia en batches
-    dataset = torch.utils.data.TensorDataset(
-        encodings["input_ids"],
-        encodings["attention_mask"],
-        # token_type_ids solo existe en BERT, no en DistilBERT/RoBERTa
-        *([encodings["token_type_ids"]] if "token_type_ids" in encodings else []),
-    )
-    loader = DataLoader(dataset, batch_size=BATCH_SIZE)
 
     all_preds = []
     all_probs = []
 
-    with torch.no_grad():
-        for batch in tqdm(loader, desc="  Inferencia", leave=False):
-            input_ids = batch[0].to(device)
-            attention_mask = batch[1].to(device)
-            kwargs = {"input_ids": input_ids, "attention_mask": attention_mask}
-            if len(batch) == 3:
-                kwargs["token_type_ids"] = batch[2].to(device)
+    # Process each text individually with chunking
+    for text in tqdm(texts, desc="  Inferencia con chunking", leave=False):
+        prob_M = get_chunked_probability(
+            text=text,
+            tokenizer=tokenizer,
+            model=model,
+            max_len=max_len,
+            stride=CHUNK_STRIDE,
+            device=device,
+            use_pysentimiento_preprocess=use_pysentimiento_preprocess,
+        )
 
-            outputs = model(**kwargs)
-            probs = torch.softmax(outputs.logits, dim=-1)
-            prob_M = probs[:, 1]
-            preds = (prob_M >= threshold).long()
-            all_preds.extend(preds.cpu().tolist())
-            all_probs.extend(prob_M.cpu().tolist())
+        pred = 1 if prob_M >= threshold else 0
+        all_preds.append(pred)
+        all_probs.append(prob_M)
 
     # Métricas
     precision, recall, f1, _ = precision_recall_fscore_support(
@@ -144,7 +214,7 @@ def run_inference(
     cm = confusion_matrix(true_labels, all_preds)
 
     print(
-        f"\n  {classification_report(true_labels, all_preds, target_names=['NM','M'])}"
+        f"\n  {classification_report(true_labels, all_preds, target_names=['NM', 'M'])}"
     )
     print(f"  Confusion matrix:\n{cm}\n")
 
@@ -166,16 +236,18 @@ results_list = []
 device = torch.device(
     "cuda"
     if torch.cuda.is_available()
-    else "mps" if torch.backends.mps.is_available() else "cpu"
+    else "mps"
+    if torch.backends.mps.is_available()
+    else "cpu"
 )
 print(f"\n--- INICIANDO INFERENCIA EN TEST ({device}) ---\n")
 
 for name, inf_cfg in MODEL_INFERENCE_CFG.items():
     model_path = os.path.join(MODELS_DIR, name)
 
-    print(f"\n{'='*50}")
+    print(f"\n{'=' * 50}")
     print(f">>> Modelo: {name}")
-    print(f"{'='*50}")
+    print(f"{'=' * 50}")
 
     if not Path(model_path).exists():
         print(f"  ⚠ Modelo no encontrado en {model_path}, saltando.")
@@ -244,8 +316,8 @@ df_res = pd.DataFrame(results_list).sort_values("F1-Macro", ascending=False)
 os.makedirs(os.path.dirname(RESULTS_FILE), exist_ok=True)
 df_res.to_csv(RESULTS_FILE, index=False)
 
-print(f"\n{'='*60}")
+print(f"\n{'=' * 60}")
 print("RESULTADOS EN TEST")
-print(f"{'='*60}")
+print(f"{'=' * 60}")
 print(df_res.to_markdown(index=False))
 print(f"\nGuardado en: {RESULTS_FILE}")

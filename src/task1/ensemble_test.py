@@ -1,112 +1,172 @@
+import gc
 import os
 import sys
-import gc
-import pandas as pd
+
 import numpy as np
+import pandas as pd
 import torch
-from datasets import Dataset
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
-from torch.utils.data import DataLoader
-from tqdm.auto import tqdm
-from sklearn.metrics import classification_report, f1_score
 from bert_model_configs import MODEL_CONFIGS, ModelConfig
 from pysentimiento.preprocessing import preprocess_tweet
-# seed  
+from sklearn.metrics import classification_report, f1_score
+from tqdm.auto import tqdm
+from transformers import AutoModelForSequenceClassification, AutoTokenizer
+
+# seed
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from utils import set_seed, DEFAULT_SEED
+from utils import DEFAULT_SEED, set_seed
+
 set_seed(DEFAULT_SEED)
 
 
-
 # Configuración del Ensemble
-MODELS_TO_ENSEMBLE = ["LongFormer", "MarIA", "DistilBETO"] # Nombres en tu MODEL_CONFIGS
+MODELS_TO_ENSEMBLE = [
+    "LongFormer",
+    "MarIA",
+    "DistilBETO",
+]  # Nombres en tu MODEL_CONFIGS
 MODELS_BASE_DIR = "../../models/task1/comparison"
 TEST_PATH = "../../data/task1/processed_test.csv"
 RESULTS_FILE = "../../results/task1/submission_ensemble.csv"
 BATCH_SIZE = 32
+CHUNK_STRIDE = 256  # Overlap between chunks
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-def make_tokenize_fn(tokenizer, cfg: ModelConfig):
-    """Tokenization with smart head+tail truncation (75% Head, 25% Tail)."""
-    def tokenize_fn(batch):
-        texts = batch["text"]
-        if cfg.use_pysentimiento_preprocess:
-            texts = [preprocess_tweet(t, lang="es") for t in texts]
+# ─────────────────────────────────────────────────────────────
+# CHUNKING HELPERS
+# ─────────────────────────────────────────────────────────────
 
-        tokenized = tokenizer(texts, add_special_tokens=True, truncation=False, padding=False)
 
-        max_len = cfg.max_len
-        input_ids, attention_mask = [], []
+def chunk_tokens(token_ids: list[int], max_len: int, stride: int) -> list[list[int]]:
+    """
+    Split token_ids into overlapping chunks.
+    Each chunk includes CLS at start and SEP at end.
+    """
+    if len(token_ids) <= max_len:
+        return [token_ids]
 
-        for ids in tokenized["input_ids"]:
-            if len(ids) <= max_len:
-                pad_len = max_len - len(ids)
-                padded = ids + [tokenizer.pad_token_id] * pad_len
-                mask = [1] * len(ids) + [0] * pad_len
-            else:
-                cls_token, sep_token = ids[0], ids[-1]
-                content = ids[1:-1]
-                head_len = int((max_len - 2) * 0.75)
-                tail_len = (max_len - 2) - head_len
-                padded = [cls_token] + content[:head_len] + content[-tail_len:] + [sep_token]
-                mask = [1] * max_len
-            
-            input_ids.append(padded)
-            attention_mask.append(mask)
+    cls_token = token_ids[0]
+    sep_token = token_ids[-1]
+    content = token_ids[1:-1]  # Remove CLS and SEP
 
-        return {"input_ids": input_ids, "attention_mask": attention_mask}
-    return tokenize_fn
+    chunks = []
+    content_max = max_len - 2  # Reserve space for CLS and SEP
+
+    for start in range(0, len(content), stride):
+        chunk_content = content[start : start + content_max]
+        chunk = [cls_token] + chunk_content + [sep_token]
+        chunks.append(chunk)
+
+        # Stop if we've covered all content
+        if start + content_max >= len(content):
+            break
+
+    return chunks
+
+
+def get_chunked_probability(
+    text: str,
+    tokenizer,
+    model,
+    max_len: int,
+    stride: int,
+    device: torch.device,
+    use_pysentimiento_preprocess: bool = False,
+) -> float:
+    """
+    Get probability for class M using sliding window with max pooling.
+    Returns single probability (max across all chunks).
+    """
+    if use_pysentimiento_preprocess:
+        text = preprocess_tweet(text, lang="es")
+
+    # Tokenize without truncation
+    encoding = tokenizer(
+        text,
+        add_special_tokens=True,
+        truncation=False,
+        padding=False,
+        return_tensors=None,
+    )
+    token_ids = encoding["input_ids"]
+
+    # Create chunks
+    chunks = chunk_tokens(token_ids, max_len, stride)
+
+    # Process all chunks
+    chunk_probs = []
+    for chunk in chunks:
+        # Pad to max_len
+        pad_len = max_len - len(chunk)
+        input_ids = chunk + [tokenizer.pad_token_id] * pad_len
+        attention_mask = [1] * len(chunk) + [0] * pad_len
+
+        # Create tensors
+        input_ids_tensor = torch.tensor([input_ids], device=device)
+        attention_mask_tensor = torch.tensor([attention_mask], device=device)
+
+        # Inference
+        with torch.no_grad():
+            outputs = model(
+                input_ids=input_ids_tensor, attention_mask=attention_mask_tensor
+            )
+            probs = torch.softmax(outputs.logits, dim=-1)
+            prob_M = probs[0, 1].item()
+            chunk_probs.append(prob_M)
+
+    # Max pooling across chunks
+    return max(chunk_probs)
+
+
+# ─────────────────────────────────────────────────────────────
+# INFERENCE LOGIC
+# ─────────────────────────────────────────────────────────────
+
 
 def get_model_probabilities(name, df_test):
     cfg = MODEL_CONFIGS[name]
     model_path = os.path.join(MODELS_BASE_DIR, name)
-    
-    print(f"\n>> Inferencia con: {name}")
+
+    print(f"\n>> Inferencia con: {name} (chunking enabled, stride={CHUNK_STRIDE})")
     tokenizer = AutoTokenizer.from_pretrained(model_path)
     model = AutoModelForSequenceClassification.from_pretrained(model_path).to(device)
     model.eval()
 
-    # Preparar Dataset con Truncamiento Inteligente
-    ds = Dataset.from_pandas(df_test.rename(columns={"lyrics": "text"}), preserve_index=False)
-    tok_fn = make_tokenize_fn(tokenizer, cfg)
-    ds_tok = ds.map(tok_fn, batched=True, remove_columns=["text"])
-    ds_tok.set_format("torch")
-    
-    loader = DataLoader(ds_tok, batch_size=BATCH_SIZE)
+    texts = df_test["lyrics"].fillna("").astype(str).tolist()
     probs = []
 
-    with torch.no_grad():
-        for batch in tqdm(loader, leave=False):
-            input_ids = batch["input_ids"].to(device)
-            mask = batch["attention_mask"].to(device)
-            # Manejar token_type_ids si existen
-            inputs = {"input_ids": input_ids, "attention_mask": mask}
-            if "token_type_ids" in batch:
-                inputs["token_type_ids"] = batch["token_type_ids"].to(device)
-            
-            outputs = model(**inputs)
-            p = torch.softmax(outputs.logits, dim=-1)[:, 1] # Probabilidad clase Misoginia
-            probs.extend(p.cpu().numpy())
-    
+    # Process each text with chunking
+    for text in tqdm(texts, leave=False, desc=f"Chunked inference {name}"):
+        prob_M = get_chunked_probability(
+            text=text,
+            tokenizer=tokenizer,
+            model=model,
+            max_len=cfg.max_len,
+            stride=CHUNK_STRIDE,
+            device=device,
+            use_pysentimiento_preprocess=cfg.use_pysentimiento_preprocess,
+        )
+        probs.append(prob_M)
+
     del model, tokenizer
     gc.collect()
     torch.cuda.empty_cache()
     return np.array(probs)
 
+
 def main():
     df_test = pd.read_csv(TEST_PATH)
-    
+
     # 1. Definimos los modelos y sus pesos basados en su F1-Macro de Test
     # Pesos sugeridos según tus resultados: LongFormer(0.81), MarIA(0.79), DistilBETO(0.78)
     MODELS_TO_WEIGHT = {
-        "LongFormer": 0.34, # El mejor, le damos la mitad del voto
-        "MarIA": 0.33,      # Muy estable en test
-        "DistilBETO": 0.33  # Un poco menos, pero ayuda a la diversidad
+        "LongFormer": 0.34,  # El mejor, le damos la mitad del voto
+        "MarIA": 0.33,  # Muy estable en test
+        "DistilBETO": 0.33,  # Un poco menos, pero ayuda a la diversidad
     }
 
     all_probs = []
-    
+
     # Extraer probabilidades
     for name in MODELS_TO_WEIGHT.keys():
         p = get_model_probabilities(name, df_test)
@@ -115,7 +175,7 @@ def main():
     # 2. Aplicar Ponderación y Power Averaging
     # Elevamos la probabilidad a una potencia (p=2 o p=3) para "premiar" la seguridad.
     # Esto hace que un 0.9 valga mucho más que dos 0.5.
-    power = 1.5 
+    power = 1.5
     weighted_probs_sum = np.zeros(len(df_test))
     total_weight = sum(MODELS_TO_WEIGHT.values())
 
@@ -124,15 +184,15 @@ def main():
         weighted_probs_sum += (all_probs[i] ** power) * weight
 
     # Promediamos y devolvemos a la escala original (raíz de la potencia)
-    avg_probs = (weighted_probs_sum / total_weight) ** (1/power)
-    
+    avg_probs = (weighted_probs_sum / total_weight) ** (1 / power)
+
     # 3. Optimización del Threshold
-    # Como el modelo tiende a ser conservador, un threshold ligeramente 
+    # Como el modelo tiende a ser conservador, un threshold ligeramente
     # más bajo que 0.5 suele dar mejor F1-Macro
-    final_threshold = 0.5 # Valor sugerido basado en tus 'Best-Threshold'
-    
+    final_threshold = 0.5  # Valor sugerido basado en tus 'Best-Threshold'
+
     predictions = ["M" if p >= final_threshold else "NM" for p in avg_probs]
-    
+
     # --- Guardado y Métricas ---
     df_test["label"] = predictions
     df_test[["id", "label"]].to_csv(RESULTS_FILE, index=False)
@@ -142,15 +202,14 @@ def main():
     true_labels_df = pd.read_csv("../../data/task1/test_labels.csv")
     y_true = true_labels_df["label"].map({"NM": 0, "M": 1}).values
     y_pred = np.array([1 if p == "M" else 0 for p in predictions])
-    
-    print("\n" + "="*60)
-    print("ENSEMBLE PONDERADO (POWER=2) - CLASSIFICATION REPORT")
-    print("="*60)
+
+    print("\n" + "=" * 60)
+    print("ENSEMBLE PONDERADO (POWER=1.5) - CLASSIFICATION REPORT")
+    print("=" * 60)
     print(classification_report(y_true, y_pred, target_names=["NM", "M"]))
     print(f"Macro F1 Score: {f1_score(y_true, y_pred, average='macro'):.4f}")
-    print("="*60)
+    print("=" * 60)
 
- 
 
 if __name__ == "__main__":
     main()
