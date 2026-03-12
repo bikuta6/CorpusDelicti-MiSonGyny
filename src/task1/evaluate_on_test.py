@@ -197,7 +197,7 @@ def run_inference(
             tokenizer=tokenizer,
             model=model,
             max_len=max_len,
-            stride=CHUNK_STRIDE,
+            stride=CHUNK_STRIDE if not use_pysentimiento_preprocess else 64,  
             device=device,
             use_pysentimiento_preprocess=use_pysentimiento_preprocess,
         )
