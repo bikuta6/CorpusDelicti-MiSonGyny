@@ -8,15 +8,12 @@ try:
     from lyric_utils import remove_redundant_lyrics
     from sentence_transformers import SentenceTransformer
     from contraction_utils import normalize_contractions
-    from translation_utils import translate_english_parts
 except Exception:
     repo_root = Path(__file__).resolve().parents[1]
     sys.path.append(str(repo_root))
     from lyric_utils import remove_redundant_lyrics
     from sentence_transformers import SentenceTransformer
     from contraction_utils import normalize_contractions
-    from translation_utils import translate_english_parts
-
 
 def process_file(
     input_csv: Path,
@@ -26,7 +23,6 @@ def process_file(
     text_col: str,
     line_threshold: float = 0.95,
     skip_contractions: bool = False,
-    translate: bool = False,
 ):
     df = pd.read_csv(input_csv)
     if text_col not in df.columns:
@@ -36,13 +32,7 @@ def process_file(
 
     # Step 1: Normalize contractions
     if not skip_contractions:
-        print("Normalizing contractions...")
-        texts = [normalize_contractions(t) for t in texts]
-
-    # Step 2: Translate English parts to Spanish
-    if translate:
-        print("Translating English parts to Spanish...")
-        texts = [translate_english_parts(t) for t in tqdm(texts, desc="Translating")]
+        texts = [normalize_contractions(t) for t in tqdm(texts, desc="Normalizing contractions")]
 
     model = SentenceTransformer(model_name)
 
@@ -88,7 +78,7 @@ def main():
     p.add_argument(
         "--stanza-threshold",
         type=float,
-        default=0.9,
+        default=0.95,
         help="Similarity threshold for redundancy (0-1)",
     )
     p.add_argument(
@@ -108,11 +98,6 @@ def main():
         "--skip-contractions",
         action="store_true",
         help="Skip contraction normalization step",
-    )
-    p.add_argument(
-        "--translate",
-        action="store_true",
-        help="Translate English parts of lyrics to Spanish",
     )
 
     args = p.parse_args()
@@ -140,7 +125,6 @@ def main():
         args.text_col,
         line_threshold=args.line_threshold,
         skip_contractions=args.skip_contractions,
-        translate=args.translate,
     )
     print(f"Saved processed CSV to: {out}")
 

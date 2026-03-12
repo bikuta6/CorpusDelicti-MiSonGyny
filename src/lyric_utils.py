@@ -29,7 +29,7 @@ def _normalize_lyric_text(text: str) -> str:
     text = re.sub(r'["""]', '"', text)
     text = re.sub(r"[''`]", "'", text)
     # Collapse repeated punctuation
-    text = re.sub(r"([!?]){2,}", r"\1", text)
+    text = re.sub(r"([¡!¿?]){2,}", r"\1", text)
     # Normalize jajaja variants (jajajajaja → jajaja)
     text = re.sub(r"(ja){3,}", "jajaja", text, flags=re.IGNORECASE)
     return text
