@@ -40,13 +40,20 @@ def remove_redundant_lyrics(
     text: str,
     threshold: float = 0.82,
     line_threshold: float = 0.95,
+    similarity_scope: str = "stanza_and_verse",
 ) -> str:
     """
-    Deduplicate lyrics hierarchically:
-    1. Stanza-level (split by double newlines)
-    2. Line-level within each stanza
-    3. Format output with semantic punctuation (commas and periods)
+    Deduplicate lyrics with configurable granularity:
+    - "stanza": only stanza-level similarity check (split by double newlines)
+    - "stanza_and_verse": stanza-level + verse/line-level within each stanza
+
+    Then format output with semantic punctuation (commas and periods).
     """
+    if similarity_scope not in {"stanza", "stanza_and_verse"}:
+        raise ValueError(
+            "similarity_scope must be either 'stanza' or 'stanza_and_verse'"
+        )
+
     if not text.strip():
         return ""
 
@@ -81,25 +88,28 @@ def remove_redundant_lyrics(
             kept_stanzas.append(clean_stanzas[i])
             kept_stanza_embs.append(current_embedding)
 
-    # --- Line-level deduplication within each kept stanza ---
-    final_stanzas =[]
-    for stanza in kept_stanzas:
-        if len(stanza) == 1:
-            final_stanzas.append(stanza)
-            continue
+    if similarity_scope == "stanza":
+        final_stanzas = kept_stanzas
+    else:
+        # --- Line-level deduplication within each kept stanza ---
+        final_stanzas =[]
+        for stanza in kept_stanzas:
+            if len(stanza) == 1:
+                final_stanzas.append(stanza)
+                continue
 
-        preprocessed =[f"passage: {preprocess_tweet(line)}" for line in stanza]
-        all_embs = model.encode(preprocessed, convert_to_tensor=True)  # batch encode
+            preprocessed =[f"passage: {preprocess_tweet(line)}" for line in stanza]
+            all_embs = model.encode(preprocessed, convert_to_tensor=True)  # batch encode
 
-        kept_lines = [stanza[0]]
-        kept_embs =[all_embs[0]]
-        for idx, line in enumerate(stanza[1:], start=1):
-            current_emb = all_embs[idx]
-            similarities =[util.cos_sim(current_emb, l_emb) for l_emb in kept_embs]
-            if max([sim.item() for sim in similarities]) < line_threshold:
-                kept_lines.append(line)
-                kept_embs.append(current_emb)
-        final_stanzas.append(kept_lines)
+            kept_lines = [stanza[0]]
+            kept_embs =[all_embs[0]]
+            for idx, line in enumerate(stanza[1:], start=1):
+                current_emb = all_embs[idx]
+                similarities =[util.cos_sim(current_emb, l_emb) for l_emb in kept_embs]
+                if max([sim.item() for sim in similarities]) < line_threshold:
+                    kept_lines.append(line)
+                    kept_embs.append(current_emb)
+            final_stanzas.append(kept_lines)
 
     # --- Return reconstructed lyrics with semantic formatting ---
     formatted_stanzas =[]

@@ -23,6 +23,7 @@ def process_file(
     text_col: str,
     line_threshold: float = 0.95,
     skip_contractions: bool = False,
+    linewise_processing: bool = False
 ):
     df = pd.read_csv(input_csv)
     if text_col not in df.columns:
@@ -45,7 +46,7 @@ def process_file(
     for txt in tqdm(texts, desc="Processing lyrics"):
         try:
             out = remove_redundant_lyrics(
-                model, txt, threshold=threshold, line_threshold=line_threshold
+                model, txt, threshold=threshold, line_threshold=line_threshold, similarity_scope="stanza_and_verse" if linewise_processing else "stanza"
             )
         except Exception:
             out = ""
@@ -80,6 +81,11 @@ def main():
         type=float,
         default=0.95,
         help="Similarity threshold for redundancy (0-1)",
+    )
+    p.add_argument(
+        "--linewise-processing",
+        action="store_true",
+        help="If set, applies redundancy removal at line level as well as stanza level",
     )
     p.add_argument(
         "--line-threshold",
@@ -125,6 +131,7 @@ def main():
         args.text_col,
         line_threshold=args.line_threshold,
         skip_contractions=args.skip_contractions,
+        linewise_processing=args.linewise_processing
     )
     print(f"Saved processed CSV to: {out}")
 
