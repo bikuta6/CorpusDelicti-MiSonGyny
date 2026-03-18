@@ -9,10 +9,11 @@ from bert_model_configs import MODEL_CONFIGS, ModelConfig
 from pysentimiento.preprocessing import preprocess_tweet
 from sklearn.metrics import classification_report, f1_score
 from tqdm.auto import tqdm
-from transformers import AutoModelForSequenceClassification, AutoTokenizer
+from transformers import AutoTokenizer
 
 # seed
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+from bert_pooling import load_bert_like_classifier
 from utils import DEFAULT_SEED, set_seed
 
 set_seed(DEFAULT_SEED)
@@ -129,7 +130,7 @@ def get_model_probabilities(name, df_test):
 
     print(f"\n>> Inferencia con: {name} (chunking enabled, stride={CHUNK_STRIDE})")
     tokenizer = AutoTokenizer.from_pretrained(model_path)
-    model = AutoModelForSequenceClassification.from_pretrained(model_path).to(device)
+    model = load_bert_like_classifier(model_path, device)
     model.eval()
 
     texts = df_test["lyrics"].fillna("").astype(str).tolist()

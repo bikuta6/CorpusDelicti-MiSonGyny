@@ -8,16 +8,15 @@ from sklearn.model_selection import StratifiedKFold
 from datasets import Dataset
 from pysentimiento.preprocessing import preprocess_tweet
 from transformers import (
-    AutoTokenizer, 
-    EarlyStoppingCallback, 
-    AutoModelForSequenceClassification
+    AutoTokenizer,
+    EarlyStoppingCallback,
 )
 from bert_model_configs import MODEL_CONFIGS, ModelConfig
 
 # Asegurar que cargamos las funciones del script original
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from utils import set_seed, DEFAULT_SEED
-from bert_based_comparison import load_model_with_config, compute_metrics, make_training_args
+from train_single_model import compute_metrics, load_model_with_config, make_training_args
 from trainer import WeightedTrainer
 
 # Configuración

@@ -9,11 +9,12 @@ from datasets import Dataset
 from pysentimiento.preprocessing import preprocess_tweet
 from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
-from transformers import AutoModelForSequenceClassification, AutoTokenizer
+from transformers import AutoTokenizer
 
 # Import config and utils
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from bert_model_configs import MODEL_CONFIGS, ModelConfig
+from bert_pooling import load_bert_like_classifier
 
 from utils import DEFAULT_SEED, set_seed
 
@@ -127,7 +128,7 @@ def get_chunked_probability(
 def get_fold_probabilities(fold_path, df_test, cfg):
     print(f"  -> Processing Fold at: {fold_path}")
     tokenizer = AutoTokenizer.from_pretrained(fold_path)
-    model = AutoModelForSequenceClassification.from_pretrained(fold_path).to(device)
+    model = load_bert_like_classifier(fold_path, device)
     model.eval()
 
     texts = df_test["lyrics"].fillna("").astype(str).tolist()

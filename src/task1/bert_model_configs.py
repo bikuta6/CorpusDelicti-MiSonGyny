@@ -9,6 +9,7 @@ class ModelConfig:
     model_id: str
 
     # --- Arquitectura del clasificador ---
+    pooling_strategy: str = "cls"  # "cls", "mean", "cls_mean"
     classifier_dropout: float = 0.1  # Dropout en la capa de clasificación final
     attention_probs_dropout_prob: float = 0.1  # Dropout en atención (BERT/RoBERTa)
     hidden_dropout_prob: float = 0.1  # Dropout en capas ocultas (BERT/RoBERTa)

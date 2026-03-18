@@ -20,10 +20,11 @@ from sklearn.metrics import (
 )
 from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
-from transformers import AutoConfig, AutoModelForSequenceClassification, AutoTokenizer
+from transformers import AutoTokenizer
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from bert_model_configs import MODEL_CONFIGS, ModelConfig
+from bert_pooling import load_bert_like_classifier
 
 from utils import DEFAULT_SEED, set_seed
 
@@ -177,12 +178,8 @@ def run_inference(
     """
     print(f"  Cargando tokenizador y modelo desde: {model_path}")
     tokenizer = AutoTokenizer.from_pretrained(model_path)
-    model = AutoModelForSequenceClassification.from_pretrained(model_path)
-    model.eval()
-    model.to(device)
-
-    # Verificar arquitectura para log
-    arch = type(AutoConfig.from_pretrained(model_path)).__name__
+    model = load_bert_like_classifier(model_path, device)
+    arch = type(getattr(model, "backbone", model)).__name__
     print(
         f"  Arquitectura: {arch} | max_len={max_len} | chunking enabled with stride={CHUNK_STRIDE}"
     )

@@ -22,8 +22,6 @@ from pysentimiento.preprocessing import preprocess_tweet
 from sklearn.metrics import accuracy_score, f1_score, precision_recall_fscore_support
 from sklearn.model_selection import train_test_split
 from transformers import (
-    AutoConfig,
-    AutoModelForSequenceClassification,
     AutoTokenizer,
     EarlyStoppingCallback,
     TrainingArguments,
@@ -33,6 +31,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from bert_model_configs import MODEL_CONFIGS, ModelConfig
 
 from augmentation_utils import LyricsAugmentor
+from bert_pooling import build_bert_like_classifier
 from trainer import WeightedTrainer
 from utils import DEFAULT_SEED, set_seed
 
@@ -127,52 +126,9 @@ def make_tokenize_fn(tokenizer, cfg: ModelConfig):
 
 
 def load_model_with_config(model_id: str, cfg: ModelConfig, device: torch.device):
-    """Carga el modelo aplicando los dropouts de la configuración según arquitectura."""
-
-    arch_config = AutoConfig.from_pretrained(model_id)
-    arch = type(arch_config).__name__
-
-    if "DistilBert" in arch:
-        dropout_kwargs = {
-            "seq_classif_dropout": cfg.classifier_dropout,
-            "dropout": cfg.hidden_dropout_prob,
-            "attention_dropout": cfg.attention_probs_dropout_prob,
-        }
-        print(f"    Arquitectura: {arch} → kwargs: {list(dropout_kwargs.keys())}")
-        model = AutoModelForSequenceClassification.from_pretrained(
-            cfg.model_id,
-            num_labels=2,
-            ignore_mismatched_sizes=cfg.ignore_mismatched_sizes,
-            **dropout_kwargs,
-        )
-    elif "DebertaV2" in arch or "Deberta" in arch:
-        arch_config.num_labels = 2
-        arch_config.hidden_dropout_prob = cfg.hidden_dropout_prob
-        arch_config.attention_probs_dropout_prob = cfg.attention_probs_dropout_prob
-        arch_config.cls_dropout = cfg.classifier_dropout
-        print(
-            f"    Arquitectura: {arch} → config attrs: hidden_dropout_prob, attention_probs_dropout_prob, cls_dropout"
-        )
-        model = AutoModelForSequenceClassification.from_pretrained(
-            cfg.model_id,
-            config=arch_config,
-            ignore_mismatched_sizes=cfg.ignore_mismatched_sizes,
-        )
-    else:
-        dropout_kwargs = {
-            "classifier_dropout": cfg.classifier_dropout,
-            "hidden_dropout_prob": cfg.hidden_dropout_prob,
-            "attention_probs_dropout_prob": cfg.attention_probs_dropout_prob,
-        }
-        print(f"    Arquitectura: {arch} → kwargs: {list(dropout_kwargs.keys())}")
-        model = AutoModelForSequenceClassification.from_pretrained(
-            cfg.model_id,
-            num_labels=2,
-            ignore_mismatched_sizes=cfg.ignore_mismatched_sizes,
-            **dropout_kwargs,
-        )
-
-    return model.to(device)
+    model = build_bert_like_classifier(cfg, device)
+    print(f"    Pooling: {getattr(model.config, 'pooling_strategy', 'cls')}")
+    return model
 
 
 def make_training_args(cfg: ModelConfig, checkpoints_path: str) -> TrainingArguments:

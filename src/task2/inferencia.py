@@ -6,7 +6,7 @@ import numpy as np
 from collections import Counter
 from torch.nn.functional import softmax
 from sklearn.metrics import f1_score
-from transformers import AutoTokenizer, AutoConfig, AutoModelForSequenceClassification
+from transformers import AutoTokenizer
 from pysentimiento.preprocessing import preprocess_tweet
 from tqdm import tqdm
 import joblib
@@ -14,6 +14,7 @@ import joblib
 # Añadimos path para importar models.py
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from models import MisogynyClassifier
+from bert_pooling import load_bert_like_classifier
 
 # --- CONFIGURACIÓN ---
 TEST_FILE = "../../data/task2/test.csv"
@@ -220,7 +221,7 @@ for folder in model_folders:
 
     # 2. carga el modelo con los pesos del checkpoint
     print(f"  > Cargando modelo desde: {weights_path}")
-    model = AutoModelForSequenceClassification.from_pretrained(ckpt_path).to(device)
+    model = load_bert_like_classifier(ckpt_path, device)
     tokenizer = AutoTokenizer.from_pretrained(
         ckpt_path
     )  # El tokenizer sí se carga del checkpoint

@@ -20,9 +20,7 @@ from sklearn.model_selection import train_test_split
 from transformers import (
     AutoTokenizer,
     TrainingArguments,
-    AutoModelForSequenceClassification,
     EarlyStoppingCallback,
-    AutoConfig,
 )
 from bert_model_configs import ModelConfig, MODEL_CONFIGS
 
@@ -30,6 +28,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from utils import set_seed, DEFAULT_SEED
 from trainer import WeightedTrainer
 from augmentation_utils import LyricsAugmentor
+from bert_pooling import build_bert_like_classifier
 
 SEED = DEFAULT_SEED
 set_seed(SEED)
@@ -233,94 +232,13 @@ def main(augment=False):
 
 
     def load_model_with_config(model_id: str, cfg: ModelConfig, device: torch.device):
-        """
-        Carga el modelo aplicando los dropouts de la configuración.
-        Mapea los kwargs según la arquitectura:
-        - BERT/RoBERTa: classifier_dropout, hidden_dropout_prob, attention_probs_dropout_prob
-        - DistilBERT:   seq_classif_dropout, dropout, attention_dropout
-        """
-
-        # Detectar arquitectura antes de cargar el modelo completo
-        arch_config = AutoConfig.from_pretrained(model_id)
-        arch = type(
-            arch_config
-        ).__name__  # e.g. "BertConfig", "RobertaConfig", "DistilBertConfig"
-
-        if "DistilBert" in arch:
-            # DistilBERT usa nombres distintos
-            dropout_kwargs = {
-                "seq_classif_dropout": cfg.classifier_dropout,  # Capa de clasificación final
-                "dropout": cfg.hidden_dropout_prob,  # Dropout general
-                "attention_dropout": cfg.attention_probs_dropout_prob,  # Dropout en atención
-            }
-            print(f"    Arquitectura detectada: {arch} → kwargs: {list(dropout_kwargs.keys())}")
-            model = AutoModelForSequenceClassification.from_pretrained(
-                cfg.model_id,
-                num_labels=2,
-                ignore_mismatched_sizes=cfg.ignore_mismatched_sizes,
-                **dropout_kwargs,
-            )
-        elif "DebertaV2" in arch or "Deberta" in arch:
-            # DeBERTa v2 no acepta dropout ni num_labels como kwargs; todo va en el config
-            arch_config.num_labels = 2
-            arch_config.hidden_dropout_prob = cfg.hidden_dropout_prob
-            arch_config.attention_probs_dropout_prob = cfg.attention_probs_dropout_prob
-            arch_config.cls_dropout = cfg.classifier_dropout  # nombre correcto en DeBERTa v2
-            print(f"    Arquitectura detectada: {arch} → config attrs: hidden_dropout_prob, attention_probs_dropout_prob, cls_dropout")
-            model = AutoModelForSequenceClassification.from_pretrained(
-                cfg.model_id,
-                config=arch_config,
-                ignore_mismatched_sizes=cfg.ignore_mismatched_sizes,
-            )
-        else:
-            # BERT, RoBERTa, XLM-R, MarIA, Robertuito
-            dropout_kwargs = {
-                "classifier_dropout": cfg.classifier_dropout,
-                "hidden_dropout_prob": cfg.hidden_dropout_prob,
-                "attention_probs_dropout_prob": cfg.attention_probs_dropout_prob,
-            }
-            print(f"    Arquitectura detectada: {arch} → kwargs: {list(dropout_kwargs.keys())}")
-            model = AutoModelForSequenceClassification.from_pretrained(
-                cfg.model_id,
-                num_labels=2,
-                ignore_mismatched_sizes=cfg.ignore_mismatched_sizes,
-                **dropout_kwargs,
-            )
-
-        # ── Verificación de dropouts aplicados ──────────────────────────
-        cfg_loaded = model.config
-        print(f"    [Dropout verificado]")
-        if "DistilBert" in arch:
-            print(
-                f"      seq_classif_dropout : {getattr(cfg_loaded, 'seq_classif_dropout', 'N/A')}"
-            )
-            print(f"      dropout             : {getattr(cfg_loaded, 'dropout', 'N/A')}")
-            print(
-                f"      attention_dropout   : {getattr(cfg_loaded, 'attention_dropout', 'N/A')}"
-            )
-        elif "DebertaV2" in arch or "Deberta" in arch:
-            print(
-                f"      cls_dropout                 : {getattr(cfg_loaded, 'cls_dropout', 'N/A')}"
-            )
-            print(
-                f"      hidden_dropout_prob         : {getattr(cfg_loaded, 'hidden_dropout_prob', 'N/A')}"
-            )
-            print(
-                f"      attention_probs_dropout_prob: {getattr(cfg_loaded, 'attention_probs_dropout_prob', 'N/A')}"
-            )
-        else:
-            print(
-                f"      classifier_dropout          : {getattr(cfg_loaded, 'classifier_dropout', 'N/A')}"
-            )
-            print(
-                f"      hidden_dropout_prob         : {getattr(cfg_loaded, 'hidden_dropout_prob', 'N/A')}"
-            )
-            print(
-                f"      attention_probs_dropout_prob: {getattr(cfg_loaded, 'attention_probs_dropout_prob', 'N/A')}"
-            )
-        # ────────────────────────────────────────────────────────────────
-
-        return model.to(device)
+        model = build_bert_like_classifier(cfg, device)
+        print(
+            "    Pooling="
+            f"{getattr(model.config, 'pooling_strategy', 'cls')} | "
+            f"dropout_cls={cfg.classifier_dropout}"
+        )
+        return model
 
 
     def make_training_args(cfg: ModelConfig, checkpoints_path: str) -> TrainingArguments:
