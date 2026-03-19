@@ -293,7 +293,7 @@ def main():
     out_path = csv_path.with_name(f"{csv_path.stem}_token_lengths__{tok_suffix}.csv")
     out_df = df.copy()
     out_df["n_tokens"] = lengths
-    out_df.to_csv(out_path, index=False)
+    # out_df.to_csv(out_path, index=False)
     print(f"\nSaved per-sample lengths to: {out_path}")
 
 

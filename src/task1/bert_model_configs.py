@@ -1,5 +1,6 @@
-from attr import dataclass
 from typing import Optional
+
+from attr import dataclass
 
 
 @dataclass
@@ -9,7 +10,7 @@ class ModelConfig:
     model_id: str
 
     # --- Arquitectura del clasificador ---
-    pooling_strategy: str = "cls"  # "cls", "mean", "cls_mean"
+    pooling_strategy: str = "cls_mean"  # "cls", "mean", "cls_mean"
     classifier_dropout: float = 0.1  # Dropout en la capa de clasificación final
     attention_probs_dropout_prob: float = 0.1  # Dropout en atención (BERT/RoBERTa)
     hidden_dropout_prob: float = 0.1  # Dropout en capas ocultas (BERT/RoBERTa)
@@ -84,7 +85,7 @@ MODEL_CONFIGS: dict[str, ModelConfig] = {
         learning_rate=2e-5,  # ↑ ligeramente más alto
     ),
     "LongFormer": ModelConfig(
-        model_id="mrm8488/longformer-base-4096-spanish", # or  Buzzeitor/longformer-base-4096-bne-es
+        model_id="mrm8488/longformer-base-4096-spanish",  # or  Buzzeitor/longformer-base-4096-bne-es
         classifier_dropout=0.1,
         attention_probs_dropout_prob=0.1,
         hidden_dropout_prob=0.1,

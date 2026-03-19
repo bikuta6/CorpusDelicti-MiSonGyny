@@ -3,32 +3,32 @@ Comparativa de modelos para Task 1: Clasificación Binaria de Misoginia en Canci
 Genera una tabla para el paper con métricas de cada modelo.
 """
 
-import os
 import argparse
-import sys
 import gc
+import os
+import sys
 from dataclasses import dataclass, field
 from typing import Optional
+
+import numpy as np
 import pandas as pd
 import torch
-import numpy as np
-from sklearn.metrics import f1_score
+from bert_model_configs import MODEL_CONFIGS, ModelConfig
 from datasets import Dataset
 from pysentimiento.preprocessing import preprocess_tweet
-from sklearn.metrics import accuracy_score, precision_recall_fscore_support
+from sklearn.metrics import accuracy_score, f1_score, precision_recall_fscore_support
 from sklearn.model_selection import train_test_split
 from transformers import (
     AutoTokenizer,
-    TrainingArguments,
     EarlyStoppingCallback,
+    TrainingArguments,
 )
-from bert_model_configs import ModelConfig, MODEL_CONFIGS
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from utils import set_seed, DEFAULT_SEED
-from trainer import WeightedTrainer
 from augmentation_utils import LyricsAugmentor
 from bert_pooling import build_bert_like_classifier
+from trainer import WeightedTrainer
+from utils import DEFAULT_SEED, set_seed
 
 SEED = DEFAULT_SEED
 set_seed(SEED)
@@ -55,7 +55,9 @@ def main(augment=False):
     if "augmentation" in df.columns:
         originals_df = df[df["augmentation"] == "original"].copy()
         augmented_df = df[df["augmentation"] != "original"].copy()
-        print(f"[Anti-leakage] Originals: {len(originals_df)} | Augmented: {len(augmented_df)}")
+        print(
+            f"[Anti-leakage] Originals: {len(originals_df)} | Augmented: {len(augmented_df)}"
+        )
 
         # Build a Series mapping unique_id -> label for stratification
         # Augmented samples share the same ID as their originals
@@ -64,8 +66,7 @@ def main(augment=False):
         stratify_labels = id_to_label.loc[unique_ids].to_numpy()
 
         train_ids, val_ids = train_test_split(
-            unique_ids, test_size=0.2, random_state=SEED,
-            stratify=stratify_labels
+            unique_ids, test_size=0.2, random_state=SEED, stratify=stratify_labels
         )
         train_ids_set = set(train_ids)
         val_ids_set = set(val_ids)
@@ -76,13 +77,20 @@ def main(augment=False):
         # Train: original samples with train IDs + augmented whose ID is in train_ids only
         train_originals = originals_df[originals_df["id"].isin(train_ids_set)]
         train_augmented = augmented_df[augmented_df["id"].isin(train_ids_set)]
-        train_df = pd.concat([train_originals, train_augmented], ignore_index=True).sample(
-            frac=1, random_state=SEED
-        )
+        train_df = pd.concat(
+            [train_originals, train_augmented], ignore_index=True
+        ).sample(frac=1, random_state=SEED)
 
-        print(f"  Train size (originals + augmented): {len(train_df)} | Val size (originals only): {len(val_df)}")
-        print(f"  Train augmentation distribution:\n{train_df['augmentation'].value_counts()}")
-        leaked = train_df[(train_df["augmentation"] != "original") & (train_df["id"].isin(val_ids_set))]
+        print(
+            f"  Train size (originals + augmented): {len(train_df)} | Val size (originals only): {len(val_df)}"
+        )
+        print(
+            f"  Train augmentation distribution:\n{train_df['augmentation'].value_counts()}"
+        )
+        leaked = train_df[
+            (train_df["augmentation"] != "original")
+            & (train_df["id"].isin(val_ids_set))
+        ]
         print(f"  Augmented samples with val ID in train: {len(leaked)} (should be 0)")
     else:
         train_df, val_df = train_test_split(
@@ -90,14 +98,20 @@ def main(augment=False):
         )
 
     # Compute class weights from original training samples only
-    train_originals_labels = train_df[train_df["augmentation"] == "original"]["label"] if "augmentation" in df.columns else train_df["label"]
+    train_originals_labels = (
+        train_df[train_df["augmentation"] == "original"]["label"]
+        if "augmentation" in df.columns
+        else train_df["label"]
+    )
     n_pos = (train_originals_labels == 1).sum()
     n_neg = (train_originals_labels == 0).sum()
     total = n_neg + n_pos
     w0 = total / (2 * n_neg)
     w1 = total / (2 * n_pos)
     weights_tensor = torch.tensor([w0, w1]).float()
-    print(f"Desbalance: Neg={n_neg}, Pos={n_pos} -> Peso clase 0: {w0:.2f}, clase 1: {w1:.2f}")
+    print(
+        f"Desbalance: Neg={n_neg}, Pos={n_pos} -> Peso clase 0: {w0:.2f}, clase 1: {w1:.2f}"
+    )
     # Using beto tokenizer WITHOUT truncation to get real token length stats on original training samples
     tokenizer_beto = AutoTokenizer.from_pretrained(MODEL_CONFIGS["BETO"].model_id)
     train_originals_texts = (
@@ -122,9 +136,9 @@ def main(augment=False):
     augmentor = LyricsAugmentor()
     if augment:
         train_df = augmentor.augment_dataframe(
-            train_df, 
-            minority_label=1, 
-            multiplier=2  # Genera 2 versiones nuevas por cada canción de odio original
+            train_df,
+            minority_label=1,
+            multiplier=2,  # Genera 2 versiones nuevas por cada canción de odio original
         )
 
     train_ds = Dataset.from_pandas(
@@ -137,7 +151,6 @@ def main(augment=False):
     # ─────────────────────────────────────────────────────────────
     # FUNCIONES AUXILIARES
     # ─────────────────────────────────────────────────────────────
-
 
     def compute_metrics(pred):
         labels = pred.label_ids
@@ -152,7 +165,6 @@ def main(augment=False):
             "precision": round(precision, 4),
             "recall": round(recall, 4),
         }
-
 
     def find_best_threshold(true_labels, probs, step=0.01):
         thresholds = np.arange(0.0, 1.0 + step, step)
@@ -171,7 +183,6 @@ def main(augment=False):
                 best_thr = thr
 
         return round(best_thr, 3), round(best_f1, 4)
-
 
     def make_tokenize_fn(tokenizer, cfg: ModelConfig):
         """Tokenization with smart head+tail truncation."""
@@ -194,7 +205,6 @@ def main(augment=False):
             attention_mask = []
 
             for ids in tokenized["input_ids"]:
-
                 if len(ids) <= max_len:
                     pad_len = max_len - len(ids)
 
@@ -230,7 +240,6 @@ def main(augment=False):
 
         return tokenize_fn
 
-
     def load_model_with_config(model_id: str, cfg: ModelConfig, device: torch.device):
         model = build_bert_like_classifier(cfg, device)
         print(
@@ -240,8 +249,9 @@ def main(augment=False):
         )
         return model
 
-
-    def make_training_args(cfg: ModelConfig, checkpoints_path: str) -> TrainingArguments:
+    def make_training_args(
+        cfg: ModelConfig, checkpoints_path: str
+    ) -> TrainingArguments:
         """Construye TrainingArguments a partir de la configuración del modelo."""
         return TrainingArguments(
             output_dir=checkpoints_path,
@@ -256,8 +266,8 @@ def main(augment=False):
             warmup_ratio=cfg.warmup_ratio,
             max_grad_norm=cfg.max_grad_norm,
             lr_scheduler_type=cfg.lr_scheduler_type,
-            eval_strategy = "epoch",
-            save_strategy = "epoch",
+            eval_strategy="epoch",
+            save_strategy="epoch",
             load_best_model_at_end=True,
             metric_for_best_model="eval_f1_macro",
             greater_is_better=True,
@@ -265,7 +275,6 @@ def main(augment=False):
             report_to="none",
             gradient_checkpointing=False,
         )
-
 
     # ─────────────────────────────────────────────────────────────
     # LOOP PRINCIPAL
@@ -275,17 +284,19 @@ def main(augment=False):
     device = torch.device(
         "cuda"
         if torch.cuda.is_available()
-        else "mps" if torch.backends.mps.is_available() else "cpu"
+        else "mps"
+        if torch.backends.mps.is_available()
+        else "cpu"
     )
     print(f"--- INICIANDO COMPARATIVA EN {device.type.upper()} ---")
 
     for name, cfg in MODEL_CONFIGS.items():
-        print(f"\n{'='*50}")
+        print(f"\n{'=' * 50}")
         print(f">>> Evaluando: {name} ({cfg.model_id})")
         print(
             f"    lr={cfg.learning_rate}, dropout_cls={cfg.classifier_dropout}, max_len={cfg.max_len}"
         )
-        print(f"{'='*50}")
+        print(f"{'=' * 50}")
 
         try:
             tokenizer = AutoTokenizer.from_pretrained(cfg.model_id)
@@ -350,12 +361,13 @@ def main(augment=False):
             # ─────────────────────────────────────────
             # Threshold sweep on validation
             # ─────────────────────────────────────────
-            best_thr, best_f1 = find_best_threshold(true_labels, probs)
+            # best_thr, best_f1 = find_best_threshold(true_labels, probs)
 
-            print(f"    🔎 Mejor threshold validación: {best_thr}")
-            print(f"    🔎 Macro-F1 con threshold óptimo: {best_f1}")
+            # print(f"    🔎 Mejor threshold validación: {best_thr}")
+            # print(f"    🔎 Macro-F1 con threshold óptimo: {best_f1}")
 
             # Recompute metrics using optimal threshold
+            best_thr = 0.5
             opt_preds = (probs >= best_thr).astype(int)
 
             precision, recall, f1_opt, _ = precision_recall_fscore_support(
@@ -410,15 +422,19 @@ def main(augment=False):
     os.makedirs(os.path.dirname(RESULTS_FILE), exist_ok=True)
     df_res.to_csv(RESULTS_FILE, index=False)
 
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print("RESULTADOS COMPARATIVA")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
     print(df_res.to_markdown(index=False))
     print(f"\nGuardado en: {RESULTS_FILE}")
-    
+
+
 if __name__ == "__main__":
-    arg_parser = argparse.ArgumentParser(description="Comparativa de  basados en BERT para Task 1")
-    arg_parser.add_argument("--augment", action="store_true", help="Activar augmentación de datos")
+    arg_parser = argparse.ArgumentParser(
+        description="Comparativa de  basados en BERT para Task 1"
+    )
+    arg_parser.add_argument(
+        "--augment", action="store_true", help="Activar augmentación de datos"
+    )
     args = arg_parser.parse_args()
     main(augment=args.augment)
-
