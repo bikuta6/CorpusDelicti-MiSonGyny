@@ -116,7 +116,9 @@ class LyricsPoolingClassifier(PreTrainedModel):
         return model
 
     @staticmethod
-    def _masked_mean(last_hidden_state: torch.Tensor, attention_mask: torch.Tensor) -> torch.Tensor:
+    def _masked_mean(
+        last_hidden_state: torch.Tensor, attention_mask: torch.Tensor
+    ) -> torch.Tensor:
         mask = attention_mask.unsqueeze(-1).float()
         summed = (last_hidden_state * mask).sum(dim=1)
         denom = mask.sum(dim=1).clamp(min=1e-9)

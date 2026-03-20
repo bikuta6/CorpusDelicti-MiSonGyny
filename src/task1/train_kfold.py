@@ -16,7 +16,11 @@ from bert_model_configs import MODEL_CONFIGS, ModelConfig
 # Asegurar que cargamos las funciones del script original
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from utils import set_seed, DEFAULT_SEED
-from train_single_model import compute_metrics, load_model_with_config, make_training_args
+from train_single_model import (
+    compute_metrics,
+    load_model_with_config,
+    make_training_args,
+)
 from trainer import WeightedTrainer
 
 # Configuración
@@ -27,14 +31,18 @@ SAVE_DIR = f"../../models/task1/kfold_{MODEL_NAME}"
 SEED = DEFAULT_SEED
 set_seed(SEED)
 
+
 def make_tokenize_fn(tokenizer, cfg: ModelConfig):
     """Tokenization with smart head+tail truncation (75% Head, 25% Tail)."""
+
     def tokenize_fn(batch):
         texts = batch["text"]
         if cfg.use_pysentimiento_preprocess:
             texts = [preprocess_tweet(t, lang="es") for t in texts]
 
-        tokenized = tokenizer(texts, add_special_tokens=True, truncation=False, padding=False)
+        tokenized = tokenizer(
+            texts, add_special_tokens=True, truncation=False, padding=False
+        )
 
         max_len = cfg.max_len
         input_ids, attention_mask = [], []
@@ -49,20 +57,24 @@ def make_tokenize_fn(tokenizer, cfg: ModelConfig):
                 content = ids[1:-1]
                 head_len = int((max_len - 2) * 0.75)
                 tail_len = (max_len - 2) - head_len
-                padded = [cls_token] + content[:head_len] + content[-tail_len:] + [sep_token]
+                padded = (
+                    [cls_token] + content[:head_len] + content[-tail_len:] + [sep_token]
+                )
                 mask = [1] * max_len
-            
+
             input_ids.append(padded)
             attention_mask.append(mask)
 
         return {"input_ids": input_ids, "attention_mask": attention_mask}
+
     return tokenize_fn
+
 
 def run_kfold():
     df = pd.read_csv(DATA_PATH)
     df["label"] = df["label"].map({"NM": 0, "M": 1})
     cfg = MODEL_CONFIGS[MODEL_NAME]
-    
+
     # --- Lógica Anti-Leakage ---
     originals_df = df[df["augmentation"] == "original"].copy()
     id_to_label = originals_df.drop_duplicates("id").set_index("id")["label"]
@@ -74,7 +86,7 @@ def run_kfold():
 
     for fold, (train_idx, val_idx) in enumerate(skf.split(unique_ids, stratify_labels)):
         print(f"\n>>> INICIANDO FOLD {fold+1}/{N_SPLITS}")
-        
+
         train_ids = set(unique_ids[train_idx])
         val_ids = set(unique_ids[val_idx])
 
@@ -90,12 +102,20 @@ def run_kfold():
         # Dataset
         tokenizer = AutoTokenizer.from_pretrained(cfg.model_id)
         tokenize_fn = make_tokenize_fn(tokenizer, cfg)
-        
-        train_ds = Dataset.from_pandas(train_df.rename(columns={"lyrics": "text"}), preserve_index=False)
-        val_ds = Dataset.from_pandas(val_df.rename(columns={"lyrics": "text"}), preserve_index=False)
 
-        train_tok = train_ds.map(tokenize_fn, batched=True, remove_columns=["text"]).rename_column("label", "labels")
-        val_tok = val_ds.map(tokenize_fn, batched=True, remove_columns=["text"]).rename_column("label", "labels")
+        train_ds = Dataset.from_pandas(
+            train_df.rename(columns={"lyrics": "text"}), preserve_index=False
+        )
+        val_ds = Dataset.from_pandas(
+            val_df.rename(columns={"lyrics": "text"}), preserve_index=False
+        )
+
+        train_tok = train_ds.map(
+            tokenize_fn, batched=True, remove_columns=["text"]
+        ).rename_column("label", "labels")
+        val_tok = val_ds.map(
+            tokenize_fn, batched=True, remove_columns=["text"]
+        ).rename_column("label", "labels")
         train_tok.set_format("torch")
         val_tok.set_format("torch")
 
@@ -105,9 +125,14 @@ def run_kfold():
         args = make_training_args(cfg, os.path.join(fold_path, "checkpoints"))
 
         trainer = WeightedTrainer(
-            model=model, args=args, train_dataset=train_tok, eval_dataset=val_tok,
-            compute_metrics=compute_metrics, class_weights=weights,
-            loss_type=cfg.loss_type, focal_gamma=cfg.focal_gamma
+            model=model,
+            args=args,
+            train_dataset=train_tok,
+            eval_dataset=val_tok,
+            compute_metrics=compute_metrics,
+            class_weights=weights,
+            loss_type=cfg.loss_type,
+            focal_gamma=cfg.focal_gamma,
         )
 
         trainer.train()
@@ -117,6 +142,7 @@ def run_kfold():
         del trainer, model, tokenizer, train_tok, val_tok
         gc.collect()
         torch.cuda.empty_cache()
+
 
 if __name__ == "__main__":
     run_kfold()

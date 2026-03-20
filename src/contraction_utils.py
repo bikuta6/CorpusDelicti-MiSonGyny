@@ -21,12 +21,10 @@ SPANISH_CONTRACTIONS = {
     r"\bpa'rriba": "para arriba",
     r"\bpa'ti": "para ti",
     r"\bpa'": "para",
-    
     # vo'a / vamo'a / va' (voy a / vamos a / vas)
     r"\bvo'a": "voy a",
     r"\bvamo'a": "vamos a",
     r"\bva'": "vas",
-    
     # dropped -d- in past participles / adjectives / nouns (*a'o → ado, *i'a → ida)
     r"\bto'a": "toda",
     r"\bto'as": "todas",
@@ -80,7 +78,6 @@ SPANISH_CONTRACTIONS = {
     r"\bcomprometí'a": "comprometida",
     r"\bjodí'o": "jodido",
     r"\bmeti'o": "metido",
-    
     # aspirated 's' / missing letters in pronouns, verbs and nouns
     r"\be'toy": "estoy",
     r"\be'ta": "está",
@@ -90,10 +87,9 @@ SPANISH_CONTRACTIONS = {
     r"\bmi'mo": "mismo",
     r"\bnue'tro": "nuestro",
     r"\bco'quillita": "cosquillita",
-    r"\bdi'que": "dizque", 
-    
+    r"\bdi'que": "dizque",
     # other
-    r"\boí'te": "oíste", # Corregido de "óyete" (por contexto musical/urbano suele ser "oíste")
+    r"\boí'te": "oíste",  # Corregido de "óyete" (por contexto musical/urbano suele ser "oíste")
     r"\bo'ite": "oíste",
     r"\bllega'n": "llegan",
     r"\bna'": "nada",
@@ -102,13 +98,13 @@ SPANISH_CONTRACTIONS = {
     r"\bta's": "estás",
     r"\bd'": "de",
     r"\be'": "es",
-    r"\bto'": "todo", # Ajustado para reflejar "to'" como "todo" (ej: "to' el día")
+    r"\bto'": "todo",  # Ajustado para reflejar "to'" como "todo" (ej: "to' el día")
 }
 # ── English contractions ───────────────────────────────────────────────────────
 ENGLISH_CONTRACTIONS = {
     # --- Verbos con "not" ---
     r"\bdon't": "do not",
-    r"\bdoesn't": "does not", # Añadida
+    r"\bdoesn't": "does not",  # Añadida
     r"\bdidn't": "did not",
     r"\bisn't": "is not",
     r"\baren't": "are not",
@@ -122,10 +118,9 @@ ENGLISH_CONTRACTIONS = {
     r"\bcan't": "cannot",
     r"\bcouldn't": "could not",
     r"\bshouldn't": "should not",
-    r"\bmustn't": "must not", # Añadida
-    r"\bneedn't": "need not", # Añadida
-    r"\bain't": "is not", # (O "are not" / "am not" dependiendo del contexto)
-
+    r"\bmustn't": "must not",  # Añadida
+    r"\bneedn't": "need not",  # Añadida
+    r"\bain't": "is not",  # (O "are not" / "am not" dependiendo del contexto)
     # --- Pronombres + verbo "to be" (am/is/are) ---
     r"\bi'm": "i am",
     r"\byou're": "you are",
@@ -138,25 +133,22 @@ ENGLISH_CONTRACTIONS = {
     r"\bwhat's": "what is",
     r"\bwhere's": "where is",
     r"\bthere's": "there is",
-    r"\bthere're": "there are", # Añadida
+    r"\bthere're": "there are",  # Añadida
     r"\bwho's": "who is",
     r"\bhow's": "how is",
-
     # --- Pronombres + "will" ---
     r"\bi'll": "i will",
     r"\byou'll": "you will",
     r"\bhe'll": "he will",
     r"\bshe'll": "she will",
-    r"\bit'll": "it will", # Añadida
+    r"\bit'll": "it will",  # Añadida
     r"\bwe'll": "we will",
     r"\bthey'll": "they will",
-
     # --- Pronombres + "have" ---
     r"\bi've": "i have",
     r"\byou've": "you have",
     r"\bwe've": "we have",
     r"\bthey've": "they have",
-
     # --- Pronombres + "would" / "had" ---
     r"\bi'd": "i would",
     r"\byou'd": "you would",
@@ -164,17 +156,14 @@ ENGLISH_CONTRACTIONS = {
     r"\bshe'd": "she would",
     r"\bwe'd": "we would",
     r"\bthey'd": "they would",
-
     # --- Otras / Jerga (De la lista original y comunes) ---
     r"\bc'mon": "come on",
     r"\blet's": "let us",
-    r"\by'all": "you all",    # Añadida
-    r"\bshorty's": "shorty is", # De la lista (Cuidado: puede ser posesivo)
-    r"\b90's": "90s",           # De la lista (Normalización de década)
+    r"\by'all": "you all",  # Añadida
+    r"\bshorty's": "shorty is",  # De la lista (Cuidado: puede ser posesivo)
+    r"\b90's": "90s",  # De la lista (Normalización de década)
 }
 CONTRACTIONS = {**SPANISH_CONTRACTIONS, **ENGLISH_CONTRACTIONS}
-
-
 
 
 def normalize_contractions(
@@ -186,7 +175,7 @@ def normalize_contractions(
         rules.update(SPANISH_CONTRACTIONS)
     if english:
         rules.update(ENGLISH_CONTRACTIONS)
-    
+
     # IMPORTANTE: Ordenar por longitud de la clave (descendente)
     # Esto evita que "pa'" se coma a "pa'lante"
     sorted_patterns = sorted(rules.keys(), key=len, reverse=True)
@@ -205,8 +194,9 @@ def normalize_contractions(
                     return repl[0].upper() + repl[1:]
                 # Por defecto minúsculas
                 return repl
+
             return replacer
 
         text = re.sub(pattern, make_replacer(replacement), text, flags=re.IGNORECASE)
-    
+
     return text

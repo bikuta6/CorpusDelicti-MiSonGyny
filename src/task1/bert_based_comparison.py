@@ -284,9 +284,7 @@ def main(augment=False):
     device = torch.device(
         "cuda"
         if torch.cuda.is_available()
-        else "mps"
-        if torch.backends.mps.is_available()
-        else "cpu"
+        else "mps" if torch.backends.mps.is_available() else "cpu"
     )
     print(f"--- INICIANDO COMPARATIVA EN {device.type.upper()} ---")
 

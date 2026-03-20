@@ -15,6 +15,7 @@ except Exception:
     from sentence_transformers import SentenceTransformer
     from contraction_utils import normalize_contractions
 
+
 def process_file(
     input_csv: Path,
     output_csv: Path,
@@ -23,7 +24,7 @@ def process_file(
     text_col: str,
     line_threshold: float = 0.95,
     skip_contractions: bool = False,
-    linewise_processing: bool = False
+    linewise_processing: bool = False,
 ):
     df = pd.read_csv(input_csv)
     if text_col not in df.columns:
@@ -33,7 +34,10 @@ def process_file(
 
     # Step 1: Normalize contractions
     if not skip_contractions:
-        texts = [normalize_contractions(t) for t in tqdm(texts, desc="Normalizing contractions")]
+        texts = [
+            normalize_contractions(t)
+            for t in tqdm(texts, desc="Normalizing contractions")
+        ]
 
     model = SentenceTransformer(model_name)
 
@@ -46,7 +50,13 @@ def process_file(
     for txt in tqdm(texts, desc="Processing lyrics"):
         try:
             out = remove_redundant_lyrics(
-                model, txt, threshold=threshold, line_threshold=line_threshold, similarity_scope="stanza_and_verse" if linewise_processing else "stanza"
+                model,
+                txt,
+                threshold=threshold,
+                line_threshold=line_threshold,
+                similarity_scope=(
+                    "stanza_and_verse" if linewise_processing else "stanza"
+                ),
             )
         except Exception:
             out = ""
@@ -131,7 +141,7 @@ def main():
         args.text_col,
         line_threshold=args.line_threshold,
         skip_contractions=args.skip_contractions,
-        linewise_processing=args.linewise_processing
+        linewise_processing=args.linewise_processing,
     )
     print(f"Saved processed CSV to: {out}")
 

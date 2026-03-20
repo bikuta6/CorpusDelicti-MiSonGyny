@@ -71,9 +71,11 @@ UNK_TOKEN = "<UNK>"
 # VOCABULARIO Y TOKENIZACIÓN
 # ══════════════════════════════════════════════════════════════════════════════
 
+
 def simple_tokenize(text: str) -> list[str]:
     """Tokenización básica: minúsculas + split por espacios/puntuación."""
     import re
+
     text = text.lower()
     # Separar puntuación y mantener palabras (incluye acentos y ñ)
     tokens = re.findall(r"[a-záéíóúüñ']+", text)
@@ -100,8 +102,10 @@ class Vocabulary:
             if freq >= self.min_freq:
                 self.word2idx[word] = len(self.word2idx)
         self.idx2word = {idx: word for word, idx in self.word2idx.items()}
-        print(f"  Vocabulario: {len(self.word2idx):,} tokens "
-              f"(min_freq={self.min_freq})")
+        print(
+            f"  Vocabulario: {len(self.word2idx):,} tokens "
+            f"(min_freq={self.min_freq})"
+        )
 
     def encode(self, text: str, max_len: int) -> list[int]:
         tokens = simple_tokenize(text)[:max_len]
@@ -121,6 +125,7 @@ class Vocabulary:
 # ══════════════════════════════════════════════════════════════════════════════
 # CARGA DE EMBEDDINGS
 # ══════════════════════════════════════════════════════════════════════════════
+
 
 def load_embeddings_txt(path: str, vocab: Vocabulary, emb_dim: int) -> torch.Tensor:
     """
@@ -157,8 +162,10 @@ def load_embeddings_txt(path: str, vocab: Vocabulary, emb_dim: int) -> torch.Ten
                 continue
 
     coverage = n_found / max(len(vocab) - 2, 1) * 100
-    print(f"  Embeddings cargados: {n_found:,}/{len(vocab)-2:,} tokens "
-          f"({coverage:.1f}% de cobertura)")
+    print(
+        f"  Embeddings cargados: {n_found:,}/{len(vocab)-2:,} tokens "
+        f"({coverage:.1f}% de cobertura)"
+    )
     return torch.tensor(embedding_matrix)
 
 
@@ -191,8 +198,10 @@ def load_embeddings_fasttext_bin(
             n_found += 1
 
     coverage = n_found / max(len(vocab) - 2, 1) * 100
-    print(f"  Embeddings cargados: {n_found:,}/{len(vocab)-2:,} tokens "
-          f"({coverage:.1f}% de cobertura)")
+    print(
+        f"  Embeddings cargados: {n_found:,}/{len(vocab)-2:,} tokens "
+        f"({coverage:.1f}% de cobertura)"
+    )
     return torch.tensor(embedding_matrix)
 
 
@@ -207,6 +216,7 @@ def load_embeddings(path: str, vocab: Vocabulary, emb_dim: int) -> torch.Tensor:
 # ══════════════════════════════════════════════════════════════════════════════
 # DATASET PYTORCH
 # ══════════════════════════════════════════════════════════════════════════════
+
 
 class LyricsDataset(Dataset):
     def __init__(
@@ -233,6 +243,7 @@ class LyricsDataset(Dataset):
 # ARQUITECTURAS RNN
 # ══════════════════════════════════════════════════════════════════════════════
 
+
 class AttentionPooling(nn.Module):
     """Atención aditiva simple sobre los pasos temporales de la RNN."""
 
@@ -242,9 +253,9 @@ class AttentionPooling(nn.Module):
 
     def forward(self, rnn_out: torch.Tensor) -> torch.Tensor:
         # rnn_out: (batch, seq_len, hidden)
-        scores = self.attn(rnn_out).squeeze(-1)          # (batch, seq_len)
+        scores = self.attn(rnn_out).squeeze(-1)  # (batch, seq_len)
         weights = torch.softmax(scores, dim=1).unsqueeze(-1)  # (batch, seq_len, 1)
-        return (rnn_out * weights).sum(dim=1)             # (batch, hidden)
+        return (rnn_out * weights).sum(dim=1)  # (batch, hidden)
 
 
 class RNNClassifier(nn.Module):
@@ -265,12 +276,12 @@ class RNNClassifier(nn.Module):
         hidden_size: int,
         num_layers: int,
         dropout: float,
-        cell_type: str,          # "LSTM" | "GRU"
+        cell_type: str,  # "LSTM" | "GRU"
         bidirectional: bool,
         pad_idx: int,
         pretrained_embeddings: torch.Tensor,
         freeze_embeddings: bool = False,
-        pooling: str = "max_mean",   # max | mean | max_mean | attention
+        pooling: str = "max_mean",  # max | mean | max_mean | attention
         num_classes: int = 2,
     ):
         super().__init__()
@@ -309,7 +320,7 @@ class RNNClassifier(nn.Module):
     def forward(self, input_ids: torch.Tensor) -> torch.Tensor:
         # input_ids: (batch, seq_len)
         emb = self.dropout(self.embedding(input_ids))  # (batch, seq_len, emb_dim)
-        out, _ = self.rnn(emb)                         # (batch, seq_len, hidden*dirs)
+        out, _ = self.rnn(emb)  # (batch, seq_len, hidden*dirs)
 
         if self.pooling == "max":
             pooled, _ = out.max(dim=1)
@@ -317,7 +328,7 @@ class RNNClassifier(nn.Module):
             pooled = out.mean(dim=1)
         elif self.pooling == "max_mean":
             max_pool, _ = out.max(dim=1)
-            mean_pool   = out.mean(dim=1)
+            mean_pool = out.mean(dim=1)
             pooled = torch.cat([max_pool, mean_pool], dim=1)
         elif self.pooling == "attention":
             pooled = self.attn_pool(out)
@@ -332,6 +343,7 @@ class RNNClassifier(nn.Module):
 # ══════════════════════════════════════════════════════════════════════════════
 # ENTRENAMIENTO Y EVALUACIÓN
 # ══════════════════════════════════════════════════════════════════════════════
+
 
 def train_epoch(
     model: nn.Module,
@@ -450,19 +462,25 @@ def train_model(
             patience_counter = 0
             # Guardar checkpoint en disco
             torch.save(model.state_dict(), checkpoint_path)
-            print(f"  💾 Checkpoint guardado → {checkpoint_path.name} "
-                  f"(val_loss={best_val_loss:.4f}, val_f1={best_val_f1:.4f})")
+            print(
+                f"  💾 Checkpoint guardado → {checkpoint_path.name} "
+                f"(val_loss={best_val_loss:.4f}, val_f1={best_val_f1:.4f})"
+            )
         else:
             patience_counter += 1
             if patience_counter >= cfg.patience:
-                print(f"  ⏹  Early stopping en epoch {epoch} "
-                      f"(sin mejora en {cfg.patience} epochs)")
+                print(
+                    f"  ⏹  Early stopping en epoch {epoch} "
+                    f"(sin mejora en {cfg.patience} epochs)"
+                )
                 break
 
     # Restaurar mejor modelo desde disco
     model.load_state_dict(torch.load(checkpoint_path, map_location=device))
-    print(f"  ✓  Mejor val_loss: {best_val_loss:.4f} | val_f1: {best_val_f1:.4f} "
-          f"(cargado desde {checkpoint_path.name})")
+    print(
+        f"  ✓  Mejor val_loss: {best_val_loss:.4f} | val_f1: {best_val_f1:.4f} "
+        f"(cargado desde {checkpoint_path.name})"
+    )
     return best_metrics
 
 
@@ -470,42 +488,60 @@ def train_model(
 # PROGRAMA PRINCIPAL
 # ══════════════════════════════════════════════════════════════════════════════
 
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Test de modelos LSTM/GRU con embeddings preentrenados"
     )
     parser.add_argument(
-        "--embeddings", type=str, required=False,
+        "--embeddings",
+        type=str,
+        required=False,
         default="../../models/word_embs/cc.es.300.vec",
-        help="Ruta al fichero de embeddings preentrenados (.vec/.txt/.bin)"
+        help="Ruta al fichero de embeddings preentrenados (.vec/.txt/.bin)",
     )
-    parser.add_argument("--data_path", type=str,
-                        default="../../data/task1/processed_train.csv")
-    parser.add_argument("--test_path", type=str,
-                        default="../../data/task1/processed_test.csv")
-    parser.add_argument("--test_labels_path", type=str,
-                        default="../../data/task1/test_labels.csv")
-    parser.add_argument("--results_file", type=str,
-                        default="../../results/task1/tabla_rnn.csv")
+    parser.add_argument(
+        "--data_path", type=str, default="../../data/task1/processed_train.csv"
+    )
+    parser.add_argument(
+        "--test_path", type=str, default="../../data/task1/processed_test.csv"
+    )
+    parser.add_argument(
+        "--test_labels_path", type=str, default="../../data/task1/test_labels.csv"
+    )
+    parser.add_argument(
+        "--results_file", type=str, default="../../results/task1/tabla_rnn.csv"
+    )
     parser.add_argument("--embedding_dim", type=int, default=300)
-    parser.add_argument("--hidden_size",   type=int, default=256)
-    parser.add_argument("--num_layers",    type=int, default=2)
-    parser.add_argument("--dropout",       type=float, default=0.5)
-    parser.add_argument("--batch_size",    type=int, default=32)
-    parser.add_argument("--epochs",        type=int, default=30)
-    parser.add_argument("--patience",      type=int, default=5)
-    parser.add_argument("--lr",            type=float, default=3e-4)
-    parser.add_argument("--max_len",       type=int, default=512)
-    parser.add_argument("--min_freq",      type=int, default=2)
-    parser.add_argument("--val_size",      type=float, default=0.2)
-    parser.add_argument("--freeze_emb",    action="store_true",
-                        help="Congelar embeddings durante el entrenamiento")
-    parser.add_argument("--pooling",       type=str, default="max_mean",
-                        choices=["max", "mean", "max_mean", "attention"],
-                        help="Estrategia de pooling temporal")
-    parser.add_argument("--label_smoothing", type=float, default=0.1,
-                        help="Label smoothing en CrossEntropyLoss (0 = sin smoothing)")
-    parser.add_argument("--seed",          type=int, default=DEFAULT_SEED)
+    parser.add_argument("--hidden_size", type=int, default=256)
+    parser.add_argument("--num_layers", type=int, default=2)
+    parser.add_argument("--dropout", type=float, default=0.5)
+    parser.add_argument("--batch_size", type=int, default=32)
+    parser.add_argument("--epochs", type=int, default=30)
+    parser.add_argument("--patience", type=int, default=5)
+    parser.add_argument("--lr", type=float, default=3e-4)
+    parser.add_argument("--max_len", type=int, default=512)
+    parser.add_argument("--min_freq", type=int, default=2)
+    parser.add_argument("--val_size", type=float, default=0.2)
+    parser.add_argument(
+        "--freeze_emb",
+        action="store_true",
+        help="Congelar embeddings durante el entrenamiento",
+    )
+    parser.add_argument(
+        "--pooling",
+        type=str,
+        default="max_mean",
+        choices=["max", "mean", "max_mean", "attention"],
+        help="Estrategia de pooling temporal",
+    )
+    parser.add_argument(
+        "--label_smoothing",
+        type=float,
+        default=0.1,
+        help="Label smoothing en CrossEntropyLoss (0 = sin smoothing)",
+    )
+    parser.add_argument("--seed", type=int, default=DEFAULT_SEED)
     return parser.parse_args()
 
 
@@ -514,9 +550,9 @@ def main():
     set_seed(cfg.seed)
 
     device = torch.device(
-        "mps" if torch.backends.mps.is_available()
-        else "cuda" if torch.cuda.is_available()
-        else "cpu"
+        "mps"
+        if torch.backends.mps.is_available()
+        else "cuda" if torch.cuda.is_available() else "cpu"
     )
     print(f"\nDispositivo: {device}")
 
@@ -565,17 +601,21 @@ def main():
             vocab=vocab,
             max_len=cfg.max_len,
         )
-        return DataLoader(ds, batch_size=cfg.batch_size, shuffle=shuffle,
-                          pin_memory=(device.type == "cuda"))
+        return DataLoader(
+            ds,
+            batch_size=cfg.batch_size,
+            shuffle=shuffle,
+            pin_memory=(device.type == "cuda"),
+        )
 
     train_loader = make_loader(train_split, shuffle=True)
-    val_loader   = make_loader(val_split,   shuffle=False)
-    test_loader  = make_loader(test_df,     shuffle=False)
+    val_loader = make_loader(val_split, shuffle=False)
+    test_loader = make_loader(test_df, shuffle=False)
 
     # Pesos de clase para pérdida ponderada
-    n_pos  = int(train_split["label"].sum())
-    n_neg  = len(train_split) - n_pos
-    total  = n_pos + n_neg
+    n_pos = int(train_split["label"].sum())
+    n_neg = len(train_split) - n_pos
+    total = n_pos + n_neg
     w0 = total / (2 * n_neg)
     w1 = total / (2 * n_pos)
     cfg.class_weights = torch.tensor([w0, w1], dtype=torch.float)
@@ -583,10 +623,10 @@ def main():
 
     # ── 5. Configuraciones de modelos ──────────────────────────────────────────
     model_configs = [
-        {"name": "LSTM",    "cell_type": "LSTM", "bidirectional": False},
-        {"name": "BiLSTM",  "cell_type": "LSTM", "bidirectional": True},
-        {"name": "GRU",     "cell_type": "GRU",  "bidirectional": False},
-        {"name": "BiGRU",   "cell_type": "GRU",  "bidirectional": True},
+        {"name": "LSTM", "cell_type": "LSTM", "bidirectional": False},
+        {"name": "BiLSTM", "cell_type": "LSTM", "bidirectional": True},
+        {"name": "GRU", "cell_type": "GRU", "bidirectional": False},
+        {"name": "BiGRU", "cell_type": "GRU", "bidirectional": True},
     ]
 
     # ── 6. Entrenamiento y evaluación ──────────────────────────────────────────
@@ -641,19 +681,21 @@ def main():
             f"Rec={test_metrics['recall']:.4f}"
         )
 
-        results.append({
-            "Modelo": mcfg["name"],
-            # Validación
-            "Val F1-macro":  best_val["f1_macro"],
-            "Val Accuracy":  best_val["accuracy"],
-            "Val Precision": best_val["precision"],
-            "Val Recall":    best_val["recall"],
-            # Test
-            "Test F1-macro":  test_metrics["f1_macro"],
-            "Test Accuracy":  test_metrics["accuracy"],
-            "Test Precision": test_metrics["precision"],
-            "Test Recall":    test_metrics["recall"],
-        })
+        results.append(
+            {
+                "Modelo": mcfg["name"],
+                # Validación
+                "Val F1-macro": best_val["f1_macro"],
+                "Val Accuracy": best_val["accuracy"],
+                "Val Precision": best_val["precision"],
+                "Val Recall": best_val["recall"],
+                # Test
+                "Test F1-macro": test_metrics["f1_macro"],
+                "Test Accuracy": test_metrics["accuracy"],
+                "Test Precision": test_metrics["precision"],
+                "Test Recall": test_metrics["recall"],
+            }
+        )
 
         # Liberar memoria
         del model

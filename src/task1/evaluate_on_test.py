@@ -194,7 +194,7 @@ def run_inference(
             tokenizer=tokenizer,
             model=model,
             max_len=max_len,
-            stride=CHUNK_STRIDE if not use_pysentimiento_preprocess else 64,  
+            stride=CHUNK_STRIDE if not use_pysentimiento_preprocess else 64,
             device=device,
             use_pysentimiento_preprocess=use_pysentimiento_preprocess,
         )
@@ -233,9 +233,7 @@ results_list = []
 device = torch.device(
     "cuda"
     if torch.cuda.is_available()
-    else "mps"
-    if torch.backends.mps.is_available()
-    else "cpu"
+    else "mps" if torch.backends.mps.is_available() else "cpu"
 )
 print(f"\n--- INICIANDO INFERENCIA EN TEST ({device}) ---\n")
 
