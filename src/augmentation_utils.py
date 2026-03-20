@@ -26,7 +26,7 @@ BACKTRANS_RU = 5
 
 HELSINKI_BATCH_SIZE = 32
 
-DEFAULT_METHOD_PROBS = [0.45, 0.20, 0.20, 0.10, 0.05]
+DEFAULT_METHOD_PROBS = [0.35, 0.15, 0.20, 0.20, 0.10]
 
 # ─────────────────────────────────────────────────────────────
 # MARIAN MODEL CACHE
@@ -164,12 +164,12 @@ class LyricsAugmentor:
         # 1. Sustitución por Sinónimos (Español)
         self.aug_syn = naw.SynonymAug(aug_src="wordnet", lang="spa")
 
-        # 2. Random Swap (Intercambia palabras)
-        self.aug_swap = naw.RandomWordAug(action="swap", aug_p=0.1)
+        # 2. Random Swap (Intercambia palabras) - moderate intensity
+        self.aug_swap = naw.RandomWordAug(action="swap", aug_p=0.07)
 
-        # 3. Ruido de caracteres (Simula typos)
+        # 3. Ruido de caracteres (Simula typos) - moderate intensity
         self.aug_char = nac.RandomCharAug(
-            action="substitute", aug_char_p=0.1, aug_word_p=0.1
+            action="substitute", aug_char_p=0.06, aug_word_p=0.06
         )
 
         self.rng = np.random.default_rng(seed)
@@ -209,8 +209,8 @@ class LyricsAugmentor:
     def _assign_method_mask(self, n: int) -> np.ndarray:
         """
         Randomly assigns a method to each of the n samples.
-        Default distribution:
-        SYNONYM 45%, WORD_SWAP 20%, CHAR_NOISE 20%, BACKTRANS_EN 10%, BACKTRANS_RU 5%.
+        Default moderate distribution:
+        SYNONYM 35%, WORD_SWAP 15%, CHAR_NOISE 20%, BACKTRANS_EN 20%, BACKTRANS_RU 10%.
         """
         choices = self.rng.choice(
             [SYNONYM, WORD_SWAP, CHAR_NOISE, BACKTRANS_EN, BACKTRANS_RU],
