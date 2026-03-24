@@ -26,7 +26,7 @@ class ModelConfig:
     num_train_epochs: int = 10
     weight_decay: float = 0.01
     warmup_ratio: float = 0.1
-    max_grad_norm: float = None
+    max_grad_norm: float = 0.0
     lr_scheduler_type: str = "linear"
     early_stopping_patience: int = 3
     optim: str = "adamw_torch_fused"  # "adamw_torch" o "adamw_hf"
