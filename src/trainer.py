@@ -77,9 +77,7 @@ class WeightedTrainer(Trainer):
         if self.loss_type == "focal":
             self.focal_loss_fct = FocalLoss(
                 gamma=focal_gamma, alpha=focal_alpha, is_multilabel=is_multilabel
-            ).to(
-                self.args.device
-            )  # Ensure it starts on the right device
+            ).to(self.args.device)  # Ensure it starts on the right device
 
         elif self.loss_type == "weighted":
             self.focal_loss_fct = None

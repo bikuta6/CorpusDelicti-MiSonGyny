@@ -46,61 +46,19 @@ SAVE_DIR = "../../models/task1/comparison"
 # CARGA DE DATOS
 # ─────────────────────────────────────────────────────────────
 def main(augment=False):
-    print(f"Cargando datos desde {DATA_PATH}...")
-    df = pd.read_csv(DATA_PATH)
-    df["label"] = df["label"].map({"NM": 0, "M": 1})
-    print(f"Dataset cargado: {len(df)} canciones")
-    print(f"Distribución original:\n{df['label'].value_counts()}")
-
-    if "augmentation" in df.columns:
-        originals_df = df[df["augmentation"] == "original"].copy()
-        augmented_df = df[df["augmentation"] != "original"].copy()
-        print(
-            f"[Anti-leakage] Originals: {len(originals_df)} | Augmented: {len(augmented_df)}"
-        )
-
-        # Build a Series mapping unique_id -> label for stratification
-        # Augmented samples share the same ID as their originals
-        id_to_label = originals_df.drop_duplicates("id").set_index("id")["label"]
-        unique_ids = id_to_label.index.to_numpy()
-        stratify_labels = id_to_label.loc[unique_ids].to_numpy()
-
-        train_ids, val_ids = train_test_split(
-            unique_ids, test_size=0.2, random_state=SEED, stratify=stratify_labels
-        )
-        train_ids_set = set(train_ids)
-        val_ids_set = set(val_ids)
-
-        # Validation: only original samples whose ID is in val_ids
-        val_df = originals_df[originals_df["id"].isin(val_ids_set)].copy()
-
-        # Train: original samples with train IDs + augmented whose ID is in train_ids only
-        train_originals = originals_df[originals_df["id"].isin(train_ids_set)]
-        train_augmented = augmented_df[augmented_df["id"].isin(train_ids_set)]
-        train_df = pd.concat(
-            [train_originals, train_augmented], ignore_index=True
-        ).sample(frac=1, random_state=SEED)
-
-        print(
-            f"  Train size (originals + augmented): {len(train_df)} | Val size (originals only): {len(val_df)}"
-        )
-        print(
-            f"  Train augmentation distribution:\n{train_df['augmentation'].value_counts()}"
-        )
-        leaked = train_df[
-            (train_df["augmentation"] != "original")
-            & (train_df["id"].isin(val_ids_set))
-        ]
-        print(f"  Augmented samples with val ID in train: {len(leaked)} (should be 0)")
-    else:
-        train_df, val_df = train_test_split(
-            df, test_size=0.2, random_state=SEED, stratify=df["label"]
-        )
+    TRAIN_PATH = DATA_PATH
+    VAL_PATH = DATA_PATH.replace("train.csv", "val.csv")
+    print(f"Cargando datos de entrenamiento desde {TRAIN_PATH}...")
+    train_df = pd.read_csv(TRAIN_PATH)
+    train_df["label"] = train_df["label"].map({"NM": 0, "M": 1})
+    print(f"Cargando datos de validación desde {VAL_PATH}...")
+    val_df = pd.read_csv(VAL_PATH)
+    val_df["label"] = val_df["label"].map({"NM": 0, "M": 1})
 
     # Compute class weights from original training samples only
     train_originals_labels = (
         train_df[train_df["augmentation"] == "original"]["label"]
-        if "augmentation" in df.columns
+        if "augmentation" in train_df.columns
         else train_df["label"]
     )
     n_pos = (train_originals_labels == 1).sum()
@@ -116,7 +74,7 @@ def main(augment=False):
     tokenizer_beto = AutoTokenizer.from_pretrained(MODEL_CONFIGS["BETO"].model_id)
     train_originals_texts = (
         train_df[train_df["augmentation"] == "original"]["lyrics"].tolist()
-        if "augmentation" in df.columns
+        if "augmentation" in train_df.columns
         else train_df["lyrics"].tolist()
     )
     tokenized_lengths = tokenizer_beto(
@@ -284,7 +242,9 @@ def main(augment=False):
     device = torch.device(
         "cuda"
         if torch.cuda.is_available()
-        else "mps" if torch.backends.mps.is_available() else "cpu"
+        else "mps"
+        if torch.backends.mps.is_available()
+        else "cpu"
     )
     print(f"--- INICIANDO COMPARATIVA EN {device.type.upper()} ---")
 

@@ -2,15 +2,17 @@
 Script de prueba: Verifica que la reproducibilidad con seeds funciona correctamente.
 """
 
-import sys
 import os
+import sys
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-import torch
-import numpy as np
 import random
-from utils import set_seed, DEFAULT_SEED, print_seed_info
+
+import numpy as np
+import torch
+
+from utils import DEFAULT_SEED, print_seed_info, set_seed
 
 print("=" * 60)
 print("TEST DE REPRODUCIBILIDAD")

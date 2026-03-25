@@ -3,28 +3,30 @@ Comparativa de modelos para Task 1: Clasificación Binaria de Misoginia en Canci
 Genera una tabla para el paper con métricas de cada modelo.
 """
 
+import gc
 import os
 import sys
-import gc
+
 import pandas as pd
 import torch
 from datasets import Dataset
+from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 from sklearn.model_selection import train_test_split
 from transformers import (
-    AutoTokenizer,
-    TrainingArguments,
     AutoModelForSequenceClassification,
-    EarlyStoppingCallback,
+    AutoTokenizer,
     BitsAndBytesConfig,
+    EarlyStoppingCallback,
+    TrainingArguments,
 )
-from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
 
 # Añadimos la carpeta padre al path para poder importar utils y trainer
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from utils import set_seed, DEFAULT_SEED
+from llm_model_configs import LLM_CONFIGS, LLMConfig
+
 from trainer import WeightedTrainer
-from llm_model_configs import LLMConfig, LLM_CONFIGS
+from utils import DEFAULT_SEED, set_seed
 
 # --- REPRODUCIBILIDAD ---
 SEED = DEFAULT_SEED
@@ -38,13 +40,16 @@ SAVE_DIR = "../../models/task1/comparison_llm"
 
 
 # --- CARGA DE DATOS ---
-print(f"Cargando datos desde {DATA_PATH}...")
-df = pd.read_csv(DATA_PATH)
-df["label"] = df["label"].map({"NM": 0, "M": 1})
+TRAIN_PATH = DATA_PATH
+VAL_PATH = DATA_PATH.replace("train.csv", "val.csv")
 
-train_df, val_df = train_test_split(
-    df, test_size=0.2, random_state=SEED, stratify=df["label"]
-)
+print(f"Cargando datos de entrenamiento desde {TRAIN_PATH}...")
+train_df = pd.read_csv(TRAIN_PATH)
+train_df["label"] = train_df["label"].map({"NM": 0, "M": 1})
+
+print(f"Cargando datos de validación desde {VAL_PATH}...")
+val_df = pd.read_csv(VAL_PATH)
+val_df["label"] = val_df["label"].map({"NM": 0, "M": 1})
 # column lyrics -> text, label -> label
 train_ds = Dataset.from_pandas(
     train_df.rename(columns={"lyrics": "text", "label": "label"}), preserve_index=False
@@ -104,7 +109,9 @@ results_list = []
 device = torch.device(
     "cuda"
     if torch.cuda.is_available()
-    else "mps" if torch.backends.mps.is_available() else "cpu"
+    else "mps"
+    if torch.backends.mps.is_available()
+    else "cpu"
 )
 
 print(
@@ -115,10 +122,10 @@ for name, cfg in LLM_CONFIGS.items():
     if name[-2:] in {"7B", "8B"}:
         continue
     model_id = cfg.model_id
-    print(f"\n{'='*50}")
+    print(f"\n{'=' * 50}")
     print(f">>> Evaluando: {name} ({model_id})")
     print(f"    lr={cfg.learning_rate}, max_len={cfg.max_len}, lora_r={cfg.lora_r}")
-    print(f"{'='*50}")
+    print(f"{'=' * 50}")
 
     try:
         # 1. Configuración de Cuantización a 4-bit (Obligatorio para 12GB VRAM)
@@ -281,8 +288,8 @@ df_res = df_res.sort_values("F1-Macro", ascending=False)
 os.makedirs(os.path.dirname(RESULTS_FILE), exist_ok=True)
 df_res.to_csv(RESULTS_FILE, index=False)
 
-print(f"\n{'='*60}")
+print(f"\n{'=' * 60}")
 print("RESULTADOS COMPARATIVA LLMs QLoRA")
-print(f"{'='*60}")
+print(f"{'=' * 60}")
 print(df_res.to_markdown(index=False))
 print(f"\n Guardado en: {RESULTS_FILE}")

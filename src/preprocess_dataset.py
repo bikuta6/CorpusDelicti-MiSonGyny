@@ -1,19 +1,22 @@
 import argparse
 import sys
 from pathlib import Path
+
 import pandas as pd
 from tqdm.auto import tqdm
 
 try:
-    from lyric_utils import remove_redundant_lyrics
     from sentence_transformers import SentenceTransformer
+
     from contraction_utils import normalize_contractions
+    from lyric_utils import remove_redundant_lyrics
 except Exception:
     repo_root = Path(__file__).resolve().parents[1]
     sys.path.append(str(repo_root))
-    from lyric_utils import remove_redundant_lyrics
     from sentence_transformers import SentenceTransformer
+
     from contraction_utils import normalize_contractions
+    from lyric_utils import remove_redundant_lyrics
 
 
 def process_file(

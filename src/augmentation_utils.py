@@ -1,8 +1,8 @@
-import pandas as pd
-import nlpaug.augmenter.word as naw
 import nlpaug.augmenter.char as nac
+import nlpaug.augmenter.word as naw
 import nltk
 import numpy as np
+import pandas as pd
 import torch
 from tqdm.auto import tqdm
 from transformers import MarianMTModel, MarianTokenizer
@@ -297,11 +297,11 @@ class LyricsAugmentor:
 
         print(
             f"  Method distribution — "
-            f"synonym: {(mask==SYNONYM).sum()}, "
-            f"word_swap: {(mask==WORD_SWAP).sum()}, "
-            f"char_noise: {(mask==CHAR_NOISE).sum()}, "
-            f"backtrans_en: {(mask==BACKTRANS_EN).sum()}, "
-            f"backtrans_ru: {(mask==BACKTRANS_RU).sum()}"
+            f"synonym: {(mask == SYNONYM).sum()}, "
+            f"word_swap: {(mask == WORD_SWAP).sum()}, "
+            f"char_noise: {(mask == CHAR_NOISE).sum()}, "
+            f"backtrans_en: {(mask == BACKTRANS_EN).sum()}, "
+            f"backtrans_ru: {(mask == BACKTRANS_RU).sum()}"
         )
 
         # ── 1. Synonym ────────────────────────────────────────────

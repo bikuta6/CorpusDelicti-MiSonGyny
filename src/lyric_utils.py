@@ -1,9 +1,10 @@
 import re
 import unicodedata
-from sentence_transformers import SentenceTransformer, util
-from pysentimiento.preprocessing import preprocess_tweet
-import torch
+
 import pandas as pd
+import torch
+from pysentimiento.preprocessing import preprocess_tweet
+from sentence_transformers import SentenceTransformer, util
 
 # Structural section labels to remove from parentheses (Spanish + English)
 _STRUCTURAL_LABELS_RE = re.compile(
