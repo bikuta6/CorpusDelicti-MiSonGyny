@@ -35,13 +35,13 @@ set_seed(SEED)
 # CONFIGURACIÓN
 # ─────────────────────────────────────────────────────────────
 
-TEST_LYRICS_PATH = "../../prev_data/task1/processed_test.csv"
-TEST_LABELS_PATH = "../../prev_data/task1/test_labels.csv"
-MODELS_DIR = "../../models/task1/comparison"
-RESULTS_FILE = "../../results/task1/tabla_paper_test.csv"
-BEST_THRESHOLDS_PATH = "../../results/task1/tabla_paper.csv"
+TEST_LYRICS_PATH = "../../prev_data/task3/processed_test.csv"
+TEST_LABELS_PATH = "../../prev_data/task3/test_labels.csv"
+MODELS_DIR = "../../models/task3/comparison"
+RESULTS_FILE = "../../results/task3/tabla_paper_test.csv"
+BEST_THRESHOLDS_PATH = "../../results/task3/tabla_paper.csv"
 BATCH_SIZE = 32
-ID2LABEL = {0: "NM", 1: "M"}
+ID2LABEL = {0: "N", 1: "Y"}
 CHUNK_STRIDE = 256  # Overlap between chunks
 
 # max_len y pysentimiento_preprocess por modelo
@@ -64,7 +64,7 @@ df_lyrics = pd.read_csv(TEST_LYRICS_PATH)
 df_labels = pd.read_csv(TEST_LABELS_PATH)
 
 df = df_lyrics.merge(df_labels, on="id")
-df["label"] = df["label"].map({"NM": 0, "M": 1})
+df["label"] = df["label"].map({"N": 0, "Y": 1})
 df = df.rename(columns={"lyrics": "text"})
 df["text"] = df["text"].fillna("").astype(str)
 
@@ -115,7 +115,7 @@ def get_chunked_probability(
     use_pysentimiento_preprocess: bool = False,
 ) -> float:
     """
-    Get probability for class M using sliding window with max pooling.
+    Get probability for class Y using sliding window with max pooling.
     Returns single probability (max across all chunks).
     """
     if use_pysentimiento_preprocess:
@@ -211,7 +211,7 @@ def run_inference(
     cm = confusion_matrix(true_labels, all_preds)
 
     print(
-        f"\n  {classification_report(true_labels, all_preds, target_names=['NM', 'M'])}"
+        f"\n  {classification_report(true_labels, all_preds, target_names=['N', 'Y'])}"
     )
     print(f"  Confusion matrix:\n{cm}\n")
 

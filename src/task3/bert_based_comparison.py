@@ -33,9 +33,9 @@ from utils import DEFAULT_SEED, set_seed
 SEED = DEFAULT_SEED
 set_seed(SEED)
 
-DATA_PATH = "../../data/task1/train_df.csv"
-RESULTS_FILE = "../../results/task1/tabla_paper.csv"
-SAVE_DIR = "../../models/task1/comparison"
+DATA_PATH = "../../data/task3/train_df.csv"
+RESULTS_FILE = "../../results/task3/tabla_paper.csv"
+SAVE_DIR = "../../models/task3/comparison"
 
 # ─────────────────────────────────────────────────────────────
 # CONFIGURACIONES POR MODELO
@@ -50,10 +50,10 @@ def main(augment=False):
     VAL_PATH = DATA_PATH.replace("train_df.csv", "val_df.csv")
     print(f"Cargando datos de entrenamiento desde {TRAIN_PATH}...")
     train_df = pd.read_csv(TRAIN_PATH)
-    train_df["label"] = train_df["label"].map({"NM": 0, "M": 1})
+    train_df["label"] = train_df["label"].map({"N": 0, "Y": 1})
     print(f"Cargando datos de validación desde {VAL_PATH}...")
     val_df = pd.read_csv(VAL_PATH)
-    val_df["label"] = val_df["label"].map({"NM": 0, "M": 1})
+    val_df["label"] = val_df["label"].map({"N": 0, "Y": 1})
 
     # Compute class weights from original training samples only
     train_originals_labels = (
