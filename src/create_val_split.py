@@ -1,13 +1,31 @@
 import argparse
+
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
-def main(task: str = "task1", ratio: float = 0.85):
+from utils import set_seed
+
+
+def get_stratify_col(task: str, df: pd.DataFrame) -> pd.Series:
+    if task in ["task1", "task3"]:
+        return df["label"]
+    elif task == "task2":
+        return (
+            df[["sexualization", "violence", "hate"]].astype(str).agg("_".join, axis=1)
+        )
+    else:
+        raise ValueError(f"Invalid task: {task}. Must be 'task1', 'task2', or 'task3'.")
+
+
+def main(task: str = "task1", ratio: float = 0.8):
+
+    set_seed(42)  # Establecer seed para reproducibilidad
     try:
-        path = f"../data/{task}/train.csv"
+        path = f"../data/{task}/processed_train.csv"
         df = pd.read_csv(path)
+        stratify_col = get_stratify_col(task, df)
         train_df, val_df = train_test_split(
-            df, test_size=1 - ratio, random_state=42, stratify=df["label"]
+            df, test_size=1 - ratio, random_state=42, stratify=stratify_col
         )
 
         # overwrite train and save train and val splits
@@ -15,10 +33,11 @@ def main(task: str = "task1", ratio: float = 0.85):
         val_df.to_csv(f"../data/{task}/val_df.csv", index=False)
 
     except FileNotFoundError:
-        path = f"./data/{task}/train.csv"
+        path = f"./data/{task}/processed_train.csv"
         df = pd.read_csv(path)
+        stratify_col = get_stratify_col(task, df)
         train_df, val_df = train_test_split(
-            df, test_size=1 - ratio, random_state=42, stratify=df["label"]
+            df, test_size=1 - ratio, random_state=42, stratify=stratify_col
         )
 
         # overwrite train and save train and val splits
