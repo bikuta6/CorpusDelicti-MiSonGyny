@@ -26,13 +26,13 @@ def preprocess_lyrics(text):
 
 # 2. Data Loading & Merging
 # Assuming 'train.csv' exists with columns: song_id, lyrics, label
-train_df = pd.read_csv("../../data/task1/processed_train.csv")
+train_df = pd.read_csv("../../data/task1/train_df.csv")
+val_df = pd.read_csv("../../data/task1/val_df.csv")
+train_df = pd.concat([train_df, val_df], ignore_index=True)
 train_df["clean_lyrics"] = train_df["lyrics"].apply(preprocess_lyrics)
 
 # Test data (separate files)
-test_songs = pd.read_csv("../../data/task1/processed_test.csv")  # song_id, lyrics
-test_labels = pd.read_csv("../../data/task1/test_labels.csv")  # song_id, label
-test_df = pd.merge(test_songs, test_labels, on="id")
+test_df = pd.read_csv("../../data/task1/dev_df.csv")  # song_id, lyrics
 test_df["clean_lyrics"] = test_df["lyrics"].apply(preprocess_lyrics)
 # Create a mapping
 label_map = {"NM": 0, "M": 1}

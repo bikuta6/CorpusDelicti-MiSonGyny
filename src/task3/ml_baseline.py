@@ -26,13 +26,13 @@ def preprocess_lyrics(text):
 
 # 2. Data Loading & Merging
 # Assuming 'train.csv' exists with columns: song_id, lyrics, label
-train_df = pd.read_csv("../../data/task3/processed_train.csv")
+train_df = pd.read_csv("../../data/task3/train_df.csv")
+val_df = pd.read_csv("../../data/task3/val_df.csv")
+train_df = pd.concat([train_df, val_df], ignore_index=True)
 train_df["clean_lyrics"] = train_df["lyrics"].apply(preprocess_lyrics)
 
 # Test data (separate files)
-test_songs = pd.read_csv("../../data/task3/processed_test.csv")  # song_id, lyrics
-test_labels = pd.read_csv("../../data/task3/test_labels.csv")  # song_id, label
-test_df = pd.merge(test_songs, test_labels, on="id")
+test_df = pd.read_csv("../../data/task3/dev_df.csv")  # song_id, lyrics
 test_df["clean_lyrics"] = test_df["lyrics"].apply(preprocess_lyrics)
 # Create a mapping
 label_map = {"N": 0, "Y": 1}
@@ -45,12 +45,8 @@ y_test = test_df["label"].map(label_map)
 
 # 3. Vectorization (TF-IDF)
 tfidf = TfidfVectorizer(max_features=5000)
-X = tfidf.fit_transform(train_df["clean_lyrics"])
-
-X_train, X_val, y_train, y_val = train_test_split(
-    X, y, stratify=y, test_size=0.2, random_state=42
-)
-
+X_train = tfidf.fit_transform(train_df["clean_lyrics"])
+y_train = y
 
 X_test = tfidf.transform(test_df["clean_lyrics"])
 
