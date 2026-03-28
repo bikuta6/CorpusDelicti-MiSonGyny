@@ -46,18 +46,29 @@ def _paraphrase_llm(text: str) -> str:
                 {
                     "role": "system", 
                     "content": (
-                        "Eres un asistente estricto. Parafrasea la siguiente letra de "
-                        "canción en español. Mantén el significado original exacto. "
-                        "IMPORTANTE: La letra usa comas (,) para separar los versos y puntos (.) "
-                        "para separar las estrofas. DEBES mantener estrictamente este mismo formato "
-                        "en tu respuesta, sin usar saltos de línea. Responde ÚNICAMENTE con la letra "
-                        "parafraseada."
+                        "Eres un experto compositor. Reescribe y parafrasea la siguiente letra "
+                        "de canción en español. Cambia el vocabulario usando sinónimos y "
+                        "altera la estructura, pero mantén el sentimiento original. "
+                        "REGLA ESTRICTA: NO USES SALTOS DE LÍNEA. Todo el texto debe fluir en un "
+                        "solo párrafo. Separa los versos con comas (,) y las estrofas con puntos (.). "
+                        "No incluyas el título ni el artista."
                     )
                 },
+                # --- FEW-SHOT EXAMPLE: We SHOW the model exactly how to behave ---
+                {
+                    "role": "user",
+                    "content": "title: Ejemplo, artist: Fake. Me duele el alma, cuando te vas, y me dejas solo. Vuelve pronto, te lo ruego, no me hagas sufrir."
+                },
+                {
+                    "role": "assistant",
+                    # Notice the output: totally different words, strictly one line, comma/period format!
+                    "content": "Siento un gran vacío en mi interior, al verte partir, dejándome en total abandono. Regresa rápido a mi lado, te lo imploro, evita que siga padeciendo."
+                },
+                # --- ACTUAL INPUT ---
                 {"role": "user", "content": text}
             ],
-            temperature=0.2, 
-            max_tokens=512
+            temperature=0.7,  # Bumped to 0.7 for maximum synonym swapping
+            max_tokens=2048
         )
         return response.choices[0].message.content.strip()
     except Exception as e:
