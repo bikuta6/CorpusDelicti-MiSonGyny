@@ -1,13 +1,18 @@
 import os
 import re
+
+import nlpaug.augmenter.char as nac
+import nlpaug.augmenter.word as naw
 import nltk
 import numpy as np
 import pandas as pd
 import torch
-import nlpaug.augmenter.word as naw
+import transformers
+from openai import OpenAI
 from tqdm.auto import tqdm
 from transformers import MarianMTModel, MarianTokenizer
-from openai import OpenAI
+
+transformers.logging.set_verbosity_error()
 
 # ─────────────────────────────────────────────────────────────
 # 1. SETUP & RESOURCES
@@ -24,19 +29,60 @@ SYNONYM = 1
 BACKTRANS_EN = 2
 BACKTRANS_FR = 3
 LLM_PARAPHRASE = 4
+RANDOM_DELETE = 5
+RANDOM_CHAR_INSERT = 6
+AEDA_PUNC = 7
 
 HELSINKI_BATCH_SIZE = 32
-DEFAULT_METHOD_PROBS = [0.20, 0.30, 0.20, 0.30]
+DEFAULT_METHOD_PROBS = [0.15, 0.20, 0.15, 0.20, 0.10, 0.10, 0.10]
 
 # ─────────────────────────────────────────────────────────────
 # 2. LLM PARAPHRASING SETUP (via Local Ollama)
 # ─────────────────────────────────────────────────────────────
 llm_client = OpenAI(
-    base_url="http://localhost:11434/v1", 
-    api_key="ollama", 
+    base_url="http://localhost:11434/v1",
+    api_key="ollama",
 )
 
 LLM_MODEL = "dolphin-llama3"
+
+
+def _is_hallucination_or_filler(generated_text: str) -> bool:
+    lower_text = generated_text.lower()
+
+    # Detect repetitive loops (e.g. "HAHAHAHAHAHA" or repeating the same word ad infinitum)
+    if re.search(r"(.{1,15})\1{10,}", lower_text):
+        return True
+
+    words = lower_text.split()
+    if len(words) > 10:
+        for i in range(len(words) - 10):
+            # If the exact same word is repeated 10 times in a row
+            if len(set(words[i : i + 10])) == 1:
+                return True
+
+    fillers = [
+        "aquí tienes",
+        "claro",
+        "por supuesto",
+        "te ayudo",
+        "here is",
+        "sure",
+        "i cannot",
+        "lo siento",
+        "no puedo",
+        "as an ai",
+        "como modelo",
+        "reescritura:",
+        "paráfrasis:",
+        "a continuación",
+    ]
+    if any(lower_text.startswith(f) for f in fillers):
+        return True
+    if "aquí tienes" in lower_text[:50] or "here is" in lower_text[:50]:
+        return True
+    return False
+
 
 def _paraphrase_llm(text: str) -> str:
     try:
@@ -44,36 +90,41 @@ def _paraphrase_llm(text: str) -> str:
             model=LLM_MODEL,
             messages=[
                 {
-                    "role": "system", 
+                    "role": "system",
                     "content": (
-                        "Eres un experto compositor. Reescribe y parafrasea la siguiente letra "
-                        "de canción en español. Cambia el vocabulario usando sinónimos y "
-                        "altera la estructura, pero mantén el sentimiento original. "
-                        "REGLA ESTRICTA: NO USES SALTOS DE LÍNEA. Todo el texto debe fluir en un "
-                        "solo párrafo. Separa los versos con comas (,) y las estrofas con puntos (.). "
-                        "No incluyas el título ni el artista."
-                    )
+                        "You are an expert songwriter. Rewrite and paraphrase the following song lyrics "
+                        "in Spanish (or Latin American Spanish). Change the vocabulary using synonyms and "
+                        "alter the structure, but keep the original message and tone intact. "
+                        "STRICT RULE: DO NOT USE LINE BREAKS. The entire text must flow as a "
+                        "single paragraph. Separate verses with commas (,) and stanzas with periods (.). "
+                        "Do not include the title or the artist in your response."
+                    ),
                 },
                 # --- FEW-SHOT EXAMPLE: We SHOW the model exactly how to behave ---
                 {
                     "role": "user",
-                    "content": "title: Ejemplo, artist: Fake. Me duele el alma, cuando te vas, y me dejas solo. Vuelve pronto, te lo ruego, no me hagas sufrir."
+                    "content": "title: Corrido de Nicolaza, artist: El compadre enamorado Jose Luis Chavez. Con cinco tiros de mauser mataron a Nicolaza, el primer tiro era bueno los otros cuatros de gracia, por andarlos mancornando les pasa lo que les pasa.",
                 },
                 {
                     "role": "assistant",
                     # Notice the output: totally different words, strictly one line, comma/period format!
-                    "content": "Siento un gran vacío en mi interior, al verte partir, dejándome en total abandono. Regresa rápido a mi lado, te lo imploro, evita que siga padeciendo."
+                    "content": "De cinco balazos de rifle le quitaron la vida a Nicolaza, el primer impacto fue letal y los cuatro restantes para rematarla. Eso es lo que sucede por andar engañando a dos hombres, sufren las consecuencias de sus actos.",
                 },
                 # --- ACTUAL INPUT ---
-                {"role": "user", "content": text}
+                {"role": "user", "content": text},
             ],
-            temperature=0.7,  # Bumped to 0.7 for maximum synonym swapping
-            max_tokens=2048
+            temperature=0.3,
+            max_tokens=2048,
         )
-        return response.choices[0].message.content.strip()
+        result = response.choices[0].message.content.strip()
+        if _is_hallucination_or_filler(result):
+            print("  [LLM] Detected hallucination or filler. Rejecting.")
+            return text
+        return result
     except Exception as e:
         print(f"  [LLM] Error: {e}")
         return text
+
 
 # ─────────────────────────────────────────────────────────────
 # 3. BACKTRANSLATION (MarianMT)
@@ -82,10 +133,14 @@ _device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 _HELSINKI_MODELS = {
     "en": {"fwd": "Helsinki-NLP/opus-mt-es-en", "bwd": "Helsinki-NLP/opus-mt-en-es"},
-    "fr": {"fwd": "Helsinki-NLP/opus-mt-es-fr", "bwd": "Helsinki-NLP/opus-mt-fr-es"}, # Swapped to French
+    "fr": {
+        "fwd": "Helsinki-NLP/opus-mt-es-fr",
+        "bwd": "Helsinki-NLP/opus-mt-fr-es",
+    },  # Swapped to French
 }
 
 _marian_cache: dict = {}
+
 
 def _get_marian(model_name: str):
     if model_name not in _marian_cache:
@@ -96,12 +151,15 @@ def _get_marian(model_name: str):
         _marian_cache[model_name] = (tok, mdl)
     return _marian_cache[model_name]
 
+
 def _translate_single(text: str, tokenizer, model) -> str:
-    MAX_TOKENS = 490 
-    
+    MAX_TOKENS = 490
+
     token_ids = tokenizer.encode(text, add_special_tokens=False)
     if len(token_ids) <= MAX_TOKENS:
-        inputs = tokenizer([text], return_tensors="pt", padding=True, truncation=True, max_length=512).to(_device)
+        inputs = tokenizer(
+            [text], return_tensors="pt", padding=True, truncation=True, max_length=512
+        ).to(_device)
         with torch.no_grad():
             output = model.generate(**inputs)
         return tokenizer.decode(output[0], skip_special_tokens=True)
@@ -111,13 +169,15 @@ def _translate_single(text: str, tokenizer, model) -> str:
 
     for seg in segments:
         seg_len = len(tokenizer.encode(seg, add_special_tokens=False))
-        
+
         if seg_len > MAX_TOKENS:
             if current_chunk:
                 chunks.append(" ".join(current_chunk))
                 current_chunk, current_len = [], 0
-            
-            sub_segments = [sub.strip() for sub in re.split(r"(?<=,) ", seg) if sub.strip()]
+
+            sub_segments = [
+                sub.strip() for sub in re.split(r"(?<=,) ", seg) if sub.strip()
+            ]
             for sub in sub_segments:
                 sub_len = len(tokenizer.encode(sub, add_special_tokens=False))
                 if sub_len > MAX_TOKENS:
@@ -149,41 +209,52 @@ def _translate_single(text: str, tokenizer, model) -> str:
     if current_chunk:
         chunks.append(" ".join(current_chunk))
 
-    inputs = tokenizer(chunks, return_tensors="pt", padding=True, truncation=True, max_length=512).to(_device)
+    inputs = tokenizer(
+        chunks, return_tensors="pt", padding=True, truncation=True, max_length=512
+    ).to(_device)
     with torch.no_grad():
         outputs = model.generate(**inputs)
-    
+
     translated_chunks = [tokenizer.decode(o, skip_special_tokens=True) for o in outputs]
     return " ".join(translated_chunks)
+
 
 def _translate(texts: list[str], model_name: str) -> list[str]:
     tokenizer, model = _get_marian(model_name)
     results = []
-    for text in tqdm(texts, desc=f"Translating {model_name}", leave=False):
+    for text in texts:
         try:
             results.append(_translate_single(text, tokenizer, model))
         except Exception as e:
             results.append(text)
     return results
 
+
 def backtranslate_batch(texts: list[str], pivot_lang: str) -> list[str]:
     fwd_model = _HELSINKI_MODELS[pivot_lang]["fwd"]
     bwd_model = _HELSINKI_MODELS[pivot_lang]["bwd"]
     pivot_texts = _translate(texts, fwd_model)
     back_texts = _translate(pivot_texts, bwd_model)
-    return [b if (b and isinstance(b, str)) else src for b, src in zip(back_texts, texts)]
+    return [
+        b if (b and isinstance(b, str)) else src for b, src in zip(back_texts, texts)
+    ]
+
 
 # ─────────────────────────────────────────────────────────────
 # 4. MAIN AUGMENTOR CLASS
 # ─────────────────────────────────────────────────────────────
 class LyricsAugmentor:
     def __init__(self, seed: int = 42, method_probs: list[float] | None = None):
-        self.aug_syn = naw.SynonymAug(aug_src="wordnet", lang="spa", aug_p=0.1)
+        self.aug_syn = naw.SynonymAug(aug_src="wordnet", lang="spa", aug_p=0.2)
+        self.aug_del = naw.RandomWordAug(action="delete", aug_p=0.1)
+        self.aug_char_ins = nac.RandomCharAug(
+            action="insert", aug_char_p=0.1, aug_word_p=0.1
+        )
         self.rng = np.random.default_rng(seed)
         self.method_probs = method_probs or DEFAULT_METHOD_PROBS
-        
-        if len(self.method_probs) != 4:
-            raise ValueError("method_probs must have exactly 4 values.")
+
+        if len(self.method_probs) != 7:
+            raise ValueError("method_probs must have exactly 7 values.")
         if not np.isclose(sum(self.method_probs), 1.0):
             raise ValueError("method_probs must sum to 1.0.")
 
@@ -191,30 +262,48 @@ class LyricsAugmentor:
         return " ".join(str(text).split())
 
     def _is_valid_augmentation(self, original_text: str, augmented_text: str) -> bool:
-        if not isinstance(augmented_text, str): return False
+        if not isinstance(augmented_text, str):
+            return False
         orig = self._normalize_text(original_text)
         aug = self._normalize_text(augmented_text)
-        
-        if not aug or aug == orig or len(aug) < 8: return False
-        
+
+        if not aug or aug == orig or len(aug) < 8:
+            return False
+
         ratio = len(aug) / max(1, len(orig))
-        if ratio < 0.4 or ratio > 2.0: return False
+        if ratio < 0.4 or ratio > 2.0:
+            return False
         return True
 
     def _assign_method_mask(self, n: int) -> np.ndarray:
         return self.rng.choice(
-            [SYNONYM, BACKTRANS_EN, BACKTRANS_FR, LLM_PARAPHRASE],
+            [
+                SYNONYM,
+                BACKTRANS_EN,
+                BACKTRANS_FR,
+                LLM_PARAPHRASE,
+                RANDOM_DELETE,
+                RANDOM_CHAR_INSERT,
+                AEDA_PUNC,
+            ],
             size=n,
             p=self.method_probs,
         )
 
-    def _run_backtranslations(self, texts, mask, indices, pivot_lang, method_id, results, methods):
+    def _run_backtranslations(
+        self, texts, mask, indices, pivot_lang, method_id, results, methods
+    ):
         lang_indices = [i for i in indices if mask[i] == method_id]
         lang_texts = [texts[i] for i in lang_indices]
-        if not lang_texts: return
+        if not lang_texts:
+            return
 
         translated_all = []
-        for start in tqdm(range(0, len(lang_texts), HELSINKI_BATCH_SIZE), desc=f"Backtrans {pivot_lang}", leave=False):
+        for start in tqdm(
+            range(0, len(lang_texts), HELSINKI_BATCH_SIZE),
+            desc=f"Backtrans {pivot_lang}",
+            leave=False,
+        ):
             batch = lang_texts[start : start + HELSINKI_BATCH_SIZE]
             translated_all.extend(backtranslate_batch(batch, pivot_lang))
 
@@ -222,12 +311,21 @@ class LyricsAugmentor:
             results[i] = aug_text
             methods[i] = f"backtranslation_{pivot_lang}"
 
-    def augment_dataframe(self, df: pd.DataFrame, text_col="lyrics", label_col="label", target_classes=None, multiplier=1):
+    def augment_dataframe(
+        self,
+        df: pd.DataFrame,
+        text_col="lyrics",
+        label_col="label",
+        target_classes=None,
+        multiplier=1,
+    ):
         """
         Augments the dataframe.
         - target_classes: None (augments all rows), int/str (augments one class), or list (augments specific classes).
         """
-        print(f"--- Initiating Meaning-Preserving Augmentation (Factor x{multiplier}) ---")
+        print(
+            f"--- Initiating Meaning-Preserving Augmentation (Factor x{multiplier}) ---"
+        )
 
         # Determine which rows to augment
         if target_classes is None:
@@ -236,13 +334,16 @@ class LyricsAugmentor:
         else:
             if not isinstance(target_classes, list):
                 target_classes = [target_classes]
-            df_to_augment = df[df[label_col].isin(target_classes)].copy().reset_index(drop=True)
+            df_to_augment = (
+                df[df[label_col].isin(target_classes)].copy().reset_index(drop=True)
+            )
             print(f"Target classes: {target_classes}")
 
         all_texts, all_row_idx = [], []
         for i, row in df_to_augment.iterrows():
             text = str(row[text_col])
-            if not text or text.lower() == "nan": continue
+            if not text or text.lower() == "nan":
+                continue
             for _ in range(multiplier):
                 all_texts.append(text)
                 all_row_idx.append(i)
@@ -250,22 +351,23 @@ class LyricsAugmentor:
         n = len(all_texts)
         if n == 0:
             print("No texts found to augment.")
-            if "augmentation" not in df.columns: 
+            if "augmentation" not in df.columns:
                 df = df.copy()
                 df["augmentation"] = "original"
             return df
 
         mask = self._assign_method_mask(n)
-        results = list(all_texts) 
+        results = list(all_texts)
         methods = ["original_fallback"] * n
 
         # ── 1. Synonym ────────────────────────────────────────────
         syn_idx = [i for i, m in enumerate(mask) if m == SYNONYM]
         for i in tqdm(syn_idx, desc="Synonym Replacement"):
             try:
-                results[i] = self.aug_syn.augment(all_texts[i])[0] 
+                results[i] = self.aug_syn.augment(all_texts[i])[0]
                 methods[i] = "synonym"
-            except: pass
+            except:
+                pass
 
         # ── 2. LLM Paraphrase ─────────────────────────────────────
         llm_idx = [i for i, m in enumerate(mask) if m == LLM_PARAPHRASE]
@@ -273,38 +375,84 @@ class LyricsAugmentor:
             results[i] = _paraphrase_llm(all_texts[i])
             methods[i] = "llm_paraphrase"
 
-        # ── 3 & 4. Backtranslation (Batched) ──────────────────────
+        # ── 3. Random Word Deletion ───────────────────────────────
+        del_idx = [i for i, m in enumerate(mask) if m == RANDOM_DELETE]
+        for i in tqdm(del_idx, desc="Random Word Deletion"):
+            try:
+                results[i] = self.aug_del.augment(all_texts[i])[0]
+                methods[i] = "random_delete"
+            except:
+                pass
+
+        # ── 4. Random Character Insertion ─────────────────────────
+        char_idx = [i for i, m in enumerate(mask) if m == RANDOM_CHAR_INSERT]
+        for i in tqdm(char_idx, desc="Random Char Insertion"):
+            try:
+                results[i] = self.aug_char_ins.augment(all_texts[i])[0]
+                methods[i] = "random_char_insert"
+            except:
+                pass
+
+        # ── 5. AEDA (Punctuation Insertion) ───────────────────────
+        aeda_idx = [i for i, m in enumerate(mask) if m == AEDA_PUNC]
+        punctuations = [".", ",", "!", "?", ";", ":"]
+        for i in tqdm(aeda_idx, desc="AEDA Punc Insertion"):
+            try:
+                words = all_texts[i].split()
+                augmented = []
+                for word in words:
+                    augmented.append(word)
+                    if self.rng.random() < 0.1:
+                        augmented.append(self.rng.choice(punctuations))
+                results[i] = " ".join(augmented)
+                methods[i] = "aeda_punc"
+            except:
+                pass
+
+        # ── 6 & 7. Backtranslation (Batched) ──────────────────────
         all_indices = list(range(n))
-        self._run_backtranslations(all_texts, mask, all_indices, "en", BACKTRANS_EN, results, methods)
-        self._run_backtranslations(all_texts, mask, all_indices, "fr", BACKTRANS_FR, results, methods)
+        self._run_backtranslations(
+            all_texts, mask, all_indices, "en", BACKTRANS_EN, results, methods
+        )
+        self._run_backtranslations(
+            all_texts, mask, all_indices, "fr", BACKTRANS_FR, results, methods
+        )
 
         # ── Filtering and Assembly ────────────────────────────────
         filtered_results, filtered_methods, filtered_row_idx = [], [], []
         rejected = 0
-        
-        for row_idx, original_text, aug_text, method in zip(all_row_idx, all_texts, results, methods):
-            if method != "original_fallback" and self._is_valid_augmentation(original_text, aug_text):
+
+        for row_idx, original_text, aug_text, method in zip(
+            all_row_idx, all_texts, results, methods
+        ):
+            if method != "original_fallback" and self._is_valid_augmentation(
+                original_text, aug_text
+            ):
                 filtered_row_idx.append(row_idx)
                 filtered_results.append(self._normalize_text(aug_text))
                 filtered_methods.append(method)
             else:
                 rejected += 1
 
-        print(f"  Augmentation diagnostics — Accepted: {len(filtered_results)}, Rejected: {rejected}")
+        print(
+            f"  Augmentation diagnostics — Accepted: {len(filtered_results)}, Rejected: {rejected}"
+        )
 
         new_rows = []
-        for row_idx, aug_text, method in zip(filtered_row_idx, filtered_results, filtered_methods):
+        for row_idx, aug_text, method in zip(
+            filtered_row_idx, filtered_results, filtered_methods
+        ):
             new_row = df_to_augment.loc[row_idx].copy()
             new_row[text_col] = aug_text
             new_row["augmentation"] = method
             new_rows.append(new_row)
 
         df_augmented = pd.DataFrame(new_rows)
-        
-        if "augmentation" not in df.columns: 
+
+        if "augmentation" not in df.columns:
             df = df.copy()
             df["augmentation"] = "original"
-            
+
         combined_df = pd.concat([df, df_augmented], ignore_index=True)
         combined_df = combined_df.sample(frac=1, random_state=42).reset_index(drop=True)
 

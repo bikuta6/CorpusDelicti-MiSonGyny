@@ -8,6 +8,9 @@ class ModelConfig:
     """Configuración de arquitectura y entrenamiento para un modelo."""
 
     model_id: str
+    problem_type: str = (
+        "multi_label_classification"  # Tipo de tarea para la cabeza de clasificación
+    )
 
     # --- Arquitectura del clasificador ---
     pooling_strategy: str = "cls_mean"  # "cls", "mean", "cls_mean"

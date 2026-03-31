@@ -84,6 +84,14 @@ MODEL_CONFIGS: dict[str, ModelConfig] = {
         use_pysentimiento_preprocess=True,
         learning_rate=2e-5,  # ↑ ligeramente más alto
     ),
+    "mDeBERTa": ModelConfig(
+        model_id="microsoft/mdeberta-v3-base",
+        classifier_dropout=0.1,
+        attention_probs_dropout_prob=0.1,
+        hidden_dropout_prob=0.1,
+        max_len=512,
+        learning_rate=2e-5,
+    ),
     "LongFormer": ModelConfig(
         model_id="mrm8488/longformer-base-4096-spanish",  # or  Buzzeitor/longformer-base-4096-bne-es
         classifier_dropout=0.1,

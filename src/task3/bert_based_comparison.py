@@ -54,6 +54,10 @@ def main(augment=False):
     print(f"Cargando datos de validación desde {VAL_PATH}...")
     val_df = pd.read_csv(VAL_PATH)
     val_df["label"] = val_df["label"].map({"N": 0, "Y": 1})
+    DEV_PATH = DATA_PATH.replace("train_df.csv", "dev_df.csv")
+    print(f"Cargando datos de test/dev desde {DEV_PATH}...")
+    dev_df = pd.read_csv(DEV_PATH)
+    dev_df["label"] = dev_df["label"].map({"N": 0, "Y": 1})
 
     # Compute class weights from original training samples only
     train_originals_labels = (
@@ -104,6 +108,9 @@ def main(augment=False):
     )
     val_ds = Dataset.from_pandas(
         val_df.rename(columns={"lyrics": "text"}), preserve_index=False
+    )
+    dev_ds = Dataset.from_pandas(
+        dev_df.rename(columns={"lyrics": "text"}), preserve_index=False
     )
 
     # ─────────────────────────────────────────────────────────────
@@ -199,7 +206,7 @@ def main(augment=False):
         return tokenize_fn
 
     def load_model_with_config(model_id: str, cfg: ModelConfig, device: torch.device):
-        model = build_bert_like_classifier(cfg, device)
+        model = build_bert_like_classifier(cfg, device, num_labels=2)
         print(
             "    Pooling="
             f"{getattr(model.config, 'pooling_strategy', 'cls')} | "
@@ -272,12 +279,22 @@ def main(augment=False):
                 remove_columns=["text"],
                 load_from_cache_file=False,
             )
+            dev_tok = dev_ds.map(
+                tokenize_fn,
+                batched=True,
+                remove_columns=["text"],
+                load_from_cache_file=False,
+            )
             train_tok = train_tok.rename_column("label", "labels")
             val_tok = val_tok.rename_column(
                 "labels" if "labels" in val_tok.column_names else "label", "labels"
             )
+            dev_tok = dev_tok.rename_column(
+                "labels" if "labels" in dev_tok.column_names else "label", "labels"
+            )
             train_tok.set_format("torch")
             val_tok.set_format("torch")
+            dev_tok.set_format("torch")
 
             model = load_model_with_config(cfg.model_id, cfg, device)
 
@@ -308,9 +325,9 @@ def main(augment=False):
             metrics = trainer.evaluate()
 
             # ─────────────────────────────────────────
-            # Collect validation probabilities
+            # Collect validation probabilities (on Dev Set)
             # ─────────────────────────────────────────
-            pred_output = trainer.predict(val_tok)
+            pred_output = trainer.predict(dev_tok)
 
             logits = pred_output.predictions
             probs = torch.softmax(torch.tensor(logits), dim=-1)[:, 1].numpy()
@@ -366,7 +383,14 @@ def main(augment=False):
             )
 
         finally:
-            for var in ["trainer", "model", "tokenizer", "train_tok", "val_tok"]:
+            for var in [
+                "trainer",
+                "model",
+                "tokenizer",
+                "train_tok",
+                "val_tok",
+                "dev_tok",
+            ]:
                 if var in locals():
                     del locals()[var]
             gc.collect()

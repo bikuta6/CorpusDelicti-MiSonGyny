@@ -9,6 +9,8 @@ import tqdm
 SPANISH_CONTRACTIONS = {
     # pa' family
     r"\bpa'l": "para el",
+    r"\bpa'tilla": "pastilla",
+    r"\bpa'triki": "para triki",
     r"\bpa'la": "para la",
     r"\bpa'cá": "para acá",
     r"\bpa'llá": "para allá",
@@ -26,6 +28,9 @@ SPANISH_CONTRACTIONS = {
     r"\bvamo'a": "vamos a",
     r"\bva'": "vas",
     # dropped -d- in past participles / adjectives / nouns (*a'o → ado, *i'a → ida)
+    r"\bcorona'o": "coronado",
+    r"\bporta'o": "portado",
+    r"\bdesespera'o": "desesperado",
     r"\bto'a": "toda",
     r"\bto'as": "todas",
     r"\bto's": "todos",
@@ -99,7 +104,17 @@ SPANISH_CONTRACTIONS = {
     r"\bd'": "de",
     r"\be'": "es",
     r"\bto'": "todo",  # Ajustado para reflejar "to'" como "todo" (ej: "to' el día")
+    r"\bto'l": "todo el",
+    r"\bna'más": "nada más",
+    r"\ba'lo": "a lo",
 }
+# ── French contractions ────────────────────────────────────────────────────────
+FRENCH_CONTRACTIONS = {
+    r"\bc'est": "ce est",
+    r"\bj'ai": "je ai",
+    r"\bm'a": "me a",
+}
+
 # ── English contractions ───────────────────────────────────────────────────────
 ENGLISH_CONTRACTIONS = {
     # --- Verbos con "not" ---
@@ -162,12 +177,13 @@ ENGLISH_CONTRACTIONS = {
     r"\by'all": "you all",  # Añadida
     r"\bshorty's": "shorty is",  # De la lista (Cuidado: puede ser posesivo)
     r"\b90's": "90s",  # De la lista (Normalización de década)
+    r"\bmc's": "mcs",
 }
-CONTRACTIONS = {**SPANISH_CONTRACTIONS, **ENGLISH_CONTRACTIONS}
+CONTRACTIONS = {**SPANISH_CONTRACTIONS, **ENGLISH_CONTRACTIONS, **FRENCH_CONTRACTIONS}
 
 
 def normalize_contractions(
-    text: str, spanish: bool = True, english: bool = True
+    text: str, spanish: bool = True, english: bool = True, french: bool = True
 ) -> str:
     """Replace informal contractions in lyrics with their full forms."""
     rules = {}
@@ -175,6 +191,8 @@ def normalize_contractions(
         rules.update(SPANISH_CONTRACTIONS)
     if english:
         rules.update(ENGLISH_CONTRACTIONS)
+    if french:
+        rules.update(FRENCH_CONTRACTIONS)
 
     # IMPORTANTE: Ordenar por longitud de la clave (descendente)
     # Esto evita que "pa'" se coma a "pa'lante"

@@ -71,12 +71,14 @@ class WeightedTrainer(Trainer):
         self.loss_type = loss_type  # "weighted",  "focal" o "standard"
 
         # Determine problem type from model config
-        is_multilabel = self.model.config.problem_type == "multi_label_classification"
+        self.is_multilabel = (
+            self.model.config.problem_type == "multi_label_classification"
+        )
 
         # Initialize the loss function ONCE
         if self.loss_type == "focal":
             self.focal_loss_fct = FocalLoss(
-                gamma=focal_gamma, alpha=focal_alpha, is_multilabel=is_multilabel
+                gamma=focal_gamma, alpha=focal_alpha, is_multilabel=self.is_multilabel
             ).to(self.args.device)  # Ensure it starts on the right device
 
         elif self.loss_type == "weighted":
@@ -98,10 +100,10 @@ class WeightedTrainer(Trainer):
         if self.loss_type == "focal":
             loss = self.focal_loss_fct(logits, labels)
         else:
-            is_multilabel = (
+            self.is_multilabel = (
                 self.model.config.problem_type == "multi_label_classification"
             )
-            if is_multilabel:
+            if self.is_multilabel:
                 loss_fct = nn.BCEWithLogitsLoss(pos_weight=self.class_weights)
                 loss = loss_fct(logits, labels.float())
             else:

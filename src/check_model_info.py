@@ -1,13 +1,14 @@
 import traceback
+
 import torch
-from transformers import AutoModel, AutoModelForSequenceClassification, AutoConfig
+from transformers import AutoConfig, AutoModel, AutoModelForSequenceClassification
 
 MODELS = {
     "DistilBETO": "dccuchile/distilbert-base-spanish-uncased",
     "BETO": "dccuchile/bert-base-spanish-wwm-cased",
     "MarIA": "IsGarrido/roberta-base-bne",
     "XLM-R": "xlm-roberta-base",
-    # "mDeBERTa": "microsoft/mdeberta-v3-base",
+    "mDeBERTa": "microsoft/mdeberta-v3-base",
     "XLM-Longformer": "markussagen/xlm-roberta-longformer-base-4096",
     "Robertuito": "pysentimiento/robertuito-hate-speech",
 }
@@ -23,7 +24,7 @@ def print_structure(module, name="model", max_depth=2):
     def _rec(m, prefix, depth):
         total, trainable = module_info(m)
         print(
-            f"{prefix}{name if prefix=='' else ''}{('' if prefix=='' else '')}{''} - {m.__class__.__name__} | params={total} trainable={trainable}"
+            f"{prefix}{name if prefix == '' else ''}{('' if prefix == '' else '')}{''} - {m.__class__.__name__} | params={total} trainable={trainable}"
         )
         if depth >= max_depth:
             return

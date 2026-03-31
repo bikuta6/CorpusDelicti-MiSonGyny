@@ -16,7 +16,12 @@ import torch
 from bert_model_configs import MODEL_CONFIGS, ModelConfig
 from datasets import Dataset
 from pysentimiento.preprocessing import preprocess_tweet
-from sklearn.metrics import accuracy_score, f1_score, precision_recall_fscore_support
+from sklearn.metrics import (
+    accuracy_score,
+    f1_score,
+    hamming_loss,
+    precision_recall_fscore_support,
+)
 from sklearn.model_selection import train_test_split
 from transformers import (
     AutoTokenizer,
@@ -33,9 +38,9 @@ from utils import DEFAULT_SEED, set_seed
 SEED = DEFAULT_SEED
 set_seed(SEED)
 
-DATA_PATH = "../../data/task1/train_df.csv"
-RESULTS_FILE = "../../results/task1/tabla_paper.csv"
-SAVE_DIR = "../../models/task1/comparison"
+DATA_PATH = "../../data/task2/train_df.csv"
+RESULTS_FILE = "../../results/task2/tabla_paper.csv"
+SAVE_DIR = "../../models/task2/comparison"
 
 # ─────────────────────────────────────────────────────────────
 # CONFIGURACIONES POR MODELO
@@ -45,19 +50,25 @@ SAVE_DIR = "../../models/task1/comparison"
 # ─────────────────────────────────────────────────────────────
 # CARGA DE DATOS
 # ─────────────────────────────────────────────────────────────
+def create_label_column(df: pd.DataFrame, label_cols: list[str]) -> pd.Series:
+    """Crea una columna label con array one hot a partir de las columnas de etiquetas individuales."""
+    return df[label_cols].astype(int).values.tolist()
+
+
 def main(augment=False):
     TRAIN_PATH = DATA_PATH
     VAL_PATH = DATA_PATH.replace("train_df.csv", "val_df.csv")
+    label_cols = ["sexualization", "violence", "hate"]
     print(f"Cargando datos de entrenamiento desde {TRAIN_PATH}...")
     train_df = pd.read_csv(TRAIN_PATH)
-    train_df["label"] = train_df["label"].map({"NM": 0, "M": 1})
+    train_df["label"] = create_label_column(train_df, label_cols)
     print(f"Cargando datos de validación desde {VAL_PATH}...")
     val_df = pd.read_csv(VAL_PATH)
-    val_df["label"] = val_df["label"].map({"NM": 0, "M": 1})
+    val_df["label"] = create_label_column(val_df, label_cols)
     DEV_PATH = DATA_PATH.replace("train_df.csv", "dev_df.csv")
     print(f"Cargando datos de test/dev desde {DEV_PATH}...")
     dev_df = pd.read_csv(DEV_PATH)
-    dev_df["label"] = dev_df["label"].map({"NM": 0, "M": 1})
+    dev_df["label"] = create_label_column(dev_df, label_cols)
 
     # Compute class weights from original training samples only
     train_originals_labels = (
@@ -65,14 +76,20 @@ def main(augment=False):
         if "augmentation" in train_df.columns
         else train_df["label"]
     )
-    n_pos = (train_originals_labels == 1).sum()
-    n_neg = (train_originals_labels == 0).sum()
-    total = n_neg + n_pos
-    w0 = total / (2 * n_neg)
-    w1 = total / (2 * n_pos)
-    weights_tensor = torch.tensor([w0, w1]).float()
+    n_samples = len(train_originals_labels)
+    n_pos = np.array(
+        [
+            train_originals_labels.apply(lambda x: int(x[i])).sum()
+            for i in range(len(label_cols))
+        ]
+    )
+    n_neg = n_samples - n_pos
+    weights_tensor = (n_neg / np.maximum(1, n_pos)).astype(float)
+    n_sexualization, n_violence, n_hate = n_pos
+    w_sexualization, w_violence, w_hate = weights_tensor
     print(
-        f"Desbalance: Neg={n_neg}, Pos={n_pos} -> Peso clase 0: {w0:.2f}, clase 1: {w1:.2f}"
+        f"Desbalance: sexualization={n_sexualization} (w={w_sexualization:.2f}), "
+        f"violence={n_violence} (w={w_violence:.2f}), hate={n_hate} (w={w_hate:.2f})"
     )
     # Using beto tokenizer WITHOUT truncation to get real token length stats on original training samples
     tokenizer_beto = AutoTokenizer.from_pretrained(MODEL_CONFIGS["BETO"].model_id)
@@ -117,37 +134,66 @@ def main(augment=False):
     # FUNCIONES AUXILIARES
     # ─────────────────────────────────────────────────────────────
 
-    def compute_metrics(pred):
-        labels = pred.label_ids
-        preds = pred.predictions.argmax(-1)
-        precision, recall, f1, _ = precision_recall_fscore_support(
-            labels, preds, average="macro", zero_division=0.0
+    def compute_metrics(
+        pred, label_names=["sexualization", "violence", "hate"], thresholds=None
+    ):
+        """
+        pred: output from Trainer.predict
+        thresholds: None or list/array of per-label thresholds (len == num_labels). If None, uses 0.5.
+        Returns dict with per-label precision/recall/f1 and aggregated micro/macro f1 and hamming_loss.
+        """
+
+        logits = pred.predictions  # shape (n_samples, num_labels)
+        probs = torch.sigmoid(torch.tensor(logits)).numpy()
+        if thresholds is None:
+            thresholds = [0.5] * probs.shape[1]
+        thresholds = np.array(thresholds)
+        preds = (probs >= thresholds).astype(int)
+        true = pred.label_ids  # shape (n_samples, num_labels)
+
+        results = {}
+        # per-label metrics
+        for i, name in enumerate(label_names):
+            p = precision_score(true[:, i], preds[:, i], zero_division=0)
+            r = recall_score(true[:, i], preds[:, i], zero_division=0)
+            f1 = f1_score(true[:, i], preds[:, i], zero_division=0)
+            results[f"{name}_precision"] = round(p, 4)
+            results[f"{name}_recall"] = round(r, 4)
+            results[f"{name}_f1"] = round(f1, 4)
+
+        # aggregated metrics
+        results["eval_f1_micro"] = round(
+            f1_score(true, preds, average="micro", zero_division=0), 4
         )
-        acc = accuracy_score(labels, preds)
-        return {
-            "accuracy": round(acc, 4),
-            "eval_f1_macro": round(f1, 4),
-            "precision": round(precision, 4),
-            "recall": round(recall, 4),
-        }
+        results["eval_f1_macro"] = round(
+            f1_score(true, preds, average="macro", zero_division=0), 4
+        )
+        results["eval_hamming_loss"] = round(hamming_loss(true, preds), 4)
+        return results
 
-    def find_best_threshold(true_labels, probs, step=0.01):
-        thresholds = np.arange(0.0, 1.0 + step, step)
-        best_thr = 0.5
-        best_f1 = 0.0
+    def find_best_thresholds(true_labels, probs, step=0.01):
+        """
+        Find per-label threshold that maximizes F1 (macro or per-label).
+        Returns (thresholds, f1_scores) arrays of length num_labels.
+        """
+        true = np.array(true_labels)  # shape (n, num_labels)
+        probs = np.array(probs)  # shape (n, num_labels)
+        num_labels = probs.shape[1]
+        best_thresholds = []
+        best_f1s = []
 
-        true_labels = np.array(true_labels)
-        probs = np.array(probs)
-
-        for thr in thresholds:
-            preds = (probs >= thr).astype(int)
-            f1 = f1_score(true_labels, preds, average="macro", zero_division=0.0)
-
-            if f1 > best_f1:
-                best_f1 = f1
-                best_thr = thr
-
-        return round(best_thr, 3), round(best_f1, 4)
+        for i in range(num_labels):
+            best_thr = 0.5
+            best_f1 = 0.0
+            for thr in np.arange(0.0, 1.0 + step, step):
+                preds_i = (probs[:, i] >= thr).astype(int)
+                f1_i = f1_score(true[:, i], preds_i, zero_division=0)
+                if f1_i > best_f1:
+                    best_f1 = f1_i
+                    best_thr = thr
+            best_thresholds.append(round(best_thr, 3))
+            best_f1s.append(round(best_f1, 4))
+        return best_thresholds, best_f1s
 
     def make_tokenize_fn(tokenizer, cfg: ModelConfig):
         """Tokenization with smart head+tail truncation."""
@@ -206,7 +252,7 @@ def main(augment=False):
         return tokenize_fn
 
     def load_model_with_config(model_id: str, cfg: ModelConfig, device: torch.device):
-        model = build_bert_like_classifier(cfg, device, num_labels=2)
+        model = build_bert_like_classifier(cfg, device, num_labels=3)
         print(
             "    Pooling="
             f"{getattr(model.config, 'pooling_strategy', 'cls')} | "
@@ -330,7 +376,7 @@ def main(augment=False):
             pred_output = trainer.predict(dev_tok)
 
             logits = pred_output.predictions
-            probs = torch.softmax(torch.tensor(logits), dim=-1)[:, 1].numpy()
+            probs = torch.sigmoid(torch.tensor(logits)).numpy()
             true_labels = pred_output.label_ids
 
             # ─────────────────────────────────────────

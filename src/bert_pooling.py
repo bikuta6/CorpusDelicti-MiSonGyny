@@ -8,8 +8,8 @@ from transformers import (
     AutoConfig,
     AutoModel,
     AutoModelForSequenceClassification,
-    PreTrainedModel,
     PretrainedConfig,
+    PreTrainedModel,
 )
 from transformers.modeling_outputs import SequenceClassifierOutput
 
@@ -155,9 +155,8 @@ class LyricsPoolingClassifier(PreTrainedModel):
         logits = self.classifier(self.dropout(pooled))
 
         loss = None
-        if labels is not None:
-            loss_fct = nn.CrossEntropyLoss()
-            loss = loss_fct(logits.view(-1, self.config.num_labels), labels.view(-1))
+        # We bypass internal loss calculation to allow the Trainer (WeightedTrainer)
+        # to correctly apply focal or multi-label BCE loss using compute_loss()
 
         return SequenceClassifierOutput(
             loss=loss,
@@ -180,12 +179,13 @@ class BertLikeBuildConfig:
 def build_bert_like_classifier(
     cfg: Any,
     device: torch.device,
+    num_labels: int = 2,
 ) -> nn.Module:
     """Builds the configurable pooling classifier from a model config object."""
     model = LyricsPoolingClassifier.from_backbone_pretrained(
         base_model_name_or_path=cfg.model_id,
         pooling_strategy=getattr(cfg, "pooling_strategy", "cls"),
-        num_labels=2,
+        num_labels=num_labels,
         classifier_dropout=cfg.classifier_dropout,
         hidden_dropout_prob=cfg.hidden_dropout_prob,
         attention_probs_dropout_prob=cfg.attention_probs_dropout_prob,
