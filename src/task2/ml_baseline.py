@@ -64,7 +64,7 @@ candidates = [
         ),
         "param_grid": {
             # GridSearch will pass params to the underlying estimator via 'estimator__estimator__C'
-            "estimator__estimator__C": [0.1, 1.0, 10.0]
+            "estimator__C": [0.1, 1.0, 10.0]
         },
     },
     {
@@ -73,14 +73,14 @@ candidates = [
             RandomForestClassifier(class_weight="balanced", n_jobs=-1)
         ),
         "param_grid": {
-            "estimator__estimator__n_estimators": [100, 200],
-            "estimator__estimator__max_depth": [None, 20],
+            "estimator__n_estimators": [100, 200],
+            "estimator__max_depth": [None, 20],
         },
     },
     {
         "name": "LinearSVC_OVR",
         "estimator": OneVsRestClassifier(LinearSVC(max_iter=20000)),
-        "param_grid": {"estimator__estimator__C": [0.01, 0.1, 1.0]},
+        "param_grid": {"estimator__C": [0.01, 0.1, 1.0]},
     },
 ]
 
