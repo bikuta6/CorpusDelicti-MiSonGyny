@@ -26,7 +26,7 @@ from transformers import (
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from augmentation_utils import LyricsAugmentor
-from bert_pooling import build_bert_like_classifier
+from bert_pooling import build_bert_like_classifier, predict_with_chunks
 from trainer import WeightedTrainer
 from utils import DEFAULT_SEED, set_seed
 
@@ -327,7 +327,17 @@ def main(augment=False):
             # ─────────────────────────────────────────
             # Collect validation probabilities (on Dev Set)
             # ─────────────────────────────────────────
-            pred_output = trainer.predict(dev_tok)
+            pred_output = predict_with_chunks(
+                dataset=dev_ds,
+                tokenizer=tokenizer,
+                model=model,
+                device=device,
+                max_len=cfg.max_len,
+                batch_size=cfg.per_device_eval_batch_size
+                if hasattr(cfg, "per_device_eval_batch_size")
+                else 8,
+                aggregation="max",  # or "mean"
+            )
 
             logits = pred_output.predictions
             probs = torch.softmax(torch.tensor(logits), dim=-1)[:, 1].numpy()

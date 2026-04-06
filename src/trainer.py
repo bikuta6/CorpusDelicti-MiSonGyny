@@ -65,15 +65,14 @@ class WeightedTrainer(Trainer):
         loss_type="weighted",
         focal_gamma=2.0,
         focal_alpha=None,
+        is_multilabel=False,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
         self.loss_type = loss_type  # "weighted",  "focal" o "standard"
 
         # Determine problem type from model config
-        self.is_multilabel = (
-            self.model.config.problem_type == "multi_label_classification"
-        )
+        self.is_multilabel = is_multilabel
 
         # Initialize the loss function ONCE
         if self.loss_type == "focal":

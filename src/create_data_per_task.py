@@ -48,6 +48,7 @@ def main(filename="train.csv"):
 
     task1_df = df[common_cols + ["is_misogynistic"]].copy()
     task1_df.rename(columns={"is_misogynistic": "label"}, inplace=True)
+    task1_df["label"] = task1_df["label"].fillna("NM")
 
     task2_df = df[
         common_cols + ["type_sexualization", "type_violence", "type_hate"]
@@ -60,11 +61,13 @@ def main(filename="train.csv"):
         },
         inplace=True,
     )
-    task2_df.dropna(subset=["sexualization", "violence", "hate"], inplace=True)
+    task2_df[["sexualization", "violence", "hate"]] = task2_df[
+        ["sexualization", "violence", "hate"]
+    ].fillna(0)
 
     task3_df = df[common_cols + ["has_gender_stereotype"]].copy()
     task3_df.rename(columns={"has_gender_stereotype": "label"}, inplace=True)
-    task3_df.dropna(subset=["label"], inplace=True)
+    task3_df["label"] = task3_df["label"].fillna("N")
 
     task1_df.to_csv(os.path.join("data", "task1", "train.csv"), index=False)
     task2_df.to_csv(os.path.join("data", "task2", "train.csv"), index=False)

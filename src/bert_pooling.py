@@ -2,6 +2,7 @@ import os
 from dataclasses import dataclass
 from typing import Any
 
+import numpy as np
 import torch
 import torch.nn as nn
 from transformers import (
@@ -12,6 +13,7 @@ from transformers import (
     PreTrainedModel,
 )
 from transformers.modeling_outputs import SequenceClassifierOutput
+from transformers.trainer_utils import PredictionOutput
 
 
 class LyricsPoolingConfig(PretrainedConfig):
@@ -212,3 +214,114 @@ def load_bert_like_classifier(
     model.to(device)
     model.eval()
     return model
+
+
+def predict_with_chunks(
+    dataset,
+    tokenizer,
+    model,
+    device,
+    max_len=512,
+    batch_size=8,
+    aggregation="max",
+    is_multilabel=False,
+):
+    """
+    Tokenizes texts without truncation and splits them into chunks using a sliding window.
+    Window size = max_len, stride = max_len // 2.
+    Returns PredictionOutput with aggregated logits for each text.
+    """
+    model.eval()
+    stride = max_len // 2
+
+    all_logits = []
+
+    # Safely get column names whether it's a HuggingFace Dataset or a dict
+    cols = dataset.column_names if hasattr(dataset, "column_names") else dataset.keys()
+
+    texts = dataset["text"] if "text" in cols else dataset["lyrics"]
+    label_ids = (
+        dataset["labels"]
+        if "labels" in cols
+        else (dataset["label"] if "label" in cols else None)
+    )
+
+    # Process text by text to keep track of chunks per document easily
+    for text in texts:
+        tokens = tokenizer(
+            text, add_special_tokens=False, truncation=False, padding=False
+        )
+        input_ids = tokens["input_ids"]
+
+        chunks_input_ids = []
+        chunks_attention_mask = []
+
+        cls_token = tokenizer.cls_token_id
+        sep_token = tokenizer.sep_token_id
+        pad_token = tokenizer.pad_token_id if tokenizer.pad_token_id is not None else 0
+
+        # Room for CLS and SEP
+        max_content_len = max_len - 2
+
+        if len(input_ids) <= max_content_len:
+            # Single chunk
+            chunk_ids = [cls_token] + input_ids + [sep_token]
+            chunk_mask = [1] * len(chunk_ids)
+
+            # Pad
+            pad_len = max_len - len(chunk_ids)
+            if pad_len > 0:
+                chunk_ids += [pad_token] * pad_len
+                chunk_mask += [0] * pad_len
+
+            chunks_input_ids.append(chunk_ids)
+            chunks_attention_mask.append(chunk_mask)
+        else:
+            # Sliding window
+            for i in range(0, len(input_ids), stride):
+                content = input_ids[i : i + max_content_len]
+                chunk_ids = [cls_token] + content + [sep_token]
+                chunk_mask = [1] * len(chunk_ids)
+
+                pad_len = max_len - len(chunk_ids)
+                if pad_len > 0:
+                    chunk_ids += [pad_token] * pad_len
+                    chunk_mask += [0] * pad_len
+
+                chunks_input_ids.append(chunk_ids)
+                chunks_attention_mask.append(chunk_mask)
+
+                if i + max_content_len >= len(input_ids):
+                    break
+
+        # Batch predict for this document's chunks
+        doc_logits = []
+        with torch.no_grad():
+            for i in range(0, len(chunks_input_ids), batch_size):
+                b_input_ids = torch.tensor(chunks_input_ids[i : i + batch_size]).to(
+                    device
+                )
+                b_attention_mask = torch.tensor(
+                    chunks_attention_mask[i : i + batch_size]
+                ).to(device)
+
+                outputs = model(input_ids=b_input_ids, attention_mask=b_attention_mask)
+                logits = outputs.logits
+                doc_logits.append(logits.cpu().numpy())
+
+        doc_logits = np.concatenate(doc_logits, axis=0)
+
+        # Aggregate predictions for the document
+        if aggregation == "mean":
+            agg_logits = np.mean(doc_logits, axis=0)
+        elif aggregation == "max":
+            agg_logits = np.max(doc_logits, axis=0)
+        else:
+            raise ValueError(f"Unknown aggregation method: {aggregation}")
+
+        all_logits.append(agg_logits)
+
+    predictions = np.array(all_logits)
+    labels = np.array(label_ids) if label_ids is not None else None
+
+    return PredictionOutput(predictions=predictions, label_ids=labels, metrics=None)
