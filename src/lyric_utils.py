@@ -73,13 +73,13 @@ def format_lyrics(text: str) -> str:
                 processed_lines.append(formatted_line)
 
         # 3. Unimos los versos de la misma estrofa con comas
-        formatted_stanzas.append(", ".join(processed_lines))
+        formatted_stanzas.append("\n".join(processed_lines))
 
     if not formatted_stanzas:
         return ""
 
     # 4. Unimos las estrofas con puntos y agregamos el punto final
-    return ". ".join(formatted_stanzas) + "."
+    return "\n\n".join(formatted_stanzas) + "."
 
 
 def remove_redundant_lyrics(
@@ -176,13 +176,13 @@ def remove_redundant_lyrics(
                 processed_lines.append(formatted_line)
 
         # 3. Unimos los versos de la misma estrofa con comas
-        formatted_stanzas.append(", ".join(processed_lines))
+        formatted_stanzas.append("\n".join(processed_lines))
 
     if not formatted_stanzas:
         return ""
 
     # 4. Unimos las estrofas con puntos y agregamos el punto final
-    return ". ".join(formatted_stanzas) + "."
+    return "\n\n".join(formatted_stanzas) + "."
 
 
 if __name__ == "__main__":
