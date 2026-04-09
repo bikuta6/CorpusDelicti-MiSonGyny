@@ -93,3 +93,10 @@ MODEL_CONFIGS: dict[str, ModelConfig] = {
         learning_rate=2e-5,
     ),
 }
+
+
+def apply_baseline_settings():
+    """Modifica todas las configuraciones para usar los parámetros del baseline."""
+    for config in MODEL_CONFIGS.values():
+        config.pooling_strategy = "cls"
+        config.loss_type = "standard"

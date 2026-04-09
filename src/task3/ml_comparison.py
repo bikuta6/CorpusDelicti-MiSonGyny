@@ -1,4 +1,6 @@
+import argparse
 import os
+import sys
 
 import pandas as pd
 import spacy
@@ -13,6 +15,11 @@ from sklearn.metrics import (
 from sklearn.svm import SVC
 from sklearn_genetic import GASearchCV
 from sklearn_genetic.space import Categorical, Continuous, Integer
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+from utils import DEFAULT_SEED, set_seed
+
+set_seed(DEFAULT_SEED)
 
 # 1. Load Spacy for Spanish Preprocessing
 nlp = spacy.load("es_core_news_sm")
@@ -30,11 +37,22 @@ def preprocess_lyrics(text):
 
 
 if __name__ == "__main__":
+    arg_parser = argparse.ArgumentParser(
+        description="ML Baseline Comparison for Task 3"
+    )
+    arg_parser.add_argument(
+        "--baseline",
+        action="store_true",
+        help="Whether to use original dataset or not (default: False)",
+    )
+    args = arg_parser.parse_args()
+    pre = "processed_" if not args.baseline else ""
     # 2. Data Loading & Merging
+    print(f"Loading data for Task 3 with baseline={args.baseline}...")
     base = os.path.join(os.path.dirname(__file__), "..", "..")
-    train_df = pd.read_csv(os.path.join(base, "data", "task1", "train_df.csv"))
-    val_df = pd.read_csv(os.path.join(base, "data", "task1", "val_df.csv"))
-    test_df = pd.read_csv(os.path.join(base, "data", "task1", "dev_df.csv"))
+    train_df = pd.read_csv(os.path.join(base, "data", "task3", f"{pre}train_df.csv"))
+    val_df = pd.read_csv(os.path.join(base, "data", "task3", f"{pre}val_df.csv"))
+    test_df = pd.read_csv(os.path.join(base, "data", "task3", f"{pre}dev_df.csv"))
 
     train_df = pd.concat([train_df, val_df], ignore_index=True)
 
@@ -42,7 +60,7 @@ if __name__ == "__main__":
     train_df["clean_lyrics"] = train_df["lyrics"].apply(preprocess_lyrics)
     test_df["clean_lyrics"] = test_df["lyrics"].apply(preprocess_lyrics)
 
-    label_map = {"NM": 0, "M": 1}
+    label_map = {"N": 0, "Y": 1}
     y_train = train_df["label"].map(label_map).values
     y_test = test_df["label"].map(label_map).values
 
@@ -55,8 +73,11 @@ if __name__ == "__main__":
     models = [
         {
             "name": "LogisticRegression",
-            "estimator": LogisticRegression(max_iter=1000, class_weight="balanced"),
-            "param_grid": {"C": Continuous(1e-3, 1e2, distribution="log-uniform")},
+            "estimator": LogisticRegression(max_iter=1000),
+            "param_grid": {
+                "C": Continuous(1e-3, 1e2, distribution="log-uniform"),
+                "class_weight": Categorical(["balanced", None]),
+            },
         },
         {
             "name": "RandomForest",
@@ -115,7 +136,10 @@ if __name__ == "__main__":
         )
 
     # 6. Save Results
-    results_file = os.path.join(base, "results", "task1", "ml_baseline_results.csv")
+    is_baseline_str = "baseline" if args.baseline else "processed"
+    results_file = os.path.join(
+        base, "results", "task3", f"ml_{is_baseline_str}_results.csv"
+    )
     os.makedirs(os.path.dirname(results_file), exist_ok=True)
     df_res = pd.DataFrame(results_list).sort_values("F1-Macro", ascending=False)
     df_res.to_csv(results_file, index=False)

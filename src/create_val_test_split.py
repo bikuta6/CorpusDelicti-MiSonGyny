@@ -3,6 +3,7 @@ import os
 
 import pandas as pd
 from sklearn.model_selection import train_test_split
+from torch.distributed.distributed_c10d import STORE_BASED_BARRIER_PREFIX
 
 from utils import set_seed
 
@@ -19,18 +20,19 @@ def get_stratify_col(task: str, df: pd.DataFrame) -> pd.Series:
         raise ValueError(f"Invalid task: {task}. Must be 'task1', 'task2', or 'task3'.")
 
 
-def main(task: str = "task1", train_ratio: float = 0.8):
+def main(task: str = "task1", train_ratio: float = 0.8, baseline: bool = False):
     set_seed(42)
 
     # 1. Path Handling: Search for the file in possible locations
+    filename = "train.csv" if baseline else "processed_train.csv"
     paths_to_check = [
-        f"../data/{task}/processed_train.csv",
-        f"./data/{task}/processed_train.csv",
+        f"../data/{task}/{filename}",
+        f"./data/{task}/{filename}",
     ]
     path = next((p for p in paths_to_check if os.path.exists(p)), None)
 
     if not path:
-        print(f"Error: Could not find processed_train.csv for {task}")
+        print(f"Error: Could not find {filename} for {task}")
         return
 
     df = pd.read_csv(path)
@@ -51,9 +53,10 @@ def main(task: str = "task1", train_ratio: float = 0.8):
 
     # 4. Save the files
     base_dir = os.path.dirname(path)
-    train_df.to_csv(os.path.join(base_dir, "train_df.csv"), index=False)
-    val_df.to_csv(os.path.join(base_dir, "val_df.csv"), index=False)
-    dev_df.to_csv(os.path.join(base_dir, "dev_df.csv"), index=False)
+    pre = "processed_" if not baseline else ""
+    train_df.to_csv(os.path.join(base_dir, f"{pre}train_df.csv"), index=False)
+    val_df.to_csv(os.path.join(base_dir, f"{pre}val_df.csv"), index=False)
+    dev_df.to_csv(os.path.join(base_dir, f"{pre}dev_df.csv"), index=False)
 
     print(f"Splits completed for {task}:")
     print(f"Train: {len(train_df)} | Val: {len(val_df)} | Dev: {len(dev_df)}")
@@ -63,10 +66,15 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Create Train, Val, and Dev splits.")
     parser.add_argument("--task", type=str, default="task1", help="Task name")
     parser.add_argument(
+        "--baseline",
+        action="store_true",
+        help="Whether to create splits from preprocesed dataset or not",
+    )
+    parser.add_argument(
         "--ratio",
         type=float,
-        default=0.8,
-        help="Ratio of data for training (default: 0.8 for an 80/10/10 split)",
+        default=0.7,
+        help="Ratio of data for training (default: 0.7 for a 70/15/15 split)",
     )
     args = parser.parse_args()
-    main(task=args.task, train_ratio=args.ratio)
+    main(task=args.task, train_ratio=args.ratio, baseline=args.baseline)

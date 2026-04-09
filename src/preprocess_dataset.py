@@ -9,14 +9,14 @@ try:
     from sentence_transformers import SentenceTransformer
 
     from contraction_utils import normalize_contractions
-    from lyric_utils import remove_redundant_lyrics
+    from lyric_utils import format_lyrics, remove_redundant_lyrics
 except Exception:
     repo_root = Path(__file__).resolve().parents[1]
     sys.path.append(str(repo_root))
     from sentence_transformers import SentenceTransformer
 
     from contraction_utils import normalize_contractions
-    from lyric_utils import remove_redundant_lyrics
+    from lyric_utils import format_lyrics, remove_redundant_lyrics
 
 
 def process_file(
@@ -28,6 +28,7 @@ def process_file(
     line_threshold: float = 0.95,
     skip_contractions: bool = False,
     linewise_processing: bool = False,
+    skip_dedup: bool = False,
 ):
     df = pd.read_csv(input_csv)
     if text_col not in df.columns:
@@ -42,28 +43,41 @@ def process_file(
             for t in tqdm(texts, desc="Normalizing contractions")
         ]
 
-    model = SentenceTransformer(model_name)
+    if not skip_dedup:
+        model = SentenceTransformer(model_name)
 
-    # Step 3: Remove redundant lyrics
+    # Step 3: Remove redundant lyrics or just format them
     processed = []
     mean_length = sum(len(t.split()) for t in texts) / len(texts)
-    print(
-        f"Processing {len(texts)} lyrics with average length {mean_length:.1f} words using model '{model_name}' and threshold {threshold} (stanza) and {line_threshold} (line)..."
-    )
-    for txt in tqdm(texts, desc="Processing lyrics"):
-        try:
-            out = remove_redundant_lyrics(
-                model,
-                txt,
-                threshold=threshold,
-                line_threshold=line_threshold,
-                similarity_scope=(
-                    "stanza_and_verse" if linewise_processing else "stanza"
-                ),
-            )
-        except Exception:
-            out = ""
-        processed.append(out)
+
+    if skip_dedup:
+        print(
+            f"Formatting {len(texts)} lyrics without deduplication (average length {mean_length:.1f} words)..."
+        )
+        for txt in tqdm(texts, desc="Formatting lyrics"):
+            try:
+                out = format_lyrics(txt)
+            except Exception:
+                out = ""
+            processed.append(out)
+    else:
+        print(
+            f"Processing {len(texts)} lyrics with average length {mean_length:.1f} words using model '{model_name}' and threshold {threshold} (stanza) and {line_threshold} (line)..."
+        )
+        for txt in tqdm(texts, desc="Processing lyrics"):
+            try:
+                out = remove_redundant_lyrics(
+                    model,
+                    txt,
+                    threshold=threshold,
+                    line_threshold=line_threshold,
+                    similarity_scope=(
+                        "stanza_and_verse" if linewise_processing else "stanza"
+                    ),
+                )
+            except Exception:
+                out = ""
+            processed.append(out)
 
     mean_length_out = sum(len(t.split()) for t in processed) / len(processed)
     print(
@@ -118,6 +132,11 @@ def main():
         action="store_true",
         help="Skip contraction normalization step",
     )
+    p.add_argument(
+        "--skip-dedup",
+        action="store_true",
+        help="Skip deduplication and only apply semantic formatting (commas and periods)",
+    )
 
     args = p.parse_args()
 
@@ -145,6 +164,7 @@ def main():
         line_threshold=args.line_threshold,
         skip_contractions=args.skip_contractions,
         linewise_processing=args.linewise_processing,
+        skip_dedup=args.skip_dedup,
     )
     print(f"Saved processed CSV to: {out}")
 

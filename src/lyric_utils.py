@@ -36,6 +36,52 @@ def _normalize_lyric_text(text: str) -> str:
     return text
 
 
+def format_lyrics(text: str) -> str:
+    """
+    Format lyrics with semantic punctuation (commas and periods) without deduplication.
+    """
+    if not text.strip():
+        return ""
+
+    # --- Preprocessing: clean and split stanzas ---
+    stanzas = text.split("\n\n")
+    clean_stanzas = []
+    for stanza in stanzas:
+        lines = [re.sub(r"\[.*?\]", "", line).strip() for line in stanza.split("\n")]
+        lines = [_STRUCTURAL_LABELS_RE.sub("", line).strip() for line in lines]
+        lines = [re.sub(r'[()"]', "", line).strip() for line in lines]
+        lines = [_normalize_lyric_text(line) for line in lines if len(line) > 2]
+        if lines:
+            clean_stanzas.append(lines)
+
+    if not clean_stanzas:
+        return ""
+
+    # --- Return reconstructed lyrics with semantic formatting ---
+    formatted_stanzas = []
+    for stanza in clean_stanzas:
+        if not stanza:
+            continue
+
+        # 1. El primer verso mantiene su capitalización original
+        processed_lines = [stanza[0]]
+
+        # 2. Siguientes versos: minúscula en la primera letra
+        for line in stanza[1:]:
+            if line:  # check de seguridad
+                formatted_line = line[0].lower() + line[1:]
+                processed_lines.append(formatted_line)
+
+        # 3. Unimos los versos de la misma estrofa con comas
+        formatted_stanzas.append(", ".join(processed_lines))
+
+    if not formatted_stanzas:
+        return ""
+
+    # 4. Unimos las estrofas con puntos y agregamos el punto final
+    return ". ".join(formatted_stanzas) + "."
+
+
 def remove_redundant_lyrics(
     model: SentenceTransformer,
     text: str,

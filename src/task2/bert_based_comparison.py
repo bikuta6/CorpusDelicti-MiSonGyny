@@ -13,7 +13,7 @@ from typing import Optional
 import numpy as np
 import pandas as pd
 import torch
-from bert_model_configs import MODEL_CONFIGS, ModelConfig
+from bert_model_configs import MODEL_CONFIGS, ModelConfig, apply_baseline_settings
 from datasets import Dataset
 from pysentimiento.preprocessing import preprocess_tweet
 from sklearn.metrics import (
@@ -57,9 +57,17 @@ def create_label_column(df: pd.DataFrame, label_cols: list[str]) -> pd.Series:
     return df[label_cols].astype(int).values.tolist()
 
 
-def main(augment=False):
-    TRAIN_PATH = DATA_PATH
-    VAL_PATH = DATA_PATH.replace("train_df.csv", "val_df.csv")
+def main(augment=False, baseline=False):
+    if baseline:
+        apply_baseline_settings()
+
+    pre = "processed_" if not baseline else ""
+    TRAIN_PATH = f"../../data/task2/{pre}train_df.csv"
+    VAL_PATH = f"../../data/task2/{pre}val_df.csv"
+    DEV_PATH = f"../../data/task2/{pre}dev_df.csv"
+    RESULTS_FILE = (
+        f"../../results/task2/tabla_paper_{'baseline' if baseline else 'processed'}.csv"
+    )
     label_cols = ["sexualization", "violence", "hate"]
     print(f"Cargando datos de entrenamiento desde {TRAIN_PATH}...")
     train_df = pd.read_csv(TRAIN_PATH)
@@ -67,7 +75,6 @@ def main(augment=False):
     print(f"Cargando datos de validación desde {VAL_PATH}...")
     val_df = pd.read_csv(VAL_PATH)
     val_df["label"] = create_label_column(val_df, label_cols)
-    DEV_PATH = DATA_PATH.replace("train_df.csv", "dev_df.csv")
     print(f"Cargando datos de test/dev desde {DEV_PATH}...")
     dev_df = pd.read_csv(DEV_PATH)
     dev_df["label"] = create_label_column(dev_df, label_cols)
@@ -198,7 +205,7 @@ def main(augment=False):
         return best_thresholds, best_f1s
 
     def make_tokenize_fn(tokenizer, cfg: ModelConfig):
-        """Tokenization with smart head+tail truncation."""
+        """Tokenization with standard Hugging Face truncation and padding."""
 
         def tokenize_fn(batch):
             texts = batch["text"]
@@ -206,50 +213,12 @@ def main(augment=False):
             if cfg.use_pysentimiento_preprocess:
                 texts = [preprocess_tweet(t, lang="es") for t in texts]
 
-            tokenized = tokenizer(
+            return tokenizer(
                 texts,
-                add_special_tokens=True,
-                truncation=False,
-                padding=False,
+                padding="max_length",
+                truncation=True,
+                max_length=cfg.max_len,
             )
-
-            max_len = cfg.max_len
-            input_ids = []
-            attention_mask = []
-
-            for ids in tokenized["input_ids"]:
-                if len(ids) <= max_len:
-                    pad_len = max_len - len(ids)
-
-                    padded = ids + [tokenizer.pad_token_id] * pad_len
-                    mask = [1] * len(ids) + [0] * pad_len
-
-                else:
-                    cls_token = ids[0]
-                    sep_token = ids[-1]
-
-                    content = ids[1:-1]
-
-                    head_len = int((max_len - 2) * 0.75)
-                    tail_len = (max_len - 2) - head_len
-
-                    truncated = (
-                        [cls_token]
-                        + content[:head_len]
-                        + content[-tail_len:]
-                        + [sep_token]
-                    )
-
-                    padded = truncated
-                    mask = [1] * max_len
-
-                input_ids.append(padded)
-                attention_mask.append(mask)
-
-            return {
-                "input_ids": input_ids,
-                "attention_mask": attention_mask,
-            }
 
         return tokenize_fn
 
@@ -477,5 +446,8 @@ if __name__ == "__main__":
     arg_parser.add_argument(
         "--augment", action="store_true", help="Activar augmentación de datos"
     )
+    arg_parser.add_argument(
+        "--baseline", action="store_true", help="Activar baseline settings"
+    )
     args = arg_parser.parse_args()
-    main(augment=args.augment)
+    main(augment=args.augment, baseline=args.baseline)
