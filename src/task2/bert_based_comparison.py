@@ -65,9 +65,14 @@ def main(augment=False, baseline=False):
     TRAIN_PATH = f"../../data/task2/{pre}train_df.csv"
     VAL_PATH = f"../../data/task2/{pre}val_df.csv"
     DEV_PATH = f"../../data/task2/{pre}dev_df.csv"
-    RESULTS_FILE = (
-        f"../../results/task2/tabla_paper_{'baseline' if baseline else 'processed'}.csv"
-    )
+    
+    suffix = ""
+    if baseline:
+        suffix += "_baseline"
+    if augment:
+        suffix += "_aug"
+        
+    RESULTS_FILE = f"../../results/task2/tabla_paper{suffix if suffix else '_processed'}.csv"
     label_cols = ["sexualization", "violence", "hate"]
     print(f"Cargando datos de entrenamiento desde {TRAIN_PATH}...")
     train_df = pd.read_csv(TRAIN_PATH)
@@ -315,7 +320,7 @@ def main(augment=False, baseline=False):
 
             model = load_model_with_config(cfg.model_id, cfg, device)
 
-            model_save_path = os.path.join(SAVE_DIR, name)
+            model_save_path = os.path.join(SAVE_DIR, name + suffix)
             checkpoints_path = os.path.join(model_save_path, "checkpoints")
 
             args = make_training_args(cfg, checkpoints_path)
