@@ -68,13 +68,12 @@ def main(model_name, augment=False, baseline=False):
     total = n_neg + n_pos
     w0 = total / (2 * n_neg)
     w1 = total / (2 * n_pos)
-    weights_tensor = torch.tensor([w0, w1]).float()
+    weights_tensor = torch.sqrt(torch.tensor([w0, w1]).float())
 
     augmentor = LyricsAugmentor()
     if augment:
         train_df = augmentor.augment_dataframe(
             train_df,
-            minority_label=1,
             multiplier=2,
         )
 

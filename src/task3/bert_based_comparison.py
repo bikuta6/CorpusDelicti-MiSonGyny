@@ -82,7 +82,7 @@ def main(augment=False, baseline=False):
     total = n_neg + n_pos
     w0 = total / (2 * n_neg)
     w1 = total / (2 * n_pos)
-    weights_tensor = torch.tensor([w0, w1]).float()
+    weights_tensor = torch.sqrt(torch.tensor([w0, w1]).float())
     print(
         f"Desbalance: Neg={n_neg}, Pos={n_pos} -> Peso clase 0: {w0:.2f}, clase 1: {w1:.2f}"
     )
@@ -111,7 +111,6 @@ def main(augment=False, baseline=False):
     if augment:
         train_df = augmentor.augment_dataframe(
             train_df,
-            minority_label=1,
             multiplier=2,  # Genera 2 versiones nuevas por cada canción de odio original
         )
 

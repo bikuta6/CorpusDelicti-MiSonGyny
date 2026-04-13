@@ -98,7 +98,7 @@ def main(augment=False, baseline=False):
         ]
     )
     n_neg = n_samples - n_pos
-    weights_tensor = (n_neg / np.maximum(1, n_pos)).astype(float)
+    weights_tensor = torch.sqrt(torch.tensor(n_neg / np.maximum(1, n_pos)).float())
     n_sexualization, n_violence, n_hate = n_pos
     w_sexualization, w_violence, w_hate = weights_tensor
     print(
@@ -130,7 +130,6 @@ def main(augment=False, baseline=False):
     if augment:
         train_df = augmentor.augment_dataframe(
             train_df,
-            minority_label=1,
             multiplier=2,  # Genera 2 versiones nuevas por cada canción de odio original
         )
 
