@@ -3,7 +3,6 @@ import os
 
 import pandas as pd
 from sklearn.model_selection import train_test_split
-from torch.distributed.distributed_c10d import STORE_BASED_BARRIER_PREFIX
 
 from utils import set_seed
 
