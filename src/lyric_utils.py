@@ -33,6 +33,10 @@ def _normalize_lyric_text(text: str) -> str:
     text = re.sub(r"([¡!¿?]){2,}", r"\1", text)
     # Normalize jajaja variants (jajajajaja → jajaja)
     text = re.sub(r"(ja){3,}", "jajaja", text, flags=re.IGNORECASE)
+    
+    # Fix common mojibake/encoding issues found in the dataset (e.g. "quĐľ" -> "que")
+    text = text.replace("Đľ", "e")
+    
     return text
 
 
@@ -49,6 +53,13 @@ def format_lyrics(text: str) -> str:
     for stanza in stanzas:
         lines = [re.sub(r"\[.*?\]", "", line).strip() for line in stanza.split("\n")]
         lines = [_STRUCTURAL_LABELS_RE.sub("", line).strip() for line in lines]
+        
+        # Eliminar anotaciones acústicas entre asteriscos (ej. *Silbido*)
+        lines = [re.sub(r"\*.*?\*", "", line).strip() for line in lines]
+        
+        # Eliminar guiones de diálogo al inicio del verso
+        lines = [re.sub(r"^[-–—]\s*", "", line).strip() for line in lines]
+        
         lines = [re.sub(r'[()"]', "", line).strip() for line in lines]
         lines = [_normalize_lyric_text(line) for line in lines if len(line) > 2]
         if lines:
@@ -73,13 +84,13 @@ def format_lyrics(text: str) -> str:
                 processed_lines.append(formatted_line)
 
         # 3. Unimos los versos de la misma estrofa con comas
-        formatted_stanzas.append("\n".join(processed_lines))
+        formatted_stanzas.append(", ".join(processed_lines))
 
     if not formatted_stanzas:
         return ""
 
     # 4. Unimos las estrofas con puntos y agregamos el punto final
-    return "\n\n".join(formatted_stanzas) + "."
+    return ". ".join(formatted_stanzas) + "."
 
 
 def remove_redundant_lyrics(
@@ -110,6 +121,13 @@ def remove_redundant_lyrics(
     for stanza in stanzas:
         lines = [re.sub(r"\[.*?\]", "", line).strip() for line in stanza.split("\n")]
         lines = [_STRUCTURAL_LABELS_RE.sub("", line).strip() for line in lines]
+        
+        # Eliminar anotaciones acústicas entre asteriscos (ej. *Silbido*)
+        lines = [re.sub(r"\*.*?\*", "", line).strip() for line in lines]
+        
+        # Eliminar guiones de diálogo al inicio del verso
+        lines = [re.sub(r"^[-–—]\s*", "", line).strip() for line in lines]
+        
         lines = [re.sub(r'[()"]', "", line).strip() for line in lines]
         lines = [_normalize_lyric_text(line) for line in lines if len(line) > 2]
         if lines:
@@ -176,13 +194,13 @@ def remove_redundant_lyrics(
                 processed_lines.append(formatted_line)
 
         # 3. Unimos los versos de la misma estrofa con comas
-        formatted_stanzas.append("\n".join(processed_lines))
+        formatted_stanzas.append(", ".join(processed_lines))
 
     if not formatted_stanzas:
         return ""
 
     # 4. Unimos las estrofas con puntos y agregamos el punto final
-    return "\n\n".join(formatted_stanzas) + "."
+    return ". ".join(formatted_stanzas) + "."
 
 
 if __name__ == "__main__":
