@@ -9,9 +9,9 @@ def new_lyrics(df: pd.DataFrame) -> pd.Series:
     Creates a new lyrics column by concatenating the title with the original lyrics.
     """
     return (
-        "title: "
+        "Título: "
         + df["song_title"]
-        + "\n"
+        + "\n\n"
         + df["lyrics"]
     )
 
