@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from transformers import Trainer
+from transformers import Trainer, default_data_collator
 
 
 class FocalLoss(nn.Module):
@@ -73,7 +73,9 @@ class WeightedTrainer(Trainer):
 
         # Determine problem type from model config
         self.is_multilabel = is_multilabel
-
+        self.class_weights = (
+            class_weights.to(self.args.device) if class_weights is not None else None
+        )
         # Initialize the loss function ONCE
         if self.loss_type == "focal":
             self.focal_loss_fct = FocalLoss(
@@ -82,14 +84,13 @@ class WeightedTrainer(Trainer):
 
         elif self.loss_type == "weighted":
             self.focal_loss_fct = None
-            self.class_weights = (
-                class_weights.to(self.args.device)
-                if class_weights is not None
-                else None
-            )
         else:
             self.focal_loss_fct = None
-            self.class_weights = None
+
+        # Keep user-provided collator for training, but force deterministic
+        # collator on eval/test to avoid random cropping at validation time.
+        self.train_data_collator = self.data_collator
+        self.eval_data_collator = default_data_collator
 
     def compute_loss(self, model, inputs, return_outputs=False, **kwargs):
         labels = inputs.get("labels")
@@ -115,3 +116,27 @@ class WeightedTrainer(Trainer):
                 )
 
         return (loss, outputs) if return_outputs else loss
+
+    def get_train_dataloader(self):
+        original_collator = self.data_collator
+        self.data_collator = self.train_data_collator
+        try:
+            return super().get_train_dataloader()
+        finally:
+            self.data_collator = original_collator
+
+    def get_eval_dataloader(self, eval_dataset=None):
+        original_collator = self.data_collator
+        self.data_collator = self.eval_data_collator
+        try:
+            return super().get_eval_dataloader(eval_dataset)
+        finally:
+            self.data_collator = original_collator
+
+    def get_test_dataloader(self, test_dataset):
+        original_collator = self.data_collator
+        self.data_collator = self.eval_data_collator
+        try:
+            return super().get_test_dataloader(test_dataset)
+        finally:
+            self.data_collator = original_collator

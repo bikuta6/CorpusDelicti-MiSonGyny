@@ -4,9 +4,9 @@ Entrenamiento y evaluación para un único modelo en Task 2.
 
 import argparse
 import gc
+import json
 import os
 import sys
-import json
 
 import numpy as np
 import pandas as pd
@@ -28,24 +28,30 @@ from transformers import (
 )
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+from bert_model_configs import MODEL_CONFIGS, ModelConfig, apply_baseline_settings
+
 from augmentation_utils import LyricsAugmentor
 from bert_pooling import build_bert_like_classifier, predict_with_chunks
+from random_crop_collator import RandomCropDataCollator
 from trainer import WeightedTrainer
 from utils import DEFAULT_SEED, set_seed
-from bert_model_configs import MODEL_CONFIGS, ModelConfig, apply_baseline_settings
 
 SEED = DEFAULT_SEED
 set_seed(SEED)
 
+
 def create_label_column(df: pd.DataFrame, label_cols: list[str]) -> pd.Series:
     return df[label_cols].astype(int).values.tolist()
+
 
 def main(model_name, augment=False, baseline=False):
     if baseline:
         apply_baseline_settings()
 
     if model_name not in MODEL_CONFIGS:
-        raise ValueError(f"El modelo '{model_name}' no existe en las configuraciones. Opciones: {list(MODEL_CONFIGS.keys())}")
+        raise ValueError(
+            f"El modelo '{model_name}' no existe en las configuraciones. Opciones: {list(MODEL_CONFIGS.keys())}"
+        )
 
     cfg = MODEL_CONFIGS[model_name]
 
@@ -53,7 +59,7 @@ def main(model_name, augment=False, baseline=False):
     TRAIN_PATH = f"../../data/task2/{pre}train_df.csv"
     VAL_PATH = f"../../data/task2/{pre}val_df.csv"
     DEV_PATH = f"../../data/task2/{pre}dev_df.csv"
-    
+
     suffix = "_baseline" if baseline else ""
     suffix += "_aug" if augment else ""
     SAVE_DIR = f"../../models/task2/single/{model_name}{suffix}"
@@ -92,9 +98,15 @@ def main(model_name, augment=False, baseline=False):
             multiplier=2,
         )
 
-    train_ds = Dataset.from_pandas(train_df.rename(columns={"lyrics": "text"}), preserve_index=False)
-    val_ds = Dataset.from_pandas(val_df.rename(columns={"lyrics": "text"}), preserve_index=False)
-    dev_ds = Dataset.from_pandas(dev_df.rename(columns={"lyrics": "text"}), preserve_index=False)
+    train_ds = Dataset.from_pandas(
+        train_df.rename(columns={"lyrics": "text"}), preserve_index=False
+    )
+    val_ds = Dataset.from_pandas(
+        val_df.rename(columns={"lyrics": "text"}), preserve_index=False
+    )
+    dev_ds = Dataset.from_pandas(
+        dev_df.rename(columns={"lyrics": "text"}), preserve_index=False
+    )
 
     def compute_metrics(
         pred, label_names=["sexualization", "violence", "hate"], thresholds=None
@@ -116,31 +128,69 @@ def main(model_name, augment=False, baseline=False):
             results[f"{name}_recall"] = round(r, 4)
             results[f"{name}_f1"] = round(f1, 4)
 
-        results["eval_f1_micro"] = round(f1_score(true, preds, average="micro", zero_division=0), 4)
-        results["eval_f1_macro"] = round(f1_score(true, preds, average="macro", zero_division=0), 4)
+        results["eval_f1_micro"] = round(
+            f1_score(true, preds, average="micro", zero_division=0), 4
+        )
+        results["eval_f1_macro"] = round(
+            f1_score(true, preds, average="macro", zero_division=0), 4
+        )
         return results
 
-    def make_tokenize_fn(tokenizer, cfg: ModelConfig):
+    def make_tokenize_fn(tokenizer, cfg: ModelConfig, training: bool = False):
         def tokenize_fn(batch):
             texts = batch["text"]
             if cfg.use_pysentimiento_preprocess:
                 texts = [preprocess_tweet(t, lang="es") for t in texts]
-            return tokenizer(texts, padding="max_length", truncation=True, max_length=cfg.max_len)
+            if training:
+                return tokenizer(texts, padding=False, truncation=False)
+            return tokenizer(
+                texts,
+                padding="max_length",
+                truncation=True,
+                max_length=cfg.max_len,
+            )
+
         return tokenize_fn
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
+    device = torch.device(
+        "cuda"
+        if torch.cuda.is_available()
+        else "mps"
+        if torch.backends.mps.is_available()
+        else "cpu"
+    )
     print(f"--- INICIANDO ENTRENAMIENTO PARA {model_name} EN {device.type.upper()} ---")
 
     tokenizer = AutoTokenizer.from_pretrained(cfg.model_id)
 
-    tokenize_fn = make_tokenize_fn(tokenizer, cfg)
-    train_tok = train_ds.map(tokenize_fn, batched=True, remove_columns=["text"], load_from_cache_file=False)
-    val_tok = val_ds.map(tokenize_fn, batched=True, remove_columns=["text"], load_from_cache_file=False)
-    dev_tok = dev_ds.map(tokenize_fn, batched=True, remove_columns=["text"], load_from_cache_file=False)
-    
+    train_tokenize_fn = make_tokenize_fn(tokenizer, cfg, training=True)
+    eval_tokenize_fn = make_tokenize_fn(tokenizer, cfg, training=False)
+    train_tok = train_ds.map(
+        train_tokenize_fn,
+        batched=True,
+        remove_columns=["text"],
+        load_from_cache_file=False,
+    )
+    val_tok = val_ds.map(
+        eval_tokenize_fn,
+        batched=True,
+        remove_columns=["text"],
+        load_from_cache_file=False,
+    )
+    dev_tok = dev_ds.map(
+        eval_tokenize_fn,
+        batched=True,
+        remove_columns=["text"],
+        load_from_cache_file=False,
+    )
+
     train_tok = train_tok.rename_column("label", "labels")
-    val_tok = val_tok.rename_column("labels" if "labels" in val_tok.column_names else "label", "labels")
-    dev_tok = dev_tok.rename_column("labels" if "labels" in dev_tok.column_names else "label", "labels")
+    val_tok = val_tok.rename_column(
+        "labels" if "labels" in val_tok.column_names else "label", "labels"
+    )
+    dev_tok = dev_tok.rename_column(
+        "labels" if "labels" in dev_tok.column_names else "label", "labels"
+    )
     train_tok.set_format("torch")
     val_tok.set_format("torch")
     dev_tok.set_format("torch")
@@ -171,18 +221,26 @@ def main(model_name, augment=False, baseline=False):
         gradient_checkpointing=False,
     )
 
+    train_collator = RandomCropDataCollator(
+        tokenizer=tokenizer,
+        max_length=cfg.max_len,
+    )
+
     trainer = WeightedTrainer(
         model=model,
         args=args,
         train_dataset=train_tok,
         eval_dataset=val_tok,
+        data_collator=train_collator,
         compute_metrics=compute_metrics,
         class_weights=weights_tensor,
         loss_type=cfg.loss_type,
         focal_gamma=cfg.focal_gamma,
         focal_alpha=None,
         is_multilabel=True,
-        callbacks=[EarlyStoppingCallback(early_stopping_patience=cfg.early_stopping_patience)],
+        callbacks=[
+            EarlyStoppingCallback(early_stopping_patience=cfg.early_stopping_patience)
+        ],
     )
 
     print("Entrenando...")
@@ -195,7 +253,9 @@ def main(model_name, augment=False, baseline=False):
         model=model,
         device=device,
         max_len=cfg.max_len,
-        batch_size=cfg.per_device_eval_batch_size if hasattr(cfg, "per_device_eval_batch_size") else 8,
+        batch_size=cfg.per_device_eval_batch_size
+        if hasattr(cfg, "per_device_eval_batch_size")
+        else 8,
         aggregation="max",
     )
 
@@ -214,7 +274,7 @@ def main(model_name, augment=False, baseline=False):
     os.makedirs(SAVE_DIR, exist_ok=True)
     trainer.save_model(SAVE_DIR)
     tokenizer.save_pretrained(SAVE_DIR)
-    
+
     results = {
         "Modelo": model_name,
         "F1-Macro": f1_opt,
@@ -230,10 +290,21 @@ def main(model_name, augment=False, baseline=False):
     print(f"\nModelo guardado en: {SAVE_DIR}")
     print(f"Resultados: {results}")
 
+
 if __name__ == "__main__":
-    arg_parser = argparse.ArgumentParser(description="Entrenamiento de un modelo basado en BERT para Task 2")
-    arg_parser.add_argument("--model", type=str, default="BETO", help="Nombre del modelo en config")
-    arg_parser.add_argument("--augment", action="store_true", help="Activar augmentación de datos")
-    arg_parser.add_argument("--baseline", action="store_true", help="Usar configuraciones baseline y datos crudos")
+    arg_parser = argparse.ArgumentParser(
+        description="Entrenamiento de un modelo basado en BERT para Task 2"
+    )
+    arg_parser.add_argument(
+        "--model", type=str, default="BETO", help="Nombre del modelo en config"
+    )
+    arg_parser.add_argument(
+        "--augment", action="store_true", help="Activar augmentación de datos"
+    )
+    arg_parser.add_argument(
+        "--baseline",
+        action="store_true",
+        help="Usar configuraciones baseline y datos crudos",
+    )
     args = arg_parser.parse_args()
     main(model_name=args.model, augment=args.augment, baseline=args.baseline)

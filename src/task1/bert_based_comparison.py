@@ -27,6 +27,7 @@ from transformers import (
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from augmentation_utils import LyricsAugmentor
 from bert_pooling import build_bert_like_classifier, predict_with_chunks
+from random_crop_collator import RandomCropDataCollator
 from trainer import WeightedTrainer
 from utils import DEFAULT_SEED, set_seed
 
@@ -161,14 +162,21 @@ def main(augment=False, baseline=False):
 
         return round(best_thr, 3), round(best_f1, 4)
 
-    def make_tokenize_fn(tokenizer, cfg: ModelConfig):
-        """Tokenization with standard Hugging Face truncation and padding."""
+    def make_tokenize_fn(tokenizer, cfg: ModelConfig, training: bool = False):
+        """Tokenization for training/eval. Training keeps full sequences for dynamic random crop."""
 
         def tokenize_fn(batch):
             texts = batch["text"]
 
             if cfg.use_pysentimiento_preprocess:
                 texts = [preprocess_tweet(t, lang="es") for t in texts]
+
+            if training:
+                return tokenizer(
+                    texts,
+                    padding=False,
+                    truncation=False,
+                )
 
             return tokenizer(
                 texts,
@@ -243,21 +251,22 @@ def main(augment=False, baseline=False):
         try:
             tokenizer = AutoTokenizer.from_pretrained(cfg.model_id)
 
-            tokenize_fn = make_tokenize_fn(tokenizer, cfg)
+            train_tokenize_fn = make_tokenize_fn(tokenizer, cfg, training=True)
+            eval_tokenize_fn = make_tokenize_fn(tokenizer, cfg, training=False)
             train_tok = train_ds.map(
-                tokenize_fn,
+                train_tokenize_fn,
                 batched=True,
                 remove_columns=["text"],
                 load_from_cache_file=False,
             )
             val_tok = val_ds.map(
-                tokenize_fn,
+                eval_tokenize_fn,
                 batched=True,
                 remove_columns=["text"],
                 load_from_cache_file=False,
             )
             dev_tok = dev_ds.map(
-                tokenize_fn,
+                eval_tokenize_fn,
                 batched=True,
                 remove_columns=["text"],
                 load_from_cache_file=False,
@@ -280,11 +289,17 @@ def main(augment=False, baseline=False):
 
             args = make_training_args(cfg, checkpoints_path)
 
+            train_collator = RandomCropDataCollator(
+                tokenizer=tokenizer,
+                max_length=cfg.max_len,
+            )
+
             trainer = WeightedTrainer(
                 model=model,
                 args=args,
                 train_dataset=train_tok,
                 eval_dataset=val_tok,
+                data_collator=train_collator,
                 compute_metrics=compute_metrics,
                 class_weights=weights_tensor,
                 loss_type=cfg.loss_type,
