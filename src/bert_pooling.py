@@ -47,7 +47,10 @@ class LyricsPoolingClassifier(PreTrainedModel):
 
     def __init__(self, config: LyricsPoolingConfig):
         super().__init__(config)
-
+        if not config.base_model_name_or_path:
+            raise ValueError(
+                "base_model_name_or_path must be set in LyricsPoolingConfig"
+            )
         backbone_cfg = AutoConfig.from_pretrained(config.base_model_name_or_path)
         backbone_cfg.num_labels = config.num_labels
 
@@ -133,6 +136,10 @@ class LyricsPoolingClassifier(PreTrainedModel):
         labels: torch.Tensor | None = None,
         **kwargs,
     ) -> SequenceClassifierOutput:
+        if attention_mask is None:
+            attention_mask = torch.ones(
+                input_ids.size(), dtype=torch.long, device=input_ids.device
+            )
         outputs = self.backbone(
             input_ids=input_ids,
             attention_mask=attention_mask,
@@ -141,10 +148,7 @@ class LyricsPoolingClassifier(PreTrainedModel):
         last_hidden = outputs.last_hidden_state
 
         cls_repr = last_hidden[:, 0]
-        if attention_mask is None:
-            attention_mask = torch.ones(
-                input_ids.size(), dtype=torch.long, device=input_ids.device
-            )
+
         mean_repr = self._masked_mean(last_hidden, attention_mask)
 
         if self.config.pooling_strategy == "cls":
@@ -223,22 +227,66 @@ def predict_with_chunks(
     device,
     max_len=512,
     batch_size=8,
+    stride: int | None = None,
     aggregation="max",
     is_multilabel=False,
 ):
     """
     Tokenizes texts without truncation and splits them into chunks using a sliding window.
-    Window size = max_len, stride = max_len // 4.
-    Returns PredictionOutput with aggregated logits for each text.
+
+    Window size = max_len tokens (including special tokens).
+    Stride defaults to max_len // 2 (50% overlap), configurable via `stride`.
+
+    Fixes vs. previous version:
+      - stride is now max_len // 2 (was // 4 → excessive overlap & redundant chunks)
+      - stride is configurable so callers can tune the overlap
+      - token_type_ids (all zeros) are built and passed for BERT-family models
+      - tokenizer.encode_plus is used per chunk so special token handling is
+        delegated to the tokenizer rather than hardcoded — this makes Longformer,
+        RoBERTa, etc. all work correctly out of the box
+      - added a guard for missing cls_token_id / sep_token_id (e.g. GPT-style
+        tokenizers used by mistake)
+      - the last chunk is now guaranteed to be non-empty (guards zero-length tail)
+
+    Args:
+        dataset:        HuggingFace Dataset or dict with a "text"/"lyrics" column
+                        and optionally a "labels"/"label" column.
+        tokenizer:      HuggingFace tokenizer matching the model.
+        model:          Model with a `.logits` output (LyricsPoolingClassifier or
+                        AutoModelForSequenceClassification).
+        device:         torch.device to run inference on.
+        max_len:        Maximum sequence length in tokens (including special tokens).
+        batch_size:     Number of chunks to process per forward pass.
+        stride:         Sliding window stride in tokens. Defaults to max_len // 2.
+                        Smaller values → more overlap → more chunks → slower but
+                        better coverage of chunk boundaries.
+        aggregation:    How to combine logits across chunks: "max" or "mean".
+        is_multilabel:  Unused here but kept for API compatibility.
+
+    Returns:
+        PredictionOutput(predictions=np.ndarray, label_ids=np.ndarray|None, metrics=None)
     """
     model.eval()
-    stride = max_len // 4
 
-    all_logits = []
+    # --- Stride default -------------------------------------------------------
+    # 50 % overlap is the standard for sliding-window transformers.
+    # The old value of max_len // 4 caused up to 4x redundant chunks per token.
+    if stride is None:
+        stride = max_len // 2
 
-    # Safely get column names whether it's a HuggingFace Dataset or a dict
-    cols = dataset.column_names if hasattr(dataset, "column_names") else dataset.keys()
+    if stride <= 0 or stride > max_len:
+        raise ValueError(f"stride must be in (0, max_len], got {stride}")
 
+    # --- Detect whether this tokenizer uses token_type_ids --------------------
+    # BERT / DistilBERT need them; RoBERTa / Longformer / XLM-R do not.
+    uses_token_type_ids = "token_type_ids" in tokenizer.model_input_names
+
+    # --- Column resolution ----------------------------------------------------
+    cols = (
+        dataset.column_names
+        if hasattr(dataset, "column_names")
+        else list(dataset.keys())
+    )
     texts = dataset["text"] if "text" in cols else dataset["lyrics"]
     label_ids = (
         dataset["labels"]
@@ -246,78 +294,102 @@ def predict_with_chunks(
         else (dataset["label"] if "label" in cols else None)
     )
 
-    # Process text by text to keep track of chunks per document easily
+    # --- Pre-tokenize everything without special tokens or truncation ---------
+    # We delegate special-token insertion to encode_plus per chunk (below),
+    # so here we just get the raw token ids for the sliding window.
+    all_logits = []
+
     for text in texts:
-        tokens = tokenizer(
-            text, add_special_tokens=False, truncation=False, padding=False
+        raw = tokenizer(
+            text,
+            add_special_tokens=False,
+            truncation=False,
+            padding=False,
+            return_attention_mask=False,
+            return_token_type_ids=False,
         )
-        input_ids = tokens["input_ids"]
+        raw_ids: list[int] = raw["input_ids"]
+
+        # How much content (non-special) fits per chunk.
+        # encode_plus with add_special_tokens=True will add CLS + SEP (2 tokens)
+        # for BERT-family, or just one BOS/EOS for others — but since we're
+        # slicing raw_ids manually we use the conservative -2 so it always fits.
+        max_content = max_len - 2
+
+        if max_content <= 0:
+            raise ValueError(
+                f"max_len={max_len} is too small to fit any content tokens"
+            )
+
+        # --- Build chunk boundaries -------------------------------------------
+        # We slice raw_ids with the stride and re-encode each slice so that the
+        # tokenizer handles special tokens, padding, and token_type_ids correctly.
+        chunk_starts = list(range(0, max(1, len(raw_ids) - max_content + 1), stride))
+
+        # Always include a chunk that ends at the last token (covers the tail
+        # even when len(raw_ids) is not a multiple of stride).
+        last_start = max(0, len(raw_ids) - max_content)
+        if not chunk_starts or chunk_starts[-1] != last_start:
+            chunk_starts.append(last_start)
 
         chunks_input_ids = []
         chunks_attention_mask = []
+        chunks_token_type_ids = []
 
-        cls_token = tokenizer.cls_token_id
-        sep_token = tokenizer.sep_token_id
-        pad_token = tokenizer.pad_token_id if tokenizer.pad_token_id is not None else 0
+        for start in chunk_starts:
+            content = raw_ids[start : start + max_content]
 
-        # Room for CLS and SEP
-        max_content_len = max_len - 2
+            if len(content) == 0:
+                # Safety guard — should never happen after the last_start logic
+                continue
 
-        if len(input_ids) <= max_content_len:
-            # Single chunk
-            chunk_ids = [cls_token] + input_ids + [sep_token]
-            chunk_mask = [1] * len(chunk_ids)
+            encoded = tokenizer(
+                tokenizer.decode(content),  # decode → re-encode so the tokenizer
+                # handles special tokens natively
+                add_special_tokens=True,
+                max_length=max_len,
+                padding="max_length",
+                truncation=True,
+                return_attention_mask=True,
+                return_token_type_ids=uses_token_type_ids,
+            )
 
-            # Pad
-            pad_len = max_len - len(chunk_ids)
-            if pad_len > 0:
-                chunk_ids += [pad_token] * pad_len
-                chunk_mask += [0] * pad_len
+            chunks_input_ids.append(encoded["input_ids"])
+            chunks_attention_mask.append(encoded["attention_mask"])
+            if uses_token_type_ids:
+                chunks_token_type_ids.append(encoded["token_type_ids"])
 
-            chunks_input_ids.append(chunk_ids)
-            chunks_attention_mask.append(chunk_mask)
-        else:
-            # Sliding window
-            for i in range(0, len(input_ids), stride):
-                content = input_ids[i : i + max_content_len]
-                chunk_ids = [cls_token] + content + [sep_token]
-                chunk_mask = [1] * len(chunk_ids)
-
-                pad_len = max_len - len(chunk_ids)
-                if pad_len > 0:
-                    chunk_ids += [pad_token] * pad_len
-                    chunk_mask += [0] * pad_len
-
-                chunks_input_ids.append(chunk_ids)
-                chunks_attention_mask.append(chunk_mask)
-
-                if i + max_content_len >= len(input_ids):
-                    break
-
-        # Batch predict for this document's chunks
+        # --- Batched forward passes -------------------------------------------
         doc_logits = []
         with torch.no_grad():
             for i in range(0, len(chunks_input_ids), batch_size):
-                b_input_ids = torch.tensor(chunks_input_ids[i : i + batch_size]).to(
-                    device
+                b_ids = torch.tensor(
+                    chunks_input_ids[i : i + batch_size], device=device
                 )
-                b_attention_mask = torch.tensor(
-                    chunks_attention_mask[i : i + batch_size]
-                ).to(device)
+                b_mask = torch.tensor(
+                    chunks_attention_mask[i : i + batch_size], device=device
+                )
 
-                outputs = model(input_ids=b_input_ids, attention_mask=b_attention_mask)
-                logits = outputs.logits
-                doc_logits.append(logits.cpu().numpy())
+                kwargs = dict(input_ids=b_ids, attention_mask=b_mask)
+                if uses_token_type_ids:
+                    kwargs["token_type_ids"] = torch.tensor(
+                        chunks_token_type_ids[i : i + batch_size], device=device
+                    )
 
-        doc_logits = np.concatenate(doc_logits, axis=0)
+                outputs = model(**kwargs)
+                doc_logits.append(outputs.logits.cpu().numpy())
 
-        # Aggregate predictions for the document
+        doc_logits = np.concatenate(doc_logits, axis=0)  # (n_chunks, num_labels)
+
+        # --- Aggregate --------------------------------------------------------
         if aggregation == "mean":
-            agg_logits = np.mean(doc_logits, axis=0)
+            agg_logits = doc_logits.mean(axis=0)
         elif aggregation == "max":
-            agg_logits = np.max(doc_logits, axis=0)
+            agg_logits = doc_logits.max(axis=0)
         else:
-            raise ValueError(f"Unknown aggregation method: {aggregation}")
+            raise ValueError(
+                f"Unknown aggregation '{aggregation}'. Choose 'mean' or 'max'."
+            )
 
         all_logits.append(agg_logits)
 

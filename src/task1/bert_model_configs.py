@@ -1,6 +1,5 @@
+from dataclasses import dataclass
 from typing import Optional
-
-from attr import dataclass
 
 
 @dataclass
@@ -32,7 +31,7 @@ class ModelConfig:
     optim: str = "adamw_torch_fused"  # "adamw_torch" o "adamw_hf"
 
     # --- Focal Loss ---
-    loss_type: str = "standard"  # "standard", "weighted" o "focal"
+    loss_type: str = "weighted"  # "standard", "weighted" o "focal"
     focal_gamma: float = 2.0
     focal_alpha: Optional[float] = None
 
@@ -80,7 +79,7 @@ MODEL_CONFIGS: dict[str, ModelConfig] = {
         classifier_dropout=0.1,  # ↑ más regularización
         attention_probs_dropout_prob=0.1,
         hidden_dropout_prob=0.1,
-        max_len=128,  # Tweets → contexto corto
+        max_len=128,
         use_pysentimiento_preprocess=True,
         learning_rate=2e-5,  # ↑ ligeramente más alto
     ),

@@ -31,7 +31,7 @@ from trainer import WeightedTrainer
 from utils import DEFAULT_SEED, set_seed
 
 SEED = DEFAULT_SEED
-set_seed(SEED)
+
 
 DATA_PATH = "../../data/task3/train_df.csv"
 RESULTS_FILE = "../../results/task3/tabla_paper.csv"
@@ -53,14 +53,16 @@ def main(augment=False, baseline=False):
     TRAIN_PATH = f"../../data/task3/{pre}train_df.csv"
     VAL_PATH = f"../../data/task3/{pre}val_df.csv"
     DEV_PATH = f"../../data/task3/{pre}dev_df.csv"
-    
+
     suffix = ""
     if baseline:
         suffix += "_baseline"
     if augment:
         suffix += "_aug"
-        
-    RESULTS_FILE = f"../../results/task3/tabla_paper{suffix if suffix else '_processed'}.csv"
+
+    RESULTS_FILE = (
+        f"../../results/task3/tabla_paper{suffix if suffix else '_processed'}.csv"
+    )
     print(f"Cargando datos de entrenamiento desde {TRAIN_PATH}...")
     train_df = pd.read_csv(TRAIN_PATH)
     train_df["label"] = train_df["label"].map({"N": 0, "Y": 1})
@@ -195,6 +197,8 @@ def main(augment=False, baseline=False):
             output_dir=checkpoints_path,
             learning_rate=cfg.learning_rate,
             optim=cfg.optim,
+            data_seed=SEED,
+            seed=SEED,
             per_device_train_batch_size=cfg.per_device_train_batch_size,
             gradient_accumulation_steps=cfg.gradient_accumulation_steps,
             num_train_epochs=cfg.num_train_epochs,
@@ -229,6 +233,7 @@ def main(augment=False, baseline=False):
     print(f"--- INICIANDO COMPARATIVA EN {device.type.upper()} ---")
 
     for name, cfg in MODEL_CONFIGS.items():
+        set_seed(SEED)
         print(f"\n{'=' * 50}")
         print(f">>> Evaluando: {name} ({cfg.model_id})")
         print(

@@ -96,14 +96,20 @@ class WeightedTrainer(Trainer):
         outputs = model(**inputs)
         logits = outputs.logits
 
+        weight = (
+            self.class_weights.to(logits.device)
+            if self.class_weights is not None
+            else None
+        )
+
         if self.loss_type == "focal":
             loss = self.focal_loss_fct(logits, labels)
         else:
             if self.is_multilabel:
-                loss_fct = nn.BCEWithLogitsLoss(pos_weight=self.class_weights)
+                loss_fct = nn.BCEWithLogitsLoss(pos_weight=weight)
                 loss = loss_fct(logits, labels.float())
             else:
-                loss_fct = nn.CrossEntropyLoss(weight=self.class_weights)
+                loss_fct = nn.CrossEntropyLoss(weight=weight)
                 loss = loss_fct(
                     logits.view(-1, self.model.config.num_labels), labels.view(-1)
                 )
