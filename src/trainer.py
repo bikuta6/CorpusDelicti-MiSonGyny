@@ -99,9 +99,6 @@ class WeightedTrainer(Trainer):
         if self.loss_type == "focal":
             loss = self.focal_loss_fct(logits, labels)
         else:
-            self.is_multilabel = (
-                self.model.config.problem_type == "multi_label_classification"
-            )
             if self.is_multilabel:
                 loss_fct = nn.BCEWithLogitsLoss(pos_weight=self.class_weights)
                 loss = loss_fct(logits, labels.float())

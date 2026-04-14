@@ -228,11 +228,11 @@ def predict_with_chunks(
 ):
     """
     Tokenizes texts without truncation and splits them into chunks using a sliding window.
-    Window size = max_len, stride = max_len // 2.
+    Window size = max_len, stride = max_len // 4.
     Returns PredictionOutput with aggregated logits for each text.
     """
     model.eval()
-    stride = max_len // 2
+    stride = max_len // 4
 
     all_logits = []
 

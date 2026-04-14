@@ -30,6 +30,7 @@ def process_file(
     linewise_processing: bool = False,
     skip_dedup: bool = False,
 ):
+    print(f"Reading input CSV from: {input_csv}...")
     df = pd.read_csv(input_csv)
     if text_col not in df.columns:
         raise SystemExit(f"Input CSV has no column '{text_col}'")
@@ -38,12 +39,14 @@ def process_file(
 
     # Step 1: Normalize contractions
     if not skip_contractions:
+        print("Normalizing contractions in lyrics...")
         texts = [
             normalize_contractions(t)
             for t in tqdm(texts, desc="Normalizing contractions")
         ]
 
     if not skip_dedup:
+        print(f"Loading SentenceTransformer model '{model_name}' for redundancy removal...")
         model = SentenceTransformer(model_name)
 
     # Step 3: Remove redundant lyrics or just format them
