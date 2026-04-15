@@ -8,12 +8,7 @@ def new_lyrics(df: pd.DataFrame) -> pd.Series:
     """
     Creates a new lyrics column by concatenating the title with the original lyrics.
     """
-    return (
-        "Título: "
-        + df["song_title"]
-        + "\n\n"
-        + df["lyrics"]
-    )
+    return "Título: " + df["song_title"] + "\n\n" + df["lyrics"]
 
 
 def main(filename="train.csv"):
@@ -33,8 +28,8 @@ def main(filename="train.csv"):
     print(df.columns)
     print(df.head())
 
-    new_lyrics_column = new_lyrics(df)
-    df["lyrics"] = new_lyrics_column
+    # new_lyrics_column = new_lyrics(df)
+    # df["lyrics"] = new_lyrics_column
     common_cols = [
         "song_id",
         "song_title",

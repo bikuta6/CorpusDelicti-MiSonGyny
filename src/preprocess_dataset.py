@@ -19,6 +19,21 @@ except Exception:
     from lyric_utils import format_lyrics, remove_redundant_lyrics
 
 
+def new_lyrics(df: pd.DataFrame) -> pd.Series:
+    """
+    Creates a new lyrics column by concatenating the title with the original lyrics.
+    """
+    return (
+        "'"
+        + df["song_title"]
+        + "'"
+        + " de "
+        + df["artist_name"]
+        + "\n\n"
+        + df["lyrics"]
+    )
+
+
 def process_file(
     input_csv: Path,
     output_csv: Path,
@@ -35,6 +50,8 @@ def process_file(
     if text_col not in df.columns:
         raise SystemExit(f"Input CSV has no column '{text_col}'")
 
+    new_lyrics_column = new_lyrics(df)
+    df[text_col] = new_lyrics_column
     texts = df[text_col].fillna("").astype(str).tolist()
 
     # Step 1: Normalize contractions
@@ -46,7 +63,9 @@ def process_file(
         ]
 
     if not skip_dedup:
-        print(f"Loading SentenceTransformer model '{model_name}' for redundancy removal...")
+        print(
+            f"Loading SentenceTransformer model '{model_name}' for redundancy removal..."
+        )
         model = SentenceTransformer(model_name)
 
     # Step 3: Remove redundant lyrics or just format them
