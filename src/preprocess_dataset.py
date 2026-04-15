@@ -50,8 +50,11 @@ def process_file(
     if text_col not in df.columns:
         raise SystemExit(f"Input CSV has no column '{text_col}'")
 
-    new_lyrics_column = new_lyrics(df)
-    df[text_col] = new_lyrics_column
+    try:
+        new_lyrics_column = new_lyrics(df)
+        df[text_col] = new_lyrics_column
+    except:
+        print("no song or artist name")
     texts = df[text_col].fillna("").astype(str).tolist()
 
     # Step 1: Normalize contractions

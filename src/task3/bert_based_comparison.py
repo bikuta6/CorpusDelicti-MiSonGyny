@@ -25,7 +25,6 @@ from transformers import (
 )
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from augmentation_utils import LyricsAugmentor
 from bert_pooling import build_bert_like_classifier, predict_with_chunks
 from random_crop_collator import RandomCropDataCollator
 from trainer import WeightedTrainer
@@ -46,7 +45,7 @@ SAVE_DIR = "../../models/task3/comparison"
 # ─────────────────────────────────────────────────────────────
 # CARGA DE DATOS
 # ─────────────────────────────────────────────────────────────
-def main(augment=False, baseline=False):
+def main(baseline=False):
     if baseline:
         apply_baseline_settings()
 
@@ -58,8 +57,6 @@ def main(augment=False, baseline=False):
     suffix = ""
     if baseline:
         suffix += "_baseline"
-    if augment:
-        suffix += "_aug"
 
     RESULTS_FILE = (
         f"../../results/task3/tabla_paper{suffix if suffix else '_processed'}.csv"
@@ -109,13 +106,6 @@ def main(augment=False, baseline=False):
         f"p95={int(np.percentile(tokenized_lengths, 95))}, "
         f"max={max(tokenized_lengths)}"
     )
-
-    augmentor = LyricsAugmentor()
-    if augment:
-        train_df = augmentor.augment_dataframe(
-            train_df,
-            multiplier=2,  # Genera 2 versiones nuevas por cada canción de odio original
-        )
 
     train_ds = Dataset.from_pandas(
         train_df.rename(columns={"lyrics": "text"}), preserve_index=False
@@ -420,10 +410,7 @@ if __name__ == "__main__":
         description="Comparativa de  basados en BERT para Task 1"
     )
     arg_parser.add_argument(
-        "--augment", action="store_true", help="Activar augmentación de datos"
-    )
-    arg_parser.add_argument(
         "--baseline", action="store_true", help="Activar baseline settings"
     )
     args = arg_parser.parse_args()
-    main(augment=args.augment, baseline=args.baseline)
+    main(baseline=args.baseline)

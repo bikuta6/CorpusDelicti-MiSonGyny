@@ -30,7 +30,6 @@ from transformers import (
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from bert_model_configs import MODEL_CONFIGS, ModelConfig, apply_baseline_settings
 
-from augmentation_utils import LyricsAugmentor
 from bert_pooling import build_bert_like_classifier, predict_with_chunks
 from random_crop_collator import RandomCropDataCollator
 from trainer import WeightedTrainer
@@ -44,7 +43,7 @@ def create_label_column(df: pd.DataFrame, label_cols: list[str]) -> pd.Series:
     return df[label_cols].astype(int).values.tolist()
 
 
-def main(model_name, augment=False, baseline=False):
+def main(model_name, baseline=False):
     if baseline:
         apply_baseline_settings()
 
@@ -61,7 +60,6 @@ def main(model_name, augment=False, baseline=False):
     DEV_PATH = f"../../data/task2/{pre}dev_df.csv"
 
     suffix = "_baseline" if baseline else ""
-    suffix += "_aug" if augment else ""
     SAVE_DIR = f"../../models/task2/single/{model_name}{suffix}"
 
     label_cols = ["sexualization", "violence", "hate"]
@@ -90,13 +88,6 @@ def main(model_name, augment=False, baseline=False):
     )
     n_neg = n_samples - n_pos
     weights_tensor = torch.sqrt(torch.tensor(n_neg / np.maximum(1, n_pos)).float())
-
-    augmentor = LyricsAugmentor()
-    if augment:
-        train_df = augmentor.augment_dataframe(
-            train_df,
-            multiplier=2,
-        )
 
     train_ds = Dataset.from_pandas(
         train_df.rename(columns={"lyrics": "text"}), preserve_index=False
@@ -299,12 +290,9 @@ if __name__ == "__main__":
         "--model", type=str, default="BETO", help="Nombre del modelo en config"
     )
     arg_parser.add_argument(
-        "--augment", action="store_true", help="Activar augmentación de datos"
-    )
-    arg_parser.add_argument(
         "--baseline",
         action="store_true",
         help="Usar configuraciones baseline y datos crudos",
     )
     args = arg_parser.parse_args()
-    main(model_name=args.model, augment=args.augment, baseline=args.baseline)
+    main(model_name=args.model, baseline=args.baseline)

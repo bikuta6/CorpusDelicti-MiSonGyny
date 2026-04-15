@@ -45,6 +45,7 @@ def _save_csv(df: pd.DataFrame, path: str):
 
 def apply_augmentation_to_task(
     source_task: str,
+    processed_task: bool,
     multiplier: int = 1,
     seed: int = 42,
     method_probs: Optional[List[float]] = None,
@@ -64,7 +65,8 @@ def apply_augmentation_to_task(
     - export_to: list of other task names to export augmented lyrics to (based on song_id)
     - out_suffix: suffix used in output filenames
     """
-    src_path = os.path.join("..", "data", source_task, "train_df.csv")
+    pre = "processed_" if processed_task else ""
+    src_path = os.path.join("..", "data", source_task, f"{pre}train_df.csv")
     print(f"Loading source data: {src_path}")
     df = _try_read_csv(src_path)
 
@@ -212,6 +214,12 @@ def main():
         help="Source task name (folder under data/)",
     )
     parser.add_argument(
+        "--processed-task",
+        type=bool,
+        default=False,
+        help="Whether the source task is already processed",
+    )
+    parser.add_argument(
         "--multiplier",
         type=int,
         default=1,
@@ -260,6 +268,7 @@ def main():
 
     apply_augmentation_to_task(
         source_task=args.source_task,
+        processed_task=args.processed_task,
         multiplier=args.multiplier,
         seed=args.seed,
         method_probs=method_probs,

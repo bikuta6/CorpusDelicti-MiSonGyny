@@ -54,17 +54,12 @@ def similarity_check(lyrics1, lyrics2):
 
 if __name__ == "__main__":
     # Load datasets
-    train_df = load_dataset("../data/task1/train_df.csv", is_new=True)
-    val_df = load_dataset("../data/task1/val_df.csv", is_new=True)
-    test_df = load_dataset("../data/task1/dev_df.csv", is_new=True)
+    train_df = load_dataset("../data/task1/processed_train_df.csv", is_new=True)
+    val_df = load_dataset("../data/task1/processed_val_df.csv", is_new=True)
+    test_df = load_dataset("../data/task1/processed_dev_df.csv", is_new=True)
     df = pd.concat([train_df, val_df, test_df], ignore_index=True)
 
-    prev_train = load_dataset("../prev_data/task1/processed_train.csv", is_new=False)
-    prev_test = load_dataset("../prev_data/task1/processed_test.csv", is_new=False)
-    prev_test_labels = load_dataset("../prev_data/task1/test_labels.csv", is_new=False)
-    if "id" in prev_test_labels.columns:
-        prev_test = prev_test.merge(prev_test_labels, on="id", how="left")
-    prev_df = pd.concat([prev_train, prev_test], ignore_index=True)
+    prev_df = load_dataset("../prev_data/task1/processed_full.csv", is_new=False)
 
     # Preprocess lyrics into a new column used for similarity comparisons
     for d in (df, prev_df):
@@ -90,17 +85,17 @@ if __name__ == "__main__":
             sim = similarity_check(lyrics, row2["sim_lyrics"])
             if sim > 0.6:
                 print(
-                    f"Found similar lyrics (sim={sim:.2f}) in new dataset for old id {row['id']} -> new id {row2[new_id_col]}"
+                    f"Found similar lyrics (sim={sim:.2f}) in new dataset for old id {row['song_id']} -> new id {row2[new_id_col]}"
                 )
                 print(f"  Old lyrics (preprocessed): {lyrics[:100]}...")
                 print(f"  New lyrics (preprocessed): {row2['sim_lyrics'][:100]}...\n")
                 found = True
                 break
         if not found:
-            print(f"No match found for old id {row['id']} in new dataset.\n")
+            print(f"No match found for old id {row['song_id']} in new dataset.\n")
             unmatched.append(
                 {
-                    "song_id": row["id"],
+                    "song_id": row["song_id"],
                     "lyrics": row.get("lyrics", ""),
                     "label": row.get("label", None),
                 }
