@@ -24,10 +24,8 @@ def main(args):
     # 2. Cargar datos de prueba
     print(f"Cargando datos de prueba desde {args.test_file}...")
     df = pd.read_csv(args.test_file)
-    if "lyrics" not in df.columns or "song_id" not in df.columns:
-        raise ValueError(
-            "El archivo CSV debe contener las columnas 'song_id' y 'lyrics'."
-        )
+    if "lyrics" not in df.columns:
+        raise ValueError("El archivo CSV debe contener la columna 'lyrics'.")
 
     # Renombramos lyrics a text para que sea compatible con la función de chunks
     ds = Dataset.from_pandas(
@@ -71,7 +69,10 @@ def main(args):
 
     # 6. Guardar Resultados
     os.makedirs(os.path.dirname(os.path.abspath(args.output_file)), exist_ok=True)
-    df_out = df[["song_id", "label"]]
+    if "song_id" in df.columns:
+        df_out = df[["song_id", "preds"]]
+    else:
+        df_out = df[["preds"]]
     df_out.to_csv(args.output_file, index=False)
 
     print(f"\nPredicciones guardadas exitosamente en: {args.output_file}")

@@ -24,10 +24,8 @@ def main(args):
     # 2. Cargar datos de prueba
     print(f"Cargando datos de prueba desde {args.test_file}...")
     df = pd.read_csv(args.test_file)
-    if "lyrics" not in df.columns or "song_id" not in df.columns:
-        raise ValueError(
-            "El archivo CSV debe contener las columnas 'song_id' y 'lyrics'."
-        )
+    if "lyrics" not in df.columns:
+        raise ValueError("El archivo CSV debe contener la columna 'lyrics'.")
 
     # Renombramos lyrics a text para que sea compatible con la función de chunks
     ds = Dataset.from_pandas(
@@ -67,13 +65,16 @@ def main(args):
     preds = (probs >= args.threshold).astype(int)
 
     # 5. Mapear de vuelta a las columnas originales de la Task 2
-    label_cols = ["type_sexualization", "type_violence", "type_hate"]
+    label_cols = ["S", "V", "H"]
     for i, col in enumerate(label_cols):
         df[col] = preds[:, i]
 
     # 6. Guardar Resultados
     os.makedirs(os.path.dirname(os.path.abspath(args.output_file)), exist_ok=True)
-    out_cols = ["song_id"] + label_cols
+    if "song_id" in df.columns:
+        out_cols = ["song_id"] + label_cols
+    else:
+        out_cols = label_cols
     df_out = df[out_cols]
     df_out.to_csv(args.output_file, index=False)
 
