@@ -65,14 +65,17 @@ def main(args):
 
     # 5. Mapear de vuelta a las etiquetas originales de la Task 3 (0 -> N, 1 -> Y)
     label_map = {0: "N", 1: "Y"}
-    df["label"] = [label_map[p] for p in preds]
+    df["preds"] = [label_map[p] for p in preds]
 
     # 6. Guardar Resultados
     os.makedirs(os.path.dirname(os.path.abspath(args.output_file)), exist_ok=True)
     if "song_id" in df.columns:
-        df_out = df[["song_id", "preds"]]
+        df_out = df[["song_id", "preds"]].rename(columns={"song_id": "id"})
+    elif "id" in df.columns:
+        df_out = df[["id", "preds"]]
     else:
-        df_out = df[["preds"]]
+        df["id"] = [f"T3_TEST_{i + 1:04d}" for i in range(len(df))]
+        df_out = df[["id", "preds"]]
     df_out.to_csv(args.output_file, index=False)
 
     print(f"\nPredicciones guardadas exitosamente en: {args.output_file}")

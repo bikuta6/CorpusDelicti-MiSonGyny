@@ -72,10 +72,12 @@ def main(args):
     # 6. Guardar Resultados
     os.makedirs(os.path.dirname(os.path.abspath(args.output_file)), exist_ok=True)
     if "song_id" in df.columns:
-        out_cols = ["song_id"] + label_cols
+        df_out = df[["song_id"] + label_cols].rename(columns={"song_id": "id"})
+    elif "id" in df.columns:
+        df_out = df[["id"] + label_cols]
     else:
-        out_cols = label_cols
-    df_out = df[out_cols]
+        df["id"] = [f"T2_TEST_{i + 1:04d}" for i in range(len(df))]
+        df_out = df[["id"] + label_cols]
     df_out.to_csv(args.output_file, index=False)
 
     print(f"\nPredicciones guardadas exitosamente en: {args.output_file}")
