@@ -1,4 +1,4 @@
 Modelo,F1-Macro,F1-Micro,Hamming Loss,Best Params
-RandomForest_OVR,0.5685258671369783,0.6058091286307054,0.18304431599229287,"{'estimator__n_estimators': 288, 'estimator__max_depth': 5, 'estimator__min_samples_split': 11}"
-SVM_OVR,0.554819634210472,0.5871559633027523,0.21676300578034682,"{'estimator__C': np.float64(0.15157676908357015), 'estimator__kernel': 'linear'}"
-LogisticRegression_OVR,0.5500468827185133,0.5825932504440497,0.22639691714836224,"{'estimator__C': np.float64(0.15876781526924), 'estimator__class_weight': 'balanced'}"
+LogisticRegression_OVR,0.5605767525831359,0.6037037037037037,0.20616570327552985,"{'estimator__C': np.float64(0.5169879442298543), 'estimator__class_weight': 'balanced'}"
+RandomForest_OVR,0.5600241564293852,0.6029723991507431,0.18015414258188825,"{'estimator__n_estimators': 201, 'estimator__max_depth': 6, 'estimator__min_samples_split': 10}"
+SVM_OVR,0.5533586709764341,0.5845588235294118,0.21772639691714837,"{'estimator__C': np.float64(0.18242724707664296), 'estimator__kernel': 'linear'}"
