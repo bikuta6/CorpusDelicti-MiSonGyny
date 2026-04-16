@@ -303,6 +303,15 @@ def main(baseline=False):
             )
 
             trainer.train()
+
+            # Extract best epoch from log history
+            eval_logs = [l for l in trainer.state.log_history if "eval_f1_macro" in l]
+            if eval_logs:
+                best_eval = max(eval_logs, key=lambda x: x["eval_f1_macro"])
+                best_epoch = best_eval["epoch"]
+            else:
+                best_epoch = None
+            print(f"    ✓ Best epoch: {best_epoch}")
             # Standard evaluation (argmax / threshold=0.5)
             metrics = trainer.evaluate()
 
@@ -328,14 +337,13 @@ def main(baseline=False):
             # ─────────────────────────────────────────
             # Threshold sweep on validation
             # ─────────────────────────────────────────
-            # best_thr, best_f1 = find_best_threshold(true_labels, probs)
+            best_thr, best_f1 = find_best_threshold(true_labels, probs)
 
-            # print(f"    🔎 Mejor threshold validación: {best_thr}")
-            # print(f"    🔎 Macro-F1 con threshold óptimo: {best_f1}")
+            print(f"    🔎 Mejor threshold validación: {best_thr}")
+            print(f"    🔎 Macro-F1 con threshold óptimo: {best_f1}")
 
             # Recompute metrics using optimal threshold
-            best_thr = 0.5
-            opt_preds = (probs >= best_thr).astype(int)
+            opt_preds = (probs >= 0.5).astype(int)
 
             precision, recall, f1_opt, _ = precision_recall_fscore_support(
                 true_labels, opt_preds, average="macro", zero_division=0.0
@@ -355,6 +363,7 @@ def main(baseline=False):
                     "Precision": precision,
                     "Recall": recall,
                     "Best-Threshold": best_thr,
+                    "Best-Epoch": best_epoch,
                 }
             )
             print(f"✓ {name}: F1={f1_opt:.4f}")

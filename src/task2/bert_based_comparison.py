@@ -352,6 +352,15 @@ def main(baseline=False):
             )
 
             trainer.train()
+
+            # Extract best epoch from log history
+            eval_logs = [l for l in trainer.state.log_history if "eval_f1_macro" in l]
+            if eval_logs:
+                best_eval = max(eval_logs, key=lambda x: x["eval_f1_macro"])
+                best_epoch = best_eval["epoch"]
+            else:
+                best_epoch = None
+            print(f"    ✓ Best epoch: {best_epoch}")
             # Standard evaluation (argmax / threshold=0.5)
             metrics = trainer.evaluate()
 
@@ -404,6 +413,7 @@ def main(baseline=False):
                     "Precision": precision,
                     "Recall": recall,
                     "Best-Threshold": best_thr,
+                    "Best-Epoch": best_epoch,
                 }
             )
             print(f"✓ {name}: F1={f1_opt:.4f}")

@@ -1,5 +1,6 @@
 """
-Entrenamiento y evaluación para un único modelo en Task 1: Clasificación Binaria de Misoginia.
+Entrenamiento y evaluación final para un único modelo en Task 3.
+Entrena con un split 80/20 de los datos.
 """
 
 import argparse
@@ -14,6 +15,7 @@ import torch
 from datasets import Dataset
 from pysentimiento.preprocessing import preprocess_tweet
 from sklearn.metrics import accuracy_score, f1_score, precision_recall_fscore_support
+from sklearn.model_selection import train_test_split
 from transformers import (
     AutoTokenizer,
     EarlyStoppingCallback,
@@ -32,7 +34,26 @@ SEED = DEFAULT_SEED
 set_seed(SEED)
 
 
-def main(model_name, baseline=False):
+def find_best_threshold(true_labels, probs, step=0.01):
+    thresholds = np.arange(0.0, 1.0 + step, step)
+    best_thr = 0.5
+    best_f1 = 0.0
+
+    true_labels = np.array(true_labels)
+    probs = np.array(probs)
+
+    for thr in thresholds:
+        preds = (probs >= thr).astype(int)
+        f1 = f1_score(true_labels, preds, average="macro", zero_division=0.0)
+
+        if f1 > best_f1:
+            best_f1 = f1
+            best_thr = thr
+
+    return round(best_thr, 3), round(best_f1, 4)
+
+
+def main(model_name, baseline=False, processed=False, epochs=None):
     if baseline:
         apply_baseline_settings()
 
@@ -43,23 +64,22 @@ def main(model_name, baseline=False):
 
     cfg = MODEL_CONFIGS[model_name]
 
-    pre = "processed_" if not baseline else ""
-    TRAIN_PATH = f"../../data/task1/{pre}train_df.csv"
-    VAL_PATH = f"../../data/task1/{pre}val_df.csv"
-    DEV_PATH = f"../../data/task1/{pre}dev_df.csv"
+    pre = "processed_" if processed else ""
+    DATA_PATH = f"../../data/task3/{pre}train.csv"
+    if not os.path.exists(DATA_PATH):
+        DATA_PATH = f"../../data/task3/{pre}train_df.csv"
 
     suffix = "_baseline" if baseline else ""
-    SAVE_DIR = f"../../models/task1/single/{model_name}{suffix}"
+    SAVE_DIR = f"../../models/task3/final/{model_name}{suffix}"
 
-    print(f"Cargando datos de entrenamiento desde {TRAIN_PATH}...")
-    train_df = pd.read_csv(TRAIN_PATH)
-    train_df["label"] = train_df["label"].map({"NM": 0, "M": 1})
-    print(f"Cargando datos de validación desde {VAL_PATH}...")
-    val_df = pd.read_csv(VAL_PATH)
-    val_df["label"] = val_df["label"].map({"NM": 0, "M": 1})
-    print(f"Cargando datos de test/dev desde {DEV_PATH}...")
-    dev_df = pd.read_csv(DEV_PATH)
-    dev_df["label"] = dev_df["label"].map({"NM": 0, "M": 1})
+    print(f"Cargando todos los datos desde {DATA_PATH}...")
+    df = pd.read_csv(DATA_PATH)
+
+    if df["label"].dtype == object:
+        df["label"] = df["label"].map({"N": 0, "Y": 1})
+
+    print("Entrenando con el dataset COMPLETO...")
+    train_df = df
 
     train_originals_labels = (
         train_df[train_df["augmentation"] == "original"]["label"]
@@ -75,12 +95,6 @@ def main(model_name, baseline=False):
 
     train_ds = Dataset.from_pandas(
         train_df.rename(columns={"lyrics": "text"}), preserve_index=False
-    )
-    val_ds = Dataset.from_pandas(
-        val_df.rename(columns={"lyrics": "text"}), preserve_index=False
-    )
-    dev_ds = Dataset.from_pandas(
-        dev_df.rename(columns={"lyrics": "text"}), preserve_index=False
     )
 
     def compute_metrics(pred):
@@ -102,12 +116,14 @@ def main(model_name, baseline=False):
             texts = batch["text"]
             if cfg.use_pysentimiento_preprocess:
                 texts = [preprocess_tweet(t, lang="es") for t in texts]
+
             if training:
                 return tokenizer(
                     texts,
                     padding=False,
                     truncation=False,
                 )
+
             return tokenizer(
                 texts,
                 padding="max_length",
@@ -124,44 +140,25 @@ def main(model_name, baseline=False):
         if torch.backends.mps.is_available()
         else "cpu"
     )
-    print(f"--- INICIANDO ENTRENAMIENTO PARA {model_name} EN {device.type.upper()} ---")
     print(
-        f"Config: lr={cfg.learning_rate}, dropout_cls={cfg.classifier_dropout}, max_len={cfg.max_len}"
+        f"--- INICIANDO ENTRENAMIENTO FINAL PARA {model_name} EN {device.type.upper()} ---"
     )
 
     tokenizer = AutoTokenizer.from_pretrained(cfg.model_id)
 
     train_tokenize_fn = make_tokenize_fn(tokenizer, cfg, training=True)
     eval_tokenize_fn = make_tokenize_fn(tokenizer, cfg, training=False)
+
     train_tok = train_ds.map(
         train_tokenize_fn,
         batched=True,
         remove_columns=["text"],
         load_from_cache_file=False,
     )
-    val_tok = val_ds.map(
-        eval_tokenize_fn,
-        batched=True,
-        remove_columns=["text"],
-        load_from_cache_file=False,
-    )
-    dev_tok = dev_ds.map(
-        eval_tokenize_fn,
-        batched=True,
-        remove_columns=["text"],
-        load_from_cache_file=False,
-    )
 
     train_tok = train_tok.rename_column("label", "labels")
-    val_tok = val_tok.rename_column(
-        "labels" if "labels" in val_tok.column_names else "label", "labels"
-    )
-    dev_tok = dev_tok.rename_column(
-        "labels" if "labels" in dev_tok.column_names else "label", "labels"
-    )
+
     train_tok.set_format("torch")
-    val_tok.set_format("torch")
-    dev_tok.set_format("torch")
 
     model = build_bert_like_classifier(cfg, device, num_labels=2)
     checkpoints_path = os.path.join(SAVE_DIR, "checkpoints")
@@ -172,17 +169,16 @@ def main(model_name, baseline=False):
         optim=cfg.optim,
         per_device_train_batch_size=cfg.per_device_train_batch_size,
         gradient_accumulation_steps=cfg.gradient_accumulation_steps,
-        num_train_epochs=cfg.num_train_epochs,
+        num_train_epochs=epochs if epochs is not None else cfg.num_train_epochs,
         bf16=torch.cuda.is_bf16_supported(),
         fp16=False,
         weight_decay=cfg.weight_decay,
         warmup_ratio=cfg.warmup_ratio,
         max_grad_norm=cfg.max_grad_norm,
         lr_scheduler_type=cfg.lr_scheduler_type,
-        eval_strategy="epoch",
-        save_strategy="epoch",
-        load_best_model_at_end=True,
-        metric_for_best_model="eval_f1_macro",
+        eval_strategy="no",
+        save_strategy="no",
+        load_best_model_at_end=False,
         greater_is_better=True,
         save_total_limit=1,
         report_to="none",
@@ -198,54 +194,19 @@ def main(model_name, baseline=False):
         model=model,
         args=args,
         train_dataset=train_tok,
-        eval_dataset=val_tok,
+        eval_dataset=None,
         data_collator=train_collator,
         compute_metrics=compute_metrics,
         class_weights=weights_tensor,
         loss_type=cfg.loss_type,
         focal_gamma=cfg.focal_gamma,
         focal_alpha=None,
-        callbacks=[
-            EarlyStoppingCallback(early_stopping_patience=cfg.early_stopping_patience)
-        ],
     )
 
     print("Entrenando...")
     trainer.train()
 
-    # Extract best epoch from log history
-    eval_logs = [l for l in trainer.state.log_history if "eval_f1_macro" in l]
-    if eval_logs:
-        best_eval = max(eval_logs, key=lambda x: x["eval_f1_macro"])
-        best_epoch = best_eval["epoch"]
-    else:
-        best_epoch = None
-    print(f"    ✓ Best epoch: {best_epoch}")
-
-    print("Evaluando en Dev Set...")
-    pred_output = predict_with_chunks(
-        dataset=dev_ds,
-        tokenizer=tokenizer,
-        model=model,
-        device=device,
-        max_len=cfg.max_len,
-        batch_size=cfg.per_device_eval_batch_size
-        if hasattr(cfg, "per_device_eval_batch_size")
-        else 8,
-        aggregation="max",
-    )
-
-    logits = pred_output.predictions
-    probs = torch.softmax(torch.tensor(logits), dim=-1)[:, 1].numpy()
-    true_labels = pred_output.label_ids
-
-    best_thr = 0.5
-    opt_preds = (probs >= best_thr).astype(int)
-
-    precision, recall, f1_opt, _ = precision_recall_fscore_support(
-        true_labels, opt_preds, average="macro", zero_division=0.0
-    )
-    acc_opt = accuracy_score(true_labels, opt_preds)
+    print("Evaluación omitida (entrenamiento con dataset completo).")
 
     os.makedirs(SAVE_DIR, exist_ok=True)
     trainer.save_model(SAVE_DIR)
@@ -253,11 +214,8 @@ def main(model_name, baseline=False):
 
     results = {
         "Modelo": model_name,
-        "F1-Macro": f1_opt,
-        "Accuracy": acc_opt,
-        "Precision": precision,
-        "Recall": recall,
-        "Best-Threshold": best_thr,
+        "Epochs": epochs if epochs is not None else cfg.num_train_epochs,
+        "Trained_on": "Full Dataset",
     }
 
     with open(os.path.join(SAVE_DIR, "results.json"), "w") as f:
@@ -269,18 +227,31 @@ def main(model_name, baseline=False):
 
 if __name__ == "__main__":
     arg_parser = argparse.ArgumentParser(
-        description="Entrenamiento de un modelo basado en BERT para Task 1"
+        description="Entrenamiento final de un modelo basado en BERT para Task 3"
     )
     arg_parser.add_argument(
-        "--model",
-        type=str,
-        default="BETO",
-        help="Nombre del modelo en config (ej. BETO)",
+        "--model", type=str, default="BETO", help="Nombre del modelo en config"
     )
     arg_parser.add_argument(
         "--baseline",
         action="store_true",
-        help="Usar configuraciones baseline y datos crudos",
+        help="Usar configuraciones baseline",
+    )
+    arg_parser.add_argument(
+        "--processed",
+        action="store_true",
+        help="Usar dataset procesado",
+    )
+    arg_parser.add_argument(
+        "--epochs",
+        type=int,
+        default=None,
+        help="Número de epochs a entrenar (sobreescribe la config)",
     )
     args = arg_parser.parse_args()
-    main(model_name=args.model, baseline=args.baseline)
+    main(
+        model_name=args.model,
+        baseline=args.baseline,
+        processed=args.processed,
+        epochs=args.epochs,
+    )

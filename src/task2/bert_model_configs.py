@@ -12,7 +12,7 @@ class ModelConfig:
     )
 
     # --- Arquitectura del clasificador ---
-    pooling_strategy: str = "cls_mean"  # "cls", "mean", "cls_mean"
+    pooling_strategy: str = "cls"  # "cls", "mean", "cls_mean"
     classifier_dropout: float = 0.1  # Dropout en la capa de clasificación final
     attention_probs_dropout_prob: float = 0.1  # Dropout en atención (BERT/RoBERTa)
     hidden_dropout_prob: float = 0.1  # Dropout en capas ocultas (BERT/RoBERTa)
@@ -34,7 +34,7 @@ class ModelConfig:
     optim: str = "adamw_torch_fused"  # "adamw_torch" o "adamw_hf"
 
     # --- Focal Loss ---
-    loss_type: str = "weighted"  # "standard", "weighted" o "focal"
+    loss_type: str = "standard"  # "standard", "weighted" o "focal"
     focal_gamma: float = 2.0
     focal_alpha: Optional[float] = None
 

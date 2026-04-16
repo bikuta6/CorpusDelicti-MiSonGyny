@@ -212,6 +212,15 @@ def main(model_name, baseline=False):
     print("Entrenando...")
     trainer.train()
 
+    # Extract best epoch from log history
+    eval_logs = [l for l in trainer.state.log_history if "eval_f1_macro" in l]
+    if eval_logs:
+        best_eval = max(eval_logs, key=lambda x: x["eval_f1_macro"])
+        best_epoch = best_eval["epoch"]
+    else:
+        best_epoch = None
+    print(f"    ✓ Best epoch: {best_epoch}")
+
     print("Evaluando en Dev Set...")
     pred_output = predict_with_chunks(
         dataset=dev_ds,
