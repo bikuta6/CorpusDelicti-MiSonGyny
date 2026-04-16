@@ -339,14 +339,13 @@ def main(baseline=False):
             # ─────────────────────────────────────────
             # Threshold sweep on validation
             # ─────────────────────────────────────────
-            # best_thr, best_f1 = find_best_threshold(true_labels, probs)
+            best_thr, best_f1 = find_best_threshold(true_labels, probs)
 
-            # print(f"    🔎 Mejor threshold validación: {best_thr}")
-            # print(f"    🔎 Macro-F1 con threshold óptimo: {best_f1}")
+            print(f"    🔎 Mejor threshold validación: {best_thr}")
+            print(f"    🔎 Macro-F1 con threshold óptimo: {best_f1}")
 
             # Recompute metrics using optimal threshold
-            best_thr = 0.5
-            opt_preds = (probs >= best_thr).astype(int)
+            opt_preds = (probs >= 0.5).astype(int)
 
             precision, recall, f1_opt, _ = precision_recall_fscore_support(
                 true_labels, opt_preds, average="macro", zero_division=0.0
@@ -358,7 +357,18 @@ def main(baseline=False):
             tokenizer.save_pretrained(model_save_path)
             print(f"Modelo guardado en: {model_save_path}")
 
-            results_list.append({"Modelo": name, "F1-Macro": f1_opt, "Accuracy": acc_opt, "Precision": precision, "Recall": recall, "Best-Threshold": best_thr, "Best-Epoch": best_epoch})
+            results_list.append(
+                {
+                    "Modelo": name,
+                    "F1-Macro": f1_opt,
+                    "Accuracy": acc_opt,
+                    "Precision": precision,
+                    "Recall": recall,
+                    "Best-Threshold": best_thr,
+                    "f1-best": best_f1,
+                    "Best-Epoch": best_epoch,
+                }
+            )
             print(f"✓ {name}: F1={f1_opt:.4f}")
 
         except Exception as e:
