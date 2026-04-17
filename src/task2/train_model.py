@@ -40,7 +40,7 @@ set_seed(SEED)
 
 
 def create_label_column(df: pd.DataFrame, label_cols: list[str]) -> pd.Series:
-    return df[label_cols].astype(int).values.tolist()
+    return df[label_cols].astype(float).values.tolist()
 
 
 def main(model_name, baseline=False):

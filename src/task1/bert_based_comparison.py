@@ -179,11 +179,7 @@ def main(baseline=False):
 
     def load_model_with_config(model_id: str, cfg: ModelConfig, device: torch.device):
         model = build_bert_like_classifier(cfg, device, num_labels=2)
-        print(
-            "    Pooling="
-            f"{getattr(model.config, 'pooling_strategy', 'cls')} | "
-            f"dropout_cls={cfg.classifier_dropout}"
-        )
+        print(f"    dropout_cls={cfg.classifier_dropout}")
         return model
 
     def make_training_args(

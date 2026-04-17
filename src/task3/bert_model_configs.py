@@ -9,7 +9,6 @@ class ModelConfig:
     model_id: str
 
     # --- Arquitectura del clasificador ---
-    pooling_strategy: str = "cls"  # "cls", "mean", "cls_mean"
     classifier_dropout: float = 0.1  # Dropout en la capa de clasificación final
     attention_probs_dropout_prob: float = 0.1  # Dropout en atención (BERT/RoBERTa)
     hidden_dropout_prob: float = 0.1  # Dropout en capas ocultas (BERT/RoBERTa)
@@ -97,5 +96,4 @@ MODEL_CONFIGS: dict[str, ModelConfig] = {
 def apply_baseline_settings():
     """Modifica todas las configuraciones para usar los parámetros del baseline."""
     for config in MODEL_CONFIGS.values():
-        config.pooling_strategy = "cls"
         config.loss_type = "standard"
