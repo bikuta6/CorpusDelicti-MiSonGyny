@@ -1,17 +1,17 @@
 task1:
-  augment_target: 
+  augment_target:
     violence: [1, 1.0]
     hate: [1, 1.0]
     sexualization: [1, 1.0]
     label: [1, 1.0, "M"]
   multiplier: 1
   methods:
-    synonym: 0.2
+    synonym: 0.0
     aeda: 0.2
-    char_remove: 0.15
-    char_change: 0.15
+    char_remove: 0.0
+    char_change: 0.0
     backtranslation: 0.2
-    llm_paraphrase: 0.1
+    llm_paraphrase: 0.6
 
 task2:
   augment_target:
@@ -20,20 +20,20 @@ task2:
     sexualization: [1, 1.0]
   multiplier: 1
   methods:
-    synonym: 0.2
+    synonym: 0.0
     aeda: 0.2
-    char_remove: 0.15
-    char_change: 0.15
+    char_remove: 0.0
+    char_change: 0.0
     backtranslation: 0.2
-    llm_paraphrase: 0.1
+    llm_paraphrase: 0.6
 
 task3:
-  augment_target: "1, 1.0, M"
+  augment_target: "1, 1.0, Y"
   multiplier: 1
   methods:
-    synonym: 0.2
+    synonym: 0.0
     aeda: 0.2
-    char_remove: 0.15
-    char_change: 0.15
+    char_remove: 0.0
+    char_change: 0.0
     backtranslation: 0.2
-    llm_paraphrase: 0.1
+    llm_paraphrase: 0.6

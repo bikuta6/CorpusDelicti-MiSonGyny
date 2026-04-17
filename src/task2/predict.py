@@ -2,6 +2,7 @@ import argparse
 import os
 import sys
 
+import numpy as np
 import pandas as pd
 import torch
 from datasets import Dataset
@@ -43,7 +44,7 @@ def main(args):
     )
 
     tokenizer = AutoTokenizer.from_pretrained(args.model_path)
-    model = load_bert_like_classifier(args.model_path, device)
+    model = load_bert_like_classifier(args.model_path, device, num_labels=3)
 
     # 4. Realizar predicciones (con chunks para letras largas)
     print("Realizando predicciones...")
@@ -61,8 +62,16 @@ def main(args):
     logits = pred_output.predictions
     probs = torch.sigmoid(torch.tensor(logits)).numpy()
 
-    # Binarizar según el threshold (por defecto 0.5)
-    preds = (probs >= args.threshold).astype(int)
+    # Binarizar según el threshold
+    thresholds = args.thresholds
+    if len(thresholds) == 1:
+        thresholds = thresholds * probs.shape[1]
+    elif len(thresholds) != probs.shape[1]:
+        raise ValueError(
+            f"Se esperaban {probs.shape[1]} thresholds, pero se recibieron {len(thresholds)}"
+        )
+
+    preds = (probs >= np.array(thresholds)).astype(int)
 
     # 5. Mapear de vuelta a las columnas originales de la Task 2
     label_cols = ["S", "V", "H"]
@@ -100,7 +109,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--output_file",
         type=str,
-        required=True,
+        default="../../task_2_predictions.csv",
         help="Ruta donde se guardará el CSV de salida",
     )
     parser.add_argument(
@@ -110,10 +119,11 @@ if __name__ == "__main__":
         help="Nombre del modelo en bert_model_configs.py (ej. BETO)",
     )
     parser.add_argument(
-        "--threshold",
+        "--thresholds",
         type=float,
-        default=0.5,
-        help="Umbral de decisión para las clases positivas (0.5 por defecto)",
+        nargs="+",
+        default=[0.5],
+        help="Umbrales de decisión para las clases positivas (uno por clase, o un solo valor para todas. Ej: 0.5 0.6 0.7)",
     )
     parser.add_argument(
         "--batch_size", type=int, default=8, help="Tamaño de batch para la inferencia"

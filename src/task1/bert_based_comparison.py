@@ -363,6 +363,7 @@ def main(baseline=False):
                     "Precision": precision,
                     "Recall": recall,
                     "Best-Threshold": best_thr,
+                    "f1-best": best_f1,
                     "Best-Epoch": best_epoch,
                 }
             )

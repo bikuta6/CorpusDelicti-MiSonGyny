@@ -98,7 +98,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--output_file",
         type=str,
-        required=True,
+        default="../../task_1_predictions.csv",
         help="Ruta donde se guardará el CSV de salida",
     )
     parser.add_argument(

@@ -228,7 +228,7 @@ def predict_with_chunks(
     max_len=512,
     batch_size=8,
     stride: int | None = None,
-    aggregation="max",
+    aggregation="mean",
     is_multilabel=False,
 ):
     """
@@ -236,17 +236,6 @@ def predict_with_chunks(
 
     Window size = max_len tokens (including special tokens).
     Stride defaults to max_len // 2 (50% overlap), configurable via `stride`.
-
-    Fixes vs. previous version:
-      - stride is now max_len // 2 (was // 4 → excessive overlap & redundant chunks)
-      - stride is configurable so callers can tune the overlap
-      - token_type_ids (all zeros) are built and passed for BERT-family models
-      - tokenizer.encode_plus is used per chunk so special token handling is
-        delegated to the tokenizer rather than hardcoded — this makes Longformer,
-        RoBERTa, etc. all work correctly out of the box
-      - added a guard for missing cls_token_id / sep_token_id (e.g. GPT-style
-        tokenizers used by mistake)
-      - the last chunk is now guaranteed to be non-empty (guards zero-length tail)
 
     Args:
         dataset:        HuggingFace Dataset or dict with a "text"/"lyrics" column
@@ -260,17 +249,29 @@ def predict_with_chunks(
         stride:         Sliding window stride in tokens. Defaults to max_len // 2.
                         Smaller values → more overlap → more chunks → slower but
                         better coverage of chunk boundaries.
-        aggregation:    How to combine logits across chunks: "max" or "mean".
-        is_multilabel:  Unused here but kept for API compatibility.
+        aggregation:    How to combine logits across chunks: "mean" (default,
+                        recommended for multiclass) or "max" (suited for multilabel).
+        is_multilabel:  If True and aggregation != "max", emits a warning. Kept for
+                        API compatibility; does not change aggregation automatically.
 
     Returns:
         PredictionOutput(predictions=np.ndarray, label_ids=np.ndarray|None, metrics=None)
     """
+    import warnings
+
     model.eval()
 
+    # --- is_multilabel advisory -----------------------------------------------
+    if is_multilabel and aggregation != "max":
+        warnings.warn(
+            "is_multilabel=True was passed but aggregation is not 'max'. "
+            "For multilabel tasks, aggregation='max' is typically preferred. "
+            "Note: sigmoid must be applied post-hoc to the returned logits.",
+            UserWarning,
+            stacklevel=2,
+        )
+
     # --- Stride default -------------------------------------------------------
-    # 50 % overlap is the standard for sliding-window transformers.
-    # The old value of max_len // 4 caused up to 4x redundant chunks per token.
     if stride is None:
         stride = max_len // 2
 
@@ -294,26 +295,23 @@ def predict_with_chunks(
         else (dataset["label"] if "label" in cols else None)
     )
 
-    # --- Pre-tokenize everything without special tokens or truncation ---------
-    # We delegate special-token insertion to encode_plus per chunk (below),
-    # so here we just get the raw token ids for the sliding window.
     all_logits = []
 
     for text in texts:
-        raw = tokenizer(
+        # Encode without special tokens or truncation to get raw subword IDs
+        # for the sliding window. Special tokens and padding are added per chunk
+        # below via prepare_for_model, which avoids the lossy round-trip of
+        # convert_ids_to_tokens → re-tokenize.
+        raw_ids: list[int] = tokenizer.encode(
             text,
             add_special_tokens=False,
             truncation=False,
-            padding=False,
-            return_attention_mask=False,
-            return_token_type_ids=False,
         )
-        raw_ids: list[int] = raw["input_ids"]
 
-        # How much content (non-special) fits per chunk.
-        # encode_plus with add_special_tokens=True will add CLS + SEP (2 tokens)
-        # for BERT-family, or just one BOS/EOS for others — but since we're
-        # slicing raw_ids manually we use the conservative -2 so it always fits.
+        # How many content tokens fit after reserving space for special tokens.
+        # -2 is conservative and correct for BERT-family (CLS + SEP); models
+        # that add only one special token will simply have one extra padding
+        # token — harmless.
         max_content = max_len - 2
 
         if max_content <= 0:
@@ -321,15 +319,43 @@ def predict_with_chunks(
                 f"max_len={max_len} is too small to fit any content tokens"
             )
 
+        # --- Handle empty text ------------------------------------------------
+        if len(raw_ids) == 0:
+            warnings.warn(
+                "Encountered an empty text (0 tokens after encoding). "
+                "Returning zero logits for this example.",
+                UserWarning,
+                stacklevel=2,
+            )
+            # Run a single forward pass on an all-padding input so the output
+            # shape (num_labels) is inferred from the model rather than hardcoded.
+            encoded = tokenizer(
+                "",
+                add_special_tokens=True,
+                max_length=max_len,
+                padding="max_length",
+                truncation=True,
+                return_attention_mask=True,
+                return_token_type_ids=uses_token_type_ids,
+                return_tensors="pt",
+            )
+            with torch.no_grad():
+                kwargs = {
+                    k: v.to(device)
+                    for k, v in encoded.items()
+                    if k in ("input_ids", "attention_mask", "token_type_ids")
+                }
+                outputs = model(**kwargs)
+            all_logits.append(np.zeros_like(outputs.logits.cpu().numpy()[0]))
+            continue
+
         # --- Build chunk boundaries -------------------------------------------
-        # We slice raw_ids with the stride and re-encode each slice so that the
-        # tokenizer handles special tokens, padding, and token_type_ids correctly.
         chunk_starts = list(range(0, max(1, len(raw_ids) - max_content + 1), stride))
 
-        # Always include a chunk that ends at the last token (covers the tail
-        # even when len(raw_ids) is not a multiple of stride).
+        # Guarantee the tail is always covered even when len(raw_ids) is not a
+        # multiple of stride.
         last_start = max(0, len(raw_ids) - max_content)
-        if not chunk_starts or chunk_starts[-1] != last_start:
+        if chunk_starts[-1] != last_start:
             chunk_starts.append(last_start)
 
         chunks_input_ids = []
@@ -340,24 +366,36 @@ def predict_with_chunks(
             content = raw_ids[start : start + max_content]
 
             if len(content) == 0:
-                # Safety guard — should never happen after the last_start logic
+                # Should never happen after the last_start guard above.
                 continue
 
-            encoded = tokenizer(
-                tokenizer.decode(content),  # decode → re-encode so the tokenizer
-                # handles special tokens natively
-                add_special_tokens=True,
-                max_length=max_len,
-                padding="max_length",
-                truncation=True,
-                return_attention_mask=True,
-                return_token_type_ids=uses_token_type_ids,
+            # Manually assemble input_ids with special tokens from the raw ID
+            # slice.
+            cls_id = (
+                tokenizer.cls_token_id
+                if tokenizer.cls_token_id is not None
+                else tokenizer.bos_token_id
             )
+            sep_id = (
+                tokenizer.sep_token_id
+                if tokenizer.sep_token_id is not None
+                else tokenizer.eos_token_id
+            )
+            chunk_ids = [cls_id] + content + [sep_id]
 
-            chunks_input_ids.append(encoded["input_ids"])
-            chunks_attention_mask.append(encoded["attention_mask"])
+            # Pad to max_len with the tokenizer pad token id.
+            pad_id = tokenizer.pad_token_id if tokenizer.pad_token_id is not None else 0
+            n_real = len(chunk_ids)
+            n_pad = max_len - n_real
+            input_ids_chunk = chunk_ids + [pad_id] * n_pad
+            # Attention mask: 1 for real tokens, 0 for padding.
+            attention_mask_chunk = [1] * n_real + [0] * n_pad
+
+            chunks_input_ids.append(input_ids_chunk)
+            chunks_attention_mask.append(attention_mask_chunk)
             if uses_token_type_ids:
-                chunks_token_type_ids.append(encoded["token_type_ids"])
+                # BERT-family: all zeros for single-sequence input.
+                chunks_token_type_ids.append([0] * max_len)
 
         # --- Batched forward passes -------------------------------------------
         doc_logits = []
@@ -382,6 +420,10 @@ def predict_with_chunks(
         doc_logits = np.concatenate(doc_logits, axis=0)  # (n_chunks, num_labels)
 
         # --- Aggregate --------------------------------------------------------
+        # "mean" is the correct default for multiclass: averaging logits across
+        # chunks is equivalent to voting and produces a coherent softmax.
+        # "max" is appropriate for multilabel: it selects the most confident
+        # positive signal across chunks for each label independently.
         if aggregation == "mean":
             agg_logits = doc_logits.mean(axis=0)
         elif aggregation == "max":

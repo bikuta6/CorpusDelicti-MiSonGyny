@@ -94,8 +94,12 @@ def main(model_name, baseline=False, processed=False, epochs=None):
     df["label"] = create_label_column(df, label_cols)
 
     print("Realizando split 80/20 de los datos...")
-    # No stratify directly for multi-label to avoid complex splits, using random split
-    train_df, val_df = train_test_split(df, test_size=0.2, random_state=SEED)
+    stratify_col = (
+        df[["sexualization", "violence", "hate"]].astype(str).agg("_".join, axis=1)
+    )
+    train_df, val_df = train_test_split(
+        df, test_size=0.2, random_state=SEED, stratify=stratify_col
+    )
 
     train_originals_labels = (
         train_df[train_df["augmentation"] == "original"]["label"]
@@ -114,6 +118,9 @@ def main(model_name, baseline=False, processed=False, epochs=None):
 
     train_ds = Dataset.from_pandas(
         train_df.rename(columns={"lyrics": "text"}), preserve_index=False
+    )
+    eval_ds = Dataset.from_pandas(
+        val_df.rename(columns={"lyrics": "text"}), preserve_index=False
     )
 
     def compute_metrics(
@@ -184,8 +191,16 @@ def main(model_name, baseline=False, processed=False, epochs=None):
     )
 
     train_tok = train_tok.rename_column("label", "labels")
-
     train_tok.set_format("torch")
+
+    eval_tok = eval_ds.map(
+        eval_tokenize_fn,
+        batched=True,
+        remove_columns=["text"],
+        load_from_cache_file=False,
+    )
+    eval_tok = eval_tok.rename_column("label", "labels")
+    eval_tok.set_format("torch")
 
     model = build_bert_like_classifier(cfg, device, num_labels=3)
     checkpoints_path = os.path.join(SAVE_DIR, "checkpoints")
@@ -203,9 +218,10 @@ def main(model_name, baseline=False, processed=False, epochs=None):
         warmup_ratio=cfg.warmup_ratio,
         max_grad_norm=cfg.max_grad_norm,
         lr_scheduler_type=cfg.lr_scheduler_type,
-        eval_strategy="no",
-        save_strategy="no",
-        load_best_model_at_end=False,
+        eval_strategy="epoch",
+        save_strategy="epoch",
+        load_best_model_at_end=True,
+        metric_for_best_model="eval_f1_macro",
         greater_is_better=True,
         save_total_limit=1,
         report_to="none",
@@ -221,7 +237,8 @@ def main(model_name, baseline=False, processed=False, epochs=None):
         model=model,
         args=args,
         train_dataset=train_tok,
-        eval_dataset=None,
+        eval_dataset=eval_tok,
+        callbacks=[EarlyStoppingCallback(early_stopping_patience=3)],
         data_collator=train_collator,
         compute_metrics=compute_metrics,
         class_weights=weights_tensor,
@@ -234,7 +251,34 @@ def main(model_name, baseline=False, processed=False, epochs=None):
     print("Entrenando...")
     trainer.train()
 
-    print("Evaluación omitida (entrenamiento con dataset completo).")
+    pred_output = predict_with_chunks(
+        dataset=eval_ds,
+        tokenizer=tokenizer,
+        model=model,
+        device=device,
+        max_len=cfg.max_len,
+        batch_size=cfg.per_device_eval_batch_size
+        if hasattr(cfg, "per_device_eval_batch_size")
+        else 8,
+        aggregation="max",  # or "mean"
+    )
+
+    logits = pred_output.predictions
+    probs = torch.sigmoid(torch.tensor(logits)).numpy()
+    true_labels = pred_output.label_ids
+
+    base_thresholds = [0.5] * probs.shape[1]
+
+    preds_base = (probs >= base_thresholds).astype(int)
+    f1_base = f1_score(true_labels, preds_base, average="macro", zero_division=0)
+    print(f"F1 Macro con threshold 0.5: {f1_base:.4f}")
+
+    best_thrs, best_f1 = find_best_thresholds(true_labels, probs)
+    print(best_thrs, best_f1, sum(best_f1) / len(best_f1))
+
+    print("Evaluando en el conjunto de validación...")
+    eval_results = trainer.evaluate()
+    print(eval_results)
 
     os.makedirs(SAVE_DIR, exist_ok=True)
     trainer.save_model(SAVE_DIR)
@@ -243,7 +287,10 @@ def main(model_name, baseline=False, processed=False, epochs=None):
     results = {
         "Modelo": model_name,
         "Epochs": epochs if epochs is not None else cfg.num_train_epochs,
-        "Trained_on": "Full Dataset",
+        "Trained_on": "80/20 Split",
+        "eval_f1_macro": eval_results["eval_eval_f1_macro"]
+        if "eval_eval_f1_macro" in eval_results
+        else eval_results.get("eval_f1_macro", 0.0),
     }
 
     with open(os.path.join(SAVE_DIR, "results.json"), "w") as f:

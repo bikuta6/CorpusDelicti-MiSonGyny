@@ -13,9 +13,11 @@ import numpy as np
 import pandas as pd
 import torch
 from datasets import Dataset
+from pandas.core.arrays import base
 from pysentimiento.preprocessing import preprocess_tweet
 from sklearn.metrics import accuracy_score, f1_score, precision_recall_fscore_support
 from sklearn.model_selection import train_test_split
+from sympy.geometry.plane import t
 from transformers import (
     AutoTokenizer,
     EarlyStoppingCallback,
@@ -78,11 +80,15 @@ def main(model_name, baseline=False, processed=False, epochs=None):
     df = pd.read_csv(DATA_PATH)
 
     # Asumimos que los labels pueden venir como 'NM'/'M' o numéricos
-    if df["label"].dtype == object:
-        df["label"] = df["label"].map({"NM": 0, "M": 1})
+    if True:
+        df["label"] = df["label"].apply(
+            lambda x: 1 if str(x).strip().upper() in ["M", "1", "1.0"] else 0
+        )
 
-    print("Entrenando con el dataset COMPLETO...")
-    train_df = df
+    print("Dividiendo en train y eval (80/20)...")
+    train_df, eval_df = train_test_split(
+        df, test_size=0.2, random_state=SEED, stratify=df["label"]
+    )
 
     train_originals_labels = (
         train_df[train_df["augmentation"] == "original"]["label"]
@@ -98,6 +104,9 @@ def main(model_name, baseline=False, processed=False, epochs=None):
 
     train_ds = Dataset.from_pandas(
         train_df.rename(columns={"lyrics": "text"}), preserve_index=False
+    )
+    eval_ds = Dataset.from_pandas(
+        eval_df.rename(columns={"lyrics": "text"}), preserve_index=False
     )
 
     def compute_metrics(pred):
@@ -161,8 +170,16 @@ def main(model_name, baseline=False, processed=False, epochs=None):
     )
 
     train_tok = train_tok.rename_column("label", "labels")
-
     train_tok.set_format("torch")
+
+    eval_tok = eval_ds.map(
+        eval_tokenize_fn,
+        batched=True,
+        remove_columns=["text"],
+        load_from_cache_file=False,
+    )
+    eval_tok = eval_tok.rename_column("label", "labels")
+    eval_tok.set_format("torch")
 
     model = build_bert_like_classifier(cfg, device, num_labels=2)
     checkpoints_path = os.path.join(SAVE_DIR, "checkpoints")
@@ -180,9 +197,10 @@ def main(model_name, baseline=False, processed=False, epochs=None):
         warmup_ratio=cfg.warmup_ratio,
         max_grad_norm=cfg.max_grad_norm,
         lr_scheduler_type=cfg.lr_scheduler_type,
-        eval_strategy="no",
-        save_strategy="no",
-        load_best_model_at_end=False,
+        eval_strategy="epoch",
+        save_strategy="epoch",
+        load_best_model_at_end=True,
+        metric_for_best_model="eval_f1_macro",
         greater_is_better=True,
         save_total_limit=1,
         report_to="none",
@@ -198,7 +216,8 @@ def main(model_name, baseline=False, processed=False, epochs=None):
         model=model,
         args=args,
         train_dataset=train_tok,
-        eval_dataset=None,
+        eval_dataset=eval_tok,
+        callbacks=[EarlyStoppingCallback(early_stopping_patience=3)],
         data_collator=train_collator,
         compute_metrics=compute_metrics,
         class_weights=weights_tensor,
@@ -209,8 +228,31 @@ def main(model_name, baseline=False, processed=False, epochs=None):
 
     print("Entrenando...")
     trainer.train()
+    pred_output = predict_with_chunks(
+        dataset=eval_ds,
+        tokenizer=tokenizer,
+        model=model,
+        device=device,
+        max_len=cfg.max_len,
+        batch_size=cfg.per_device_eval_batch_size
+        if hasattr(cfg, "per_device_eval_batch_size")
+        else 8,
+        aggregation="max",
+    )
 
-    print("Evaluación omitida (entrenamiento con dataset completo).")
+    logits = pred_output.predictions
+    probs = torch.softmax(torch.tensor(logits), dim=-1)[:, 1].numpy()
+    true_labels = pred_output.label_ids
+
+    base_f1 = f1_score(
+        true_labels, (probs >= 0.5).astype(int), average="macro", zero_division=0.0
+    )
+    print(f"F1 Macro con umbral 0.5: {base_f1:.4f}")
+    thr, f1 = find_best_threshold(true_labels, probs)
+    print(f"Mejor umbral encontrado: {thr} con F1 Macro: {f1}")
+    print("Evaluando en el conjunto de validación...")
+    eval_results = trainer.evaluate()
+    print(eval_results)
 
     os.makedirs(SAVE_DIR, exist_ok=True)
     trainer.save_model(SAVE_DIR)
@@ -219,7 +261,13 @@ def main(model_name, baseline=False, processed=False, epochs=None):
     results = {
         "Modelo": model_name,
         "Epochs": epochs if epochs is not None else cfg.num_train_epochs,
-        "Trained_on": "Full Dataset",
+        "Trained_on": "80/20 Split",
+        "eval_f1_macro": eval_results["eval_eval_f1_macro"]
+        if "eval_eval_f1_macro" in eval_results
+        else eval_results.get("eval_f1_macro", 0.0),
+        "eval_accuracy": eval_results["eval_accuracy"]
+        if "eval_accuracy" in eval_results
+        else 0.0,
     }
 
     with open(os.path.join(SAVE_DIR, "results.json"), "w") as f:
