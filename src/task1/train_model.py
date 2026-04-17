@@ -7,7 +7,7 @@ import gc
 import json
 import os
 import sys
-
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import torch
@@ -32,7 +32,7 @@ SEED = DEFAULT_SEED
 set_seed(SEED)
 
 
-def main(model_name, baseline=False):
+def main(model_name, baseline=False, graph=False):
     if baseline:
         apply_baseline_settings()
 
@@ -187,6 +187,8 @@ def main(model_name, baseline=False):
         save_total_limit=1,
         report_to="none",
         gradient_checkpointing=False,
+        logging_strategy="epoch",
+        logging_steps=1.0,  # Loggear cada época
     )
 
     train_collator = RandomCropDataCollator(
@@ -220,6 +222,40 @@ def main(model_name, baseline=False):
         best_epoch = best_eval["epoch"]
     else:
         best_epoch = None
+
+    # prints the evolution of the model during the experiment if it is required
+    if graph:
+        train_logs = [l for l in trainer.state.log_history if "loss" in l]
+
+        _epochs = [log["epoch"] for log in eval_logs]
+        _f1_scores = [log["eval_f1_macro"] for log in eval_logs]
+        _eval_loss = [log["eval_loss"] for log in eval_logs]
+        _train_loss = [log["loss"] for log in train_logs]
+
+        plt.figure(figsize=(10, 6))
+        plt.plot(_epochs, _eval_loss, "r-o", linewidth=2, markersize=8, label='ValLoss')
+        plt.plot(_epochs, _train_loss, "b-o", linewidth=2, markersize=8, label='TrainLoss')
+
+        plt.xlabel('Epoch', fontsize=12)
+        plt.ylabel('Loss', fontsize=12)
+        plt.title('Evolution of Loss during Training', fontsize=14)
+        plt.legend()
+        # plt.grid(True, alpha=0.3)
+        plt.tight_layout()
+        plt.savefig('../../graphs/loss-' + model_name + ".png", dpi=300)
+        plt.close()
+
+        plt.figure(figsize=(10, 6))
+        plt.plot(_epochs, _f1_scores, "r-o", linewidth=2, markersize=8, label='F1 Macro')
+
+        plt.xlabel('Epoch', fontsize=12)
+        plt.ylabel('F1 Macro Score', fontsize=12)
+        plt.title('Evolution of F1 Macro during Training', fontsize=14)
+        plt.legend()
+        plt.tight_layout()
+        plt.savefig('../../graphs/f1-' + model_name + ".png", dpi=300)
+        plt.close()
+
     print(f"    ✓ Best epoch: {best_epoch}")
 
     print("Evaluando en Dev Set...")
@@ -282,5 +318,11 @@ if __name__ == "__main__":
         action="store_true",
         help="Usar configuraciones baseline y datos crudos",
     )
+    arg_parser.add_argument(
+        "--graph",
+        default=False,
+        action="store_true",
+        help="Usar configuraciones baseline y datos crudos",
+    )
     args = arg_parser.parse_args()
-    main(model_name=args.model, baseline=args.baseline)
+    main(model_name=args.model, baseline=args.baseline, graph=args.graph)
