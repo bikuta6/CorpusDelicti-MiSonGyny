@@ -92,6 +92,8 @@ MODEL_CONFIGS: dict[str, ModelConfig] = {
         hidden_dropout_prob=0.1,
         max_len=1024,  # Para textos largos (canciones)
         learning_rate=2e-5,
+        per_device_train_batch_size=8,  # Reduce batch size para manejar secuencias largas
+        gradient_accumulation_steps=4,  # Compensa el batch size reducido
     ),
 }
 

@@ -80,10 +80,12 @@ def main(model_name, baseline=False, processed=False, epochs=None):
             lambda x: 1 if str(x).strip().upper() in ["Y", "1", "1.0"] else 0
         )
 
-    print("Dividiendo en train y eval (80/20)...")
-    train_df, eval_df = train_test_split(
-        df, test_size=0.2, random_state=SEED, stratify=df["label"]
-    )
+    # print("Dividiendo en train y eval (80/20)...")
+    # , eval_df = train_test_split(
+    #   df, test_size=0.2, random_state=SEED, stratify=df["label"]
+    # )
+    train_df = df.copy()
+    eval_df = df.head(10).copy()  # Dummy eval set just for Trainer compatibility
 
     train_originals_labels = (
         train_df[train_df["augmentation"] == "original"]["label"]
@@ -194,7 +196,7 @@ def main(model_name, baseline=False, processed=False, epochs=None):
         lr_scheduler_type=cfg.lr_scheduler_type,
         eval_strategy="epoch",
         save_strategy="epoch",
-        load_best_model_at_end=True,
+        load_best_model_at_end=False,
         metric_for_best_model="eval_f1_macro",
         greater_is_better=True,
         save_total_limit=1,
@@ -212,7 +214,7 @@ def main(model_name, baseline=False, processed=False, epochs=None):
         args=args,
         train_dataset=train_tok,
         eval_dataset=eval_tok,
-        callbacks=[EarlyStoppingCallback(early_stopping_patience=3)],
+        # callbacks=[EarlyStoppingCallback(early_stopping_patience=3)],
         data_collator=train_collator,
         compute_metrics=compute_metrics,
         class_weights=weights_tensor,
@@ -220,6 +222,7 @@ def main(model_name, baseline=False, processed=False, epochs=None):
         focal_gamma=cfg.focal_gamma,
         focal_alpha=None,
     )
+    print("loss_type:", cfg.loss_type)
 
     print("Entrenando...")
     trainer.train()
