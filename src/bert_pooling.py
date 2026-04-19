@@ -101,6 +101,9 @@ def predict_with_chunks(
     stride: int | None = None,
     aggregation="mean",
     is_multilabel=False,
+    top_k: int | None = 3,
+    temperature: float | None = 1.0,
+    eps: float = 1e-6,
 ):
     """
     Tokenizes texts without truncation and splits them into chunks using a sliding window.
@@ -123,6 +126,12 @@ def predict_with_chunks(
                         recommended for multiclass) or "max" (suited for multilabel).
         is_multilabel:  If True and aggregation != "max", emits a warning. Kept for
                         API compatibility; does not change aggregation automatically.
+        top_k:          If aggregation="noisy_or", only consider the top_k chunks
+                        with highest P(label=1) for the noisy OR calculation. If None,
+                        use all chunks.
+        temperature:    If aggregation="noisy_or", apply temperature scaling to the
+                        chunk logits before converting to probabilities. Must be > 0.
+        eps:            Small constant to avoid numerical issues in noisy OR calculation.
 
     Returns:
         PredictionOutput(predictions=np.ndarray, label_ids=np.ndarray|None, metrics=None)
@@ -274,11 +283,48 @@ def predict_with_chunks(
         # --- Aggregate ---------------------------------------------------------
         if aggregation == "mean":
             agg_logits = doc_logits.mean(axis=0)
+
         elif aggregation == "max":
             agg_logits = doc_logits.max(axis=0)
+
+        elif aggregation == "noisy_or":
+            if temperature <= 0:
+                raise ValueError(f"temperature must be > 0, got {temperature}")
+
+            n_labels = doc_logits.shape[1]
+
+            if n_labels == 2:
+                scaled = doc_logits / temperature
+                exp = np.exp(scaled - scaled.max(axis=1, keepdims=True))
+                probs = exp / exp.sum(axis=1, keepdims=True)
+                p = probs[:, 1]  # P(label=1) per chunk
+            elif n_labels == 1:
+                z = (doc_logits[:, 0] / temperature).astype(np.float64)
+                p = 1.0 / (1.0 + np.exp(-z))  # P(label=1) per chunk
+            else:
+                raise ValueError(
+                    "aggregation='noisy_or' only supports binary heads with "
+                    f"num_labels in {{1,2}}, got num_labels={n_labels}"
+                )
+
+            if top_k is not None:
+                if top_k <= 0:
+                    raise ValueError(f"top_k must be > 0, got {top_k}")
+                k = min(top_k, p.shape[0])
+                p = np.sort(p)[-k:]
+
+            p = np.clip(p, eps, 1.0 - eps)
+            p_doc = 1.0 - np.prod(1.0 - p)
+
+            if n_labels == 2:
+                p_nm = 1.0 - p_doc
+                agg_logits = np.log(np.array([p_nm, p_doc], dtype=np.float32))
+            else:
+                agg_logit = np.log(p_doc / (1.0 - p_doc))
+                agg_logits = np.array([agg_logit], dtype=np.float32)
         else:
             raise ValueError(
-                f"Unknown aggregation '{aggregation}'. Choose 'mean' or 'max'."
+                f"Unknown aggregation '{aggregation}'. Choose 'mean', 'max' or 'noisy_or'."
             )
 
         all_logits.append(agg_logits)

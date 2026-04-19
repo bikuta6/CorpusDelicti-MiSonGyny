@@ -95,7 +95,7 @@ def main():
         df_out = df[["S", "V", "H"]]
         df_out.insert(0, "id", ids)  # Insertar la columna 'id' al inicio
 
-    df_out.to_csv("task_2_predictions.csv", index=False)
+    df_out.to_csv("../../task_2_predictions.csv", index=False)
     print("\n¡Archivo final submission_OVR_ultimate.csv guardado con éxito!")
 
 
