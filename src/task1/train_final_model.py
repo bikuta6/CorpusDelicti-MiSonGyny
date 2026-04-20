@@ -26,8 +26,8 @@ from transformers import (
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from bert_model_configs import MODEL_CONFIGS, ModelConfig, apply_baseline_settings
-from augment_loading import augment_df
 
+from augment_loading import augment_df
 from bert_pooling import build_bert_like_classifier, predict_with_chunks
 from random_crop_collator import RandomCropDataCollator
 from trainer import WeightedTrainer
@@ -309,6 +309,11 @@ if __name__ == "__main__":
         help="Usar dataset procesado",
     )
     arg_parser.add_argument(
+        "--augment",
+        action="store_true",
+        help="Usar datos aumentados (solo si no es baseline)",
+    )
+    arg_parser.add_argument(
         "--epochs",
         type=int,
         default=None,
@@ -320,4 +325,5 @@ if __name__ == "__main__":
         baseline=args.baseline,
         processed=args.processed,
         epochs=args.epochs,
+        augment=args.augment,
     )
