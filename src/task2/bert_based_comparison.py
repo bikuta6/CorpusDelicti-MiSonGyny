@@ -32,6 +32,7 @@ from transformers import (
 )
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+from augment_loading import augment_df
 from bert_pooling import build_bert_like_classifier, predict_with_chunks
 from random_crop_collator import RandomCropDataCollator
 from trainer import WeightedTrainer
@@ -57,7 +58,7 @@ def create_label_column(df: pd.DataFrame, label_cols: list[str]) -> pd.Series:
     return df[label_cols].astype(float).values.tolist()
 
 
-def main(baseline=False):
+def main(baseline=False, augment=False):
     if baseline:
         apply_baseline_settings()
 
@@ -69,6 +70,8 @@ def main(baseline=False):
     suffix = ""
     if baseline:
         suffix += "_baseline"
+    if augment:
+        suffix += "_augmented"
 
     RESULTS_FILE = (
         f"../../results/task2/tabla_paper{suffix if suffix else '_processed'}.csv"
@@ -76,6 +79,11 @@ def main(baseline=False):
     label_cols = ["sexualization", "violence", "hate"]
     print(f"Cargando datos de entrenamiento desde {TRAIN_PATH}...")
     train_df = pd.read_csv(TRAIN_PATH)
+    if augment and not baseline:
+        print("Aplicando data augmentation...")
+        train_df = augment_df(
+            train_df, aug_path="../../data/processed_train_augmented.csv"
+        )
     train_df["label"] = create_label_column(train_df, label_cols)
     print(f"Cargando datos de validación desde {VAL_PATH}...")
     val_df = pd.read_csv(VAL_PATH)
@@ -466,5 +474,10 @@ if __name__ == "__main__":
     arg_parser.add_argument(
         "--baseline", action="store_true", help="Activar baseline settings"
     )
+    arg_parser.add_argument(
+        "--augment",
+        action="store_true",
+        help="Usar datos aumentados (solo si no es baseline)",
+    )
     args = arg_parser.parse_args()
-    main(baseline=args.baseline)
+    main(baseline=args.baseline, augment=args.augment)

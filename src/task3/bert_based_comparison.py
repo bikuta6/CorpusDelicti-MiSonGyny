@@ -29,6 +29,7 @@ from bert_pooling import build_bert_like_classifier, predict_with_chunks
 from random_crop_collator import RandomCropDataCollator
 from trainer import WeightedTrainer
 from utils import DEFAULT_SEED, set_seed
+from augment_loading import augment_df
 
 SEED = DEFAULT_SEED
 
@@ -45,7 +46,7 @@ SAVE_DIR = "../../models/task3/comparison"
 # ─────────────────────────────────────────────────────────────
 # CARGA DE DATOS
 # ─────────────────────────────────────────────────────────────
-def main(baseline=False):
+def main(baseline=False, augment=False):
     if baseline:
         apply_baseline_settings()
 
@@ -57,12 +58,17 @@ def main(baseline=False):
     suffix = ""
     if baseline:
         suffix += "_baseline"
+    if augment:
+        suffix += "_augmented"
 
     RESULTS_FILE = (
         f"../../results/task3/tabla_paper{suffix if suffix else '_processed'}.csv"
     )
     print(f"Cargando datos de entrenamiento desde {TRAIN_PATH}...")
     train_df = pd.read_csv(TRAIN_PATH)
+    if augment and not baseline:
+        print("Aplicando data augmentation...")
+        train_df = augment_df(train_df, aug_path="../../data/processed_train_augmented.csv")
     train_df["label"] = train_df["label"].map({"N": 0, "Y": 1})
     print(f"Cargando datos de validación desde {VAL_PATH}...")
     val_df = pd.read_csv(VAL_PATH)
@@ -418,5 +424,6 @@ if __name__ == "__main__":
     arg_parser.add_argument(
         "--baseline", action="store_true", help="Activar baseline settings"
     )
+    arg_parser.add_argument("--augment", action="store_true", help="Usar datos aumentados (solo si no es baseline)")
     args = arg_parser.parse_args()
-    main(baseline=args.baseline)
+    main(baseline=args.baseline, augment=args.augment)
