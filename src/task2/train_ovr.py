@@ -28,6 +28,7 @@ from transformers import (
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from bert_model_configs import MODEL_CONFIGS, ModelConfig, apply_baseline_settings
+from augment_loading import augment_df
 
 from bert_pooling import build_bert_like_classifier, predict_with_chunks
 from random_crop_collator import RandomCropDataCollator
@@ -42,7 +43,7 @@ def create_label_column(df: pd.DataFrame, label: str) -> pd.Series:
     return df[label].astype(float).values.reshape(-1, 1).tolist()
 
 
-def train_single_label(model_name: str, label: str, baseline: bool = False):
+def train_single_label(model_name: str, label: str, baseline: bool = False, augment: bool = False):
     if baseline:
         apply_baseline_settings()
 
@@ -58,13 +59,20 @@ def train_single_label(model_name: str, label: str, baseline: bool = False):
     VAL_PATH = f"../../data/task2/{pre}val_df.csv"
     DEV_PATH = f"../../data/task2/{pre}dev_df.csv"
 
-    suffix = "_baseline" if baseline else ""
+    suffix = ""
+    if baseline:
+        suffix += "_baseline"
+    if augment:
+        suffix += "_augmented"
     SAVE_DIR = f"../../models/task2/OVR/{model_name}{suffix}_{label.capitalize()}"
 
     print(f"\n--- INICIANDO ENTRENAMIENTO PARA {model_name} - {label.upper()} ---")
 
     print(f"Cargando datos de entrenamiento desde {TRAIN_PATH}...")
     train_df = pd.read_csv(TRAIN_PATH)
+    if augment and not baseline:
+        print("Aplicando data augmentation...")
+        train_df = augment_df(train_df, aug_path="../../data/processed_train_augmented.csv")
     train_df["label"] = create_label_column(train_df, label)
     print(f"Cargando datos de validación desde {VAL_PATH}...")
     val_df = pd.read_csv(VAL_PATH)
@@ -282,6 +290,11 @@ def main():
         help="Usar configuraciones baseline y datos crudos",
     )
     arg_parser.add_argument(
+        "--augment",
+        action="store_true",
+        help="Usar datos aumentados (solo si no es baseline)",
+    )
+    arg_parser.add_argument(
         "--label",
         type=str,
         default="all",
@@ -297,7 +310,7 @@ def main():
     f1_scores = {}
     for label in labels_to_train:
         f1 = train_single_label(
-            model_name=args.model, label=label, baseline=args.baseline
+            model_name=args.model, label=label, baseline=args.baseline, augment=args.augment
         )
         f1_scores[label] = f1
 
@@ -312,13 +325,18 @@ def main():
         print(f"==================================================")
 
         # Save global summary
-        suffix = "_baseline" if args.baseline else ""
+        suffix = ""
+        if args.baseline:
+            suffix += "_baseline"
+        if args.augment:
+            suffix += "_augmented"
         global_results_dir = f"../../models/task2/OVR/{args.model}{suffix}_Global"
         os.makedirs(global_results_dir, exist_ok=True)
 
         summary = {
             "Modelo": args.model,
             "Baseline": args.baseline,
+            "Augment": args.augment,
             "Individual_F1": f1_scores,
             "Macro_F1_Global": macro_f1,
         }

@@ -52,8 +52,9 @@ def main(args):
         cfg = MODEL_CONFIGS[specific_model_name]
 
         # Construir ruta del modelo OVR
+        suffix = "_augmented" if args.augment else ""
         model_path = os.path.join(
-            args.models_dir, f"{specific_model_name}_{label_name.capitalize()}"
+            args.models_dir, f"{specific_model_name}{suffix}_{label_name.capitalize()}"
         )
 
         print(f"\n--- Procesando etiqueta: {label_name.upper()} ({short_col}) ---")
@@ -156,8 +157,11 @@ if __name__ == "__main__":
         default=None,
         help="Sobreescribe el modelo a usar específicamente para la etiqueta Hate",
     )
-    parser.add_argument(
-        "--threshold",
+    parser.add_argument(        "--augment",
+        action="store_true",
+        help="Use augmented models trained with augmented data",
+    )
+    parser.add_argument(        "--threshold",
         type=float,
         default=0.5,
         help="Umbral de decisión para las clases positivas (0.5 por defecto)",

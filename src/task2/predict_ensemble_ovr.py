@@ -19,9 +19,10 @@ from bert_model_configs import MODEL_CONFIGS
 from bert_pooling import load_bert_like_classifier, predict_with_chunks
 
 
-def get_ovr_probs(model_name, label, test_ds, device):
+def get_ovr_probs(model_name, label, test_ds, device, augment=False):
     cfg = MODEL_CONFIGS[model_name]
-    model_path = f"../../models/task2/final_OVR/{model_name}_{label}"
+    suffix = "_augmented" if augment else ""
+    model_path = f"../../models/task2/final_OVR/{model_name}{suffix}_{label}"
     tokenizer = AutoTokenizer.from_pretrained(model_path)
     model = load_bert_like_classifier(model_path, device)
 
@@ -35,13 +36,14 @@ def get_ovr_probs(model_name, label, test_ds, device):
     return probs
 
 
-def main():
+def main(augment=False):
     models_to_ensemble = ["Robertuito", "DistilBETO", "LongFormer"]
 
     # Cargar los thresholds descubiertos para cada modelo
     model_thresholds = {}
     for model_name in models_to_ensemble:
-        json_path = f"../../models/task2/final_OVR/{model_name}_ovr_params.json"
+        suffix = "_augmented" if augment else ""
+        json_path = f"../../models/task2/final_OVR/{model_name}{suffix}_ovr_params.json"
         with open(json_path, "r") as f:
             model_thresholds[model_name] = json.load(f)
 
@@ -67,7 +69,7 @@ def main():
         binary_votes = []
 
         for model_name in models_to_ensemble:
-            probs = get_ovr_probs(model_name, label_full, test_ds, device)
+            probs = get_ovr_probs(model_name, label_full, test_ds, device, augment=augment)
 
             # Aplicar el threshold específico de ESTE modelo para ESTA etiqueta
             thr = model_thresholds[model_name][label_full]["best_threshold"]
@@ -100,4 +102,12 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    import argparse
+    parser = argparse.ArgumentParser(description="OVR Ensemble Prediction for Task 2")
+    parser.add_argument(
+        "--augment",
+        action="store_true",
+        help="Use augmented models trained with augmented data",
+    )
+    args = parser.parse_args()
+    main(augment=args.augment)

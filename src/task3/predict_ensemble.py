@@ -13,10 +13,11 @@ from bert_model_configs import MODEL_CONFIGS
 from bert_pooling import load_bert_like_classifier, predict_with_chunks
 
 
-def get_binary_vote(model_name, threshold, test_ds, device):
+def get_binary_vote(model_name, threshold, test_ds, device, augment=False):
     print(f"\n--- Generando votos para {model_name} (Threshold: {threshold}) ---")
     cfg = MODEL_CONFIGS[model_name]
-    model_path = f"../../models/task3/final/{model_name}"
+    suffix = "_augmented" if augment else ""
+    model_path = f"../../models/task3/final/{model_name}{suffix}"
 
     tokenizer = AutoTokenizer.from_pretrained(model_path)
     model = load_bert_like_classifier(model_path, device)
@@ -42,8 +43,8 @@ def get_binary_vote(model_name, threshold, test_ds, device):
     return votes
 
 
-def main():
-    test_file = "../../data/test.csv"
+def main(augment=False):
+    test_file = "../../data/processed_test.csv"
     output_file = "../../task_3_predictions.csv"
 
     print(f"Cargando datos de prueba desde {test_file}...")
@@ -60,9 +61,9 @@ def main():
     )
 
     # 1. Obtener los votos de los 3 mejores modelos con sus umbrales óptimos
-    votes_robertuito = get_binary_vote("Robertuito", 0.49, test_ds, device)
-    votes_xlmr = get_binary_vote("XLM-R", 0.42, test_ds, device)
-    votes_longformer = get_binary_vote("LongFormer", 0.51, test_ds, device)
+    votes_robertuito = get_binary_vote("Robertuito", 0.49, test_ds, device, augment=augment)
+    votes_xlmr = get_binary_vote("XLM-R", 0.42, test_ds, device, augment=augment)
+    votes_longformer = get_binary_vote("LongFormer", 0.51, test_ds, device, augment=augment)
 
     # 2. Hard Voting (Votación por Mayoría)
     # Sumamos los votos. El rango será de 0 a 3.
@@ -88,4 +89,12 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    import argparse
+    parser = argparse.ArgumentParser(description="Ensemble Prediction for Task 3")
+    parser.add_argument(
+        "--augment",
+        action="store_true",
+        help="Use augmented models trained with augmented data",
+    )
+    args = parser.parse_args()
+    main(augment=args.augment)

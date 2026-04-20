@@ -16,6 +16,7 @@ from transformers import AutoTokenizer, TrainingArguments
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from bert_model_configs import MODEL_CONFIGS
+from augment_loading import augment_df
 
 from bert_pooling import build_bert_like_classifier
 from random_crop_collator import RandomCropDataCollator
@@ -29,6 +30,11 @@ set_seed(SEED)
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", type=str, required=True)
+    parser.add_argument(
+        "--augment",
+        action="store_true",
+        help="Usar datos aumentados",
+    )
     args = parser.parse_args()
 
     # Cargar parámetros descubiertos
@@ -41,6 +47,9 @@ def main():
 
     cfg = MODEL_CONFIGS[args.model]
     df = pd.read_csv("../../data/task2/processed_train.csv")
+    if args.augment:
+        print("Aplicando data augmentation...")
+        df = augment_df(df, aug_path="../../data/processed_train_augmented.csv")
     print(df.shape)
     device = torch.device(
         "cuda"
@@ -96,7 +105,10 @@ def main():
         val_tok.set_format("torch")
 
         model = build_bert_like_classifier(cfg, device, num_labels=1)
-        SAVE_DIR = f"../../models/task2/final_OVR/{args.model}_{label}"
+        suffix = ""
+        if args.augment:
+            suffix += "_augmented"
+        SAVE_DIR = f"../../models/task2/final_OVR/{args.model}{suffix}_{label}"
 
         training_args = TrainingArguments(
             output_dir=os.path.join(SAVE_DIR, "checkpoints"),

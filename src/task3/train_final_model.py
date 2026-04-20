@@ -24,6 +24,7 @@ from transformers import (
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from bert_model_configs import MODEL_CONFIGS, ModelConfig, apply_baseline_settings
+from augment_loading import augment_df
 
 from bert_pooling import build_bert_like_classifier, predict_with_chunks
 from random_crop_collator import RandomCropDataCollator
@@ -53,7 +54,7 @@ def find_best_threshold(true_labels, probs, step=0.01):
     return round(best_thr, 3), round(best_f1, 4)
 
 
-def main(model_name, baseline=False, processed=False, epochs=None):
+def main(model_name, baseline=False, processed=False, epochs=None, augment=False):
     if baseline:
         apply_baseline_settings()
 
@@ -69,11 +70,18 @@ def main(model_name, baseline=False, processed=False, epochs=None):
     if not os.path.exists(DATA_PATH):
         DATA_PATH = f"../../data/task3/{pre}train_df.csv"
 
-    suffix = "_baseline" if baseline else ""
-    SAVE_DIR = f"../../models/task3/final/{model_name}{suffix}"
+    suffix = ""
+    if baseline:
+        suffix += "_baseline"
+    if augment:
+        suffix += "_augmented"
+    SAVE_DIR = f"../../models/task3/final/{model_name}{suffix if suffix else ''}"
 
     print(f"Cargando todos los datos desde {DATA_PATH}...")
     df = pd.read_csv(DATA_PATH)
+    if augment and not baseline:
+        print("Aplicando data augmentation...")
+        df = augment_df(df, aug_path="../../data/processed_train_augmented.csv")
 
     if True:
         df["label"] = df["label"].apply(
@@ -259,6 +267,7 @@ def main(model_name, baseline=False, processed=False, epochs=None):
         "Modelo": model_name,
         "Epochs": epochs if epochs is not None else cfg.num_train_epochs,
         "Trained_on": "80/20 Split",
+        "Best_Threshold": thr,
         "eval_f1_macro": eval_results["eval_eval_f1_macro"]
         if "eval_eval_f1_macro" in eval_results
         else eval_results.get("eval_f1_macro", 0.0),
@@ -292,6 +301,11 @@ if __name__ == "__main__":
         help="Usar dataset procesado",
     )
     arg_parser.add_argument(
+        "--augment",
+        action="store_true",
+        help="Usar datos aumentados (solo si no es baseline)",
+    )
+    arg_parser.add_argument(
         "--epochs",
         type=int,
         default=None,
@@ -303,4 +317,5 @@ if __name__ == "__main__":
         baseline=args.baseline,
         processed=args.processed,
         epochs=args.epochs,
+        augment=args.augment,
     )

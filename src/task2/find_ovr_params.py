@@ -18,6 +18,7 @@ from transformers import AutoTokenizer, EarlyStoppingCallback, TrainingArguments
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from bert_model_configs import MODEL_CONFIGS
+from augment_loading import augment_df
 
 from bert_pooling import build_bert_like_classifier, predict_with_chunks
 from random_crop_collator import RandomCropDataCollator
@@ -42,10 +43,18 @@ def find_best_binary_threshold(true_labels, probs):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", type=str, required=True, help="Ej. Robertuito")
+    parser.add_argument(
+        "--augment",
+        action="store_true",
+        help="Usar datos aumentados",
+    )
     args = parser.parse_args()
 
     cfg = MODEL_CONFIGS[args.model]
     df = pd.read_csv("../../data/task2/processed_train.csv")
+    if args.augment:
+        print("Aplicando data augmentation...")
+        df = augment_df(df, aug_path="../../data/processed_train_augmented.csv")
 
     device = torch.device(
         "cuda"
@@ -106,6 +115,11 @@ def main():
 
         model = build_bert_like_classifier(cfg, device, num_labels=1)
 
+        suffix = ""
+        if args.augment:
+            suffix += "_augmented"
+        temp_dir = f"../../models/task2/temp/{args.model}{suffix}_{label}"
+
         def compute_metrics(pred):
             preds = (
                 torch.sigmoid(torch.tensor(pred.predictions)).numpy() >= 0.5
@@ -113,7 +127,7 @@ def main():
             return {"eval_f1_macro": f1_score(pred.label_ids, preds, zero_division=0)}
 
         training_args = TrainingArguments(
-            output_dir=f"../../models/task2/temp/{args.model}_{label}",
+            output_dir=temp_dir,
             learning_rate=cfg.learning_rate,
             per_device_train_batch_size=cfg.per_device_train_batch_size,
             num_train_epochs=cfg.num_train_epochs,  # Hasta 10, cortará antes

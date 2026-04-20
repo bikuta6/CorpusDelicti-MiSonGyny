@@ -13,10 +13,11 @@ from bert_model_configs import MODEL_CONFIGS
 from bert_pooling import load_bert_like_classifier, predict_with_chunks
 
 
-def get_model_probs(model_name, test_ds, device):
+def get_model_probs(model_name, test_ds, device, augment=False):
     print(f"\n--- Generando predicciones para {model_name} ---")
     cfg = MODEL_CONFIGS[model_name]
-    model_path = f"../../models/task1/final/{model_name}"
+    suffix = "_augmented" if augment else ""
+    model_path = f"../../models/task1/final/{model_name}{suffix}"
 
     tokenizer = AutoTokenizer.from_pretrained(model_path)
     model = load_bert_like_classifier(model_path, device)
@@ -43,7 +44,7 @@ def get_model_probs(model_name, test_ds, device):
     return probs
 
 
-def main():
+def main(augment=False):
     test_file = "../../data/processed_test.csv"
     output_file = "../../task_1_predictions.csv"
 
@@ -62,9 +63,9 @@ def main():
     )
 
     # 1. Get probabilities from top 3 models
-    probs_distil = get_model_probs("DistilBETO", test_ds, device)
-    probs_robert = get_model_probs("Robertuito", test_ds, device)
-    probs_beto = get_model_probs("BETO", test_ds, device)
+    probs_distil = get_model_probs("DistilBETO", test_ds, device, augment=augment)
+    probs_robert = get_model_probs("Robertuito", test_ds, device, augment=augment)
+    probs_beto = get_model_probs("BETO", test_ds, device, augment=augment)
 
     # 2. Average the probabilities (Soft Voting Ensemble)
     final_probs = (probs_distil + probs_robert + probs_beto) / 3.0
@@ -92,4 +93,12 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    import argparse
+    parser = argparse.ArgumentParser(description="Ensemble Prediction for Task 1")
+    parser.add_argument(
+        "--augment",
+        action="store_true",
+        help="Use augmented models trained with augmented data",
+    )
+    args = parser.parse_args()
+    main(augment=args.augment)
