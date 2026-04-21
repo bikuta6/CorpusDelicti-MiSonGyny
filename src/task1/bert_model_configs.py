@@ -72,6 +72,8 @@ MODEL_CONFIGS: dict[str, ModelConfig] = {
         hidden_dropout_prob=0.1,
         max_len=512,
         learning_rate=2e-5,  # XLM-R es más sensible a lr altos
+        per_device_train_batch_size=8,  # XLM-R es más pesado, reducimos batch size
+        gradient_accumulation_steps=4,  # Para mantener un batch efectivo de 32
     ),
     "Robertuito": ModelConfig(
         model_id="pysentimiento/robertuito-base-uncased",

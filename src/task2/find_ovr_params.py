@@ -18,8 +18,8 @@ from transformers import AutoTokenizer, EarlyStoppingCallback, TrainingArguments
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from bert_model_configs import MODEL_CONFIGS
-from augment_loading import augment_df
 
+from augment_loading import augment_df
 from bert_pooling import build_bert_like_classifier, predict_with_chunks
 from random_crop_collator import RandomCropDataCollator
 from trainer import WeightedTrainer
@@ -52,10 +52,8 @@ def main():
 
     cfg = MODEL_CONFIGS[args.model]
     df = pd.read_csv("../../data/task2/processed_train.csv")
-    if args.augment:
-        print("Aplicando data augmentation...")
-        df = augment_df(df, aug_path="../../data/processed_train_augmented.csv")
 
+    print(df.columns)
     device = torch.device(
         "cuda"
         if torch.cuda.is_available()
@@ -75,10 +73,17 @@ def main():
         # 1. Preparar Datos (80/20 split)
         df_label = df.copy()
         df_label["label"] = df_label[label].astype(float).values.reshape(-1, 1).tolist()
+        df_label = df_label[["song_id", "lyrics", "label"]]
 
         train_df, val_df = train_test_split(
-            df_label, test_size=0.2, random_state=SEED, stratify=df_label[label]
+            df_label, test_size=0.2, random_state=SEED, stratify=df_label["label"]
         )
+
+        if args.augment:
+            print("Aplicando data augmentation...")
+            train_df = augment_df(
+                train_df, aug_path="../../data/processed_train_augmented.csv"
+            )
 
         # Pesos Focal Loss
         n_pos = sum([x[0] for x in train_df["label"]])
@@ -181,9 +186,11 @@ def main():
 
     # Guardar parametros descubiertos
     os.makedirs("../../models/task2/final_OVR", exist_ok=True)
-    with open(f"../../models/task2/final_OVR/{args.model}_ovr_params.json", "w") as f:
+    with open(
+        f"../../models/task2/final_OVR/{args.model}{suffix}_ovr_params.json", "w"
+    ) as f:
         json.dump(params_dict, f, indent=4)
-    print(f"\nParámetros guardados en {args.model}_ovr_params.json")
+    print(f"\nParámetros guardados en {args.model}{suffix}_ovr_params.json")
 
 
 if __name__ == "__main__":

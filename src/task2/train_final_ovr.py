@@ -16,8 +16,8 @@ from transformers import AutoTokenizer, TrainingArguments
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from bert_model_configs import MODEL_CONFIGS
-from augment_loading import augment_df
 
+from augment_loading import augment_df
 from bert_pooling import build_bert_like_classifier
 from random_crop_collator import RandomCropDataCollator
 from trainer import WeightedTrainer
@@ -38,7 +38,11 @@ def main():
     args = parser.parse_args()
 
     # Cargar parámetros descubiertos
-    params_path = f"../../models/task2/final_OVR/{args.model}_ovr_params.json"
+    augmented = "_augmented" if args.augment else ""
+    params_path = (
+        f"../../models/task2/final_OVR/{args.model}{augmented}_ovr_params.json"
+    )
+    print(f"Cargando parámetros OVR desde: {params_path}")
     if not os.path.exists(params_path):
         raise FileNotFoundError(f"Ejecuta primero find_ovr_params.py para {args.model}")
 

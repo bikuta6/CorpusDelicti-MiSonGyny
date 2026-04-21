@@ -37,7 +37,7 @@ def get_ovr_probs(model_name, label, test_ds, device, augment=False):
 
 
 def main(augment=False):
-    models_to_ensemble = ["Robertuito", "DistilBETO", "LongFormer"]
+    models_to_ensemble = ["Robertuito", "BETO", "XLM-R"]
 
     # Cargar los thresholds descubiertos para cada modelo
     model_thresholds = {}
@@ -69,7 +69,9 @@ def main(augment=False):
         binary_votes = []
 
         for model_name in models_to_ensemble:
-            probs = get_ovr_probs(model_name, label_full, test_ds, device, augment=augment)
+            probs = get_ovr_probs(
+                model_name, label_full, test_ds, device, augment=augment
+            )
 
             # Aplicar el threshold específico de ESTE modelo para ESTA etiqueta
             thr = model_thresholds[model_name][label_full]["best_threshold"]
@@ -103,6 +105,7 @@ def main(augment=False):
 
 if __name__ == "__main__":
     import argparse
+
     parser = argparse.ArgumentParser(description="OVR Ensemble Prediction for Task 2")
     parser.add_argument(
         "--augment",

@@ -36,18 +36,27 @@ def augment_df(
         "augmentation_slot",
         "label",
     ]
-
-    df = df.drop(columns=irreleveant_cols[:4])
+    for col in irreleveant_cols[:4]:
+        if col in df.columns:
+            df = df.drop(columns=col)
     df["augmentation"] = "original"
-    aug_df = aug_df.drop(columns=irreleveant_cols)
+
+    for col in irreleveant_cols:
+        if col in aug_df.columns:
+            aug_df = aug_df.drop(columns=col)
     print(df.columns)
     label_cols = list(df.columns.difference(["song_id", "augmentation", "lyrics"]))
+
+    if len(label_cols) == 3:
+        label_cols = ["sexualization", "violence", "hate"]
     print(label_cols)
     labels = df[["song_id"] + label_cols]
     aug_df = aug_df.merge(labels, on="song_id", how="left")
 
     # now merge the original dataframe with the augmented dataframe on song_id
     final_df = pd.concat([df, aug_df], ignore_index=True)
+
+    print(final_df.columns)
 
     return final_df
 

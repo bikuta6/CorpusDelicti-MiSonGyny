@@ -44,7 +44,7 @@ def get_model_probs(model_name, test_ds, device, augment=False):
     return probs
 
 
-def main(augment=False):
+def main(augment=False, voting_type="soft"):
     test_file = "../../data/processed_test.csv"
     output_file = "../../task_1_predictions.csv"
 
@@ -63,17 +63,29 @@ def main(augment=False):
     )
 
     # 1. Get probabilities from top 3 models
-    probs_distil = get_model_probs("DistilBETO", test_ds, device, augment=augment)
+    probs_distil = get_model_probs("XLM-R", test_ds, device, augment=augment)
     probs_robert = get_model_probs("Robertuito", test_ds, device, augment=augment)
     probs_beto = get_model_probs("BETO", test_ds, device, augment=augment)
 
-    # 2. Average the probabilities (Soft Voting Ensemble)
-    final_probs = (probs_distil + probs_robert + probs_beto) / 3.0
+    if voting_type == "soft":
+        # 2. Average the probabilities (Soft Voting Ensemble)
+        final_probs = (probs_distil + probs_robert + probs_beto) / 3.0
 
-    # 3. Apply Threshold
-    # Average of your best thresholds: (0.41 + 0.51 + 0.59) / 3 ≈ 0.50
-    blended_threshold = 0.50
-    preds = (final_probs >= blended_threshold).astype(int)
+        # 3. Apply Threshold
+        # Average of your best thresholds: (0.41 + 0.51 + 0.59) / 3 ≈ 0.50
+        blended_threshold = 0.50
+        preds = (final_probs >= blended_threshold).astype(int)
+        print(f"\nUsing Soft Voting with threshold {blended_threshold}")
+    else:  # hard voting
+        # 2. Apply individual thresholds to get binary votes
+        votes_distil = (probs_distil >= 0.3).astype(int)
+        votes_robert = (probs_robert >= 0.26).astype(int)
+        votes_beto = (probs_beto >= 0.52).astype(int)
+
+        # 3. Hard Voting (Majority voting)
+        sum_votes = votes_distil + votes_robert + votes_beto
+        preds = (sum_votes >= 2).astype(int)
+        print(f"\nUsing Hard Voting with majority threshold (>= 2 out of 3)")
 
     # 4. Map back to NM / M
     label_map = {0: "NM", 1: "M"}
@@ -94,11 +106,19 @@ def main(augment=False):
 
 if __name__ == "__main__":
     import argparse
+
     parser = argparse.ArgumentParser(description="Ensemble Prediction for Task 1")
     parser.add_argument(
         "--augment",
         action="store_true",
         help="Use augmented models trained with augmented data",
     )
+    parser.add_argument(
+        "--voting",
+        type=str,
+        choices=["soft", "hard"],
+        default="soft",
+        help="Voting method: 'soft' (average probabilities) or 'hard' (majority voting)",
+    )
     args = parser.parse_args()
-    main(augment=args.augment)
+    main(augment=args.augment, voting_type=args.voting)
