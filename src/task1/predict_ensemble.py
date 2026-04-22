@@ -63,7 +63,7 @@ def main(augment=False, voting_type="soft"):
     )
 
     # 1. Get probabilities from top 3 models
-    probs_distil = get_model_probs("XLM-R", test_ds, device, augment=augment)
+    probs_distil = get_model_probs("DistilBETO", test_ds, device, augment=augment)
     probs_robert = get_model_probs("Robertuito", test_ds, device, augment=augment)
     probs_beto = get_model_probs("BETO", test_ds, device, augment=augment)
 
@@ -78,9 +78,9 @@ def main(augment=False, voting_type="soft"):
         print(f"\nUsing Soft Voting with threshold {blended_threshold}")
     else:  # hard voting
         # 2. Apply individual thresholds to get binary votes
-        votes_distil = (probs_distil >= 0.3).astype(int)
-        votes_robert = (probs_robert >= 0.26).astype(int)
-        votes_beto = (probs_beto >= 0.52).astype(int)
+        votes_distil = (probs_distil >= 0.41).astype(int)
+        votes_robert = (probs_robert >= 0.51).astype(int)
+        votes_beto = (probs_beto >= 0.59).astype(int)
 
         # 3. Hard Voting (Majority voting)
         sum_votes = votes_distil + votes_robert + votes_beto

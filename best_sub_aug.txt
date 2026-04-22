@@ -1,0 +1,3 @@
+1. DistilBETO + BETO + Robertuito standard loss processed data (hard voting) max chunk aggregation
+2. DistilBETO + Longformer + Robertuito standard loss processed data (OVR) (hard voting) max chunk aggregation
+3. Robertuito + DistilBETO + BETO standard loss baseline data (soft voting) max chunk aggregation

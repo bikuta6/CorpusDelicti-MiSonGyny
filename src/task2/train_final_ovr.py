@@ -118,7 +118,7 @@ def main():
             output_dir=os.path.join(SAVE_DIR, "checkpoints"),
             learning_rate=cfg.learning_rate,
             per_device_train_batch_size=cfg.per_device_train_batch_size,
-            num_train_epochs=epochs,  # EXACT EPOCHS FOUND IN STEP 1
+            num_train_epochs=epochs + 1,  # EXACT EPOCHS FOUND IN STEP 1
             eval_strategy="no",  # NO EARLY STOPPING
             save_strategy="no",
             load_best_model_at_end=False,  # FORCE LAST EPOCH
@@ -134,7 +134,7 @@ def main():
                 tokenizer=tokenizer, max_length=cfg.max_len
             ),
             class_weights=weights_tensor,
-            loss_type="focal",
+            loss_type=cfg.loss_type,
             focal_gamma=cfg.focal_gamma,
             is_multilabel=True,
         )

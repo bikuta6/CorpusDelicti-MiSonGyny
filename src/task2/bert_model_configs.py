@@ -33,7 +33,7 @@ class ModelConfig:
     optim: str = "adamw_torch_fused"  # "adamw_torch" o "adamw_hf"
 
     # --- Focal Loss ---
-    loss_type: str = "focal"  # "standard", "weighted" o "focal"
+    loss_type: str = "standard"  # "standard", "weighted" o "focal"
     focal_gamma: float = 2.0
     focal_alpha: Optional[float] = None
 

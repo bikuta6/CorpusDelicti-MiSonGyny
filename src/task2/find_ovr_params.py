@@ -154,7 +154,7 @@ def main():
             ),
             compute_metrics=compute_metrics,
             class_weights=weights_tensor,
-            loss_type="focal",
+            loss_type=cfg.loss_type,
             focal_gamma=cfg.focal_gamma,
             is_multilabel=True,
             callbacks=[EarlyStoppingCallback(early_stopping_patience=3)],
