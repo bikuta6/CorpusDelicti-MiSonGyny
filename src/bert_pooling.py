@@ -97,7 +97,7 @@ def predict_with_chunks(
     model,
     device,
     max_len=512,
-    batch_size=8,
+    batch_size=16,
     stride: int | None = None,
     aggregation="mean",
     is_multilabel=False,
