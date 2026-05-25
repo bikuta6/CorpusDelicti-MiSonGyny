@@ -72,6 +72,7 @@ def main(model_name, baseline=False, graph=False):
     w0 = total / (2 * n_neg)
     w1 = total / (2 * n_pos)
     weights_tensor = torch.sqrt(torch.tensor([w0, w1]).float())
+    print(f"Pesos de clase: Negativo={w0:.4f}, Positivo={w1:.4f}")
 
     train_ds = Dataset.from_pandas(
         train_df.rename(columns={"lyrics": "text"}), preserve_index=False
@@ -165,7 +166,7 @@ def main(model_name, baseline=False, graph=False):
 
     model = build_bert_like_classifier(cfg, device, num_labels=2)
     checkpoints_path = os.path.join(SAVE_DIR, "checkpoints")
-
+    print(f"Entrenando con Loss={cfg.loss_type} y optimizador={cfg.optim}...")
     args = TrainingArguments(
         output_dir=checkpoints_path,
         learning_rate=cfg.learning_rate,

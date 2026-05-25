@@ -1,9 +1,0 @@
-You are using a model of type `lyrics_pooling_classifier` to instantiate a model of type ``. This may be expected if you are loading a checkpoint that shares a subset of the architecture (e.g., loading a `sam2_video` checkpoint into `Sam2Model`), but is otherwise not supported and can yield errors. Please verify that the checkpoint is compatible with the model you are instantiating.
-You passed `num_labels=2` which is incompatible to the `id2label` map of length `3`.
-Cargando datos de prueba desde data/processed_test.csv...
-Cargando modelo y tokenizador desde models/task2/final/XLM-R/...
-Loading weights:   0%|          | 0/201 [00:00<?, ?it/s]Loading weights: 100%|██████████| 201/201 [00:00<00:00, 16321.83it/s]
-Token indices sequence length is longer than the specified maximum sequence length for this model (1050 > 512). Running this sequence through the model will result in indexing errors
-Realizando predicciones...
-
-Predicciones guardadas exitosamente en: ../../task_2_predictions.csv

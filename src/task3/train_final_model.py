@@ -25,6 +25,7 @@ from transformers import (
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from bert_model_configs import MODEL_CONFIGS, ModelConfig, apply_baseline_settings
 
+from augment_loading import augment_df
 from bert_pooling import build_bert_like_classifier, predict_with_chunks
 from random_crop_collator import RandomCropDataCollator
 from trainer import WeightedTrainer
@@ -53,7 +54,7 @@ def find_best_threshold(true_labels, probs, step=0.01):
     return round(best_thr, 3), round(best_f1, 4)
 
 
-def main(model_name, baseline=False, processed=False, epochs=None):
+def main(model_name, baseline=False, processed=False, epochs=None, augment=False):
     if baseline:
         apply_baseline_settings()
 
@@ -69,21 +70,30 @@ def main(model_name, baseline=False, processed=False, epochs=None):
     if not os.path.exists(DATA_PATH):
         DATA_PATH = f"../../data/task3/{pre}train_df.csv"
 
-    suffix = "_baseline" if baseline else ""
-    SAVE_DIR = f"../../models/task3/final/{model_name}{suffix}"
+    suffix = ""
+    if baseline:
+        suffix += "_baseline"
+    if augment:
+        suffix += "_augmented"
+    SAVE_DIR = f"../../models/task3/final/{model_name}{suffix if suffix else ''}"
 
     print(f"Cargando todos los datos desde {DATA_PATH}...")
     df = pd.read_csv(DATA_PATH)
+    if augment and not baseline:
+        print("Aplicando data augmentation...")
+        df = augment_df(df, aug_path="../../data/processed_train_augmented.csv")
 
     if True:
         df["label"] = df["label"].apply(
             lambda x: 1 if str(x).strip().upper() in ["Y", "1", "1.0"] else 0
         )
 
-    print("Dividiendo en train y eval (80/20)...")
-    train_df, eval_df = train_test_split(
-        df, test_size=0.2, random_state=SEED, stratify=df["label"]
-    )
+    # print("Dividiendo en train y eval (80/20)...")
+    # , eval_df = train_test_split(
+    #   df, test_size=0.2, random_state=SEED, stratify=df["label"]
+    # )
+    train_df = df.copy()
+    eval_df = df.head(10).copy()  # Dummy eval set just for Trainer compatibility
 
     train_originals_labels = (
         train_df[train_df["augmentation"] == "original"]["label"]
@@ -194,7 +204,7 @@ def main(model_name, baseline=False, processed=False, epochs=None):
         lr_scheduler_type=cfg.lr_scheduler_type,
         eval_strategy="epoch",
         save_strategy="epoch",
-        load_best_model_at_end=True,
+        load_best_model_at_end=False,
         metric_for_best_model="eval_f1_macro",
         greater_is_better=True,
         save_total_limit=1,
@@ -212,7 +222,7 @@ def main(model_name, baseline=False, processed=False, epochs=None):
         args=args,
         train_dataset=train_tok,
         eval_dataset=eval_tok,
-        callbacks=[EarlyStoppingCallback(early_stopping_patience=3)],
+        # callbacks=[EarlyStoppingCallback(early_stopping_patience=3)],
         data_collator=train_collator,
         compute_metrics=compute_metrics,
         class_weights=weights_tensor,
@@ -220,6 +230,7 @@ def main(model_name, baseline=False, processed=False, epochs=None):
         focal_gamma=cfg.focal_gamma,
         focal_alpha=None,
     )
+    print("loss_type:", cfg.loss_type)
 
     print("Entrenando...")
     trainer.train()
@@ -256,6 +267,7 @@ def main(model_name, baseline=False, processed=False, epochs=None):
         "Modelo": model_name,
         "Epochs": epochs if epochs is not None else cfg.num_train_epochs,
         "Trained_on": "80/20 Split",
+        "Best_Threshold": thr,
         "eval_f1_macro": eval_results["eval_eval_f1_macro"]
         if "eval_eval_f1_macro" in eval_results
         else eval_results.get("eval_f1_macro", 0.0),
@@ -289,6 +301,11 @@ if __name__ == "__main__":
         help="Usar dataset procesado",
     )
     arg_parser.add_argument(
+        "--augment",
+        action="store_true",
+        help="Usar datos aumentados (solo si no es baseline)",
+    )
+    arg_parser.add_argument(
         "--epochs",
         type=int,
         default=None,
@@ -300,4 +317,5 @@ if __name__ == "__main__":
         baseline=args.baseline,
         processed=args.processed,
         epochs=args.epochs,
+        augment=args.augment,
     )

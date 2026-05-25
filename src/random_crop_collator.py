@@ -54,8 +54,18 @@ class RandomCropDataCollator:
             seq_len = len(ids)
 
             if seq_len > self.max_length:
+                # Keep first/last token (typically special tokens) and randomly crop
+                # the inner span to fit max_length safely.
                 crop_len = self.max_length - 2
-                start = random.randint(1, seq_len - 1 - crop_len)
+                low = 1
+                high = seq_len - 1 - crop_len  # inclusive upper bound for start
+
+                # Borderline safety: when near max length, avoid empty randint range.
+                if high < low:
+                    start = low
+                else:
+                    start = random.randint(low, high)
+
                 end = start + crop_len
 
                 ids_slice = [ids[0]] + ids[start:end] + [ids[-1]]

@@ -377,7 +377,7 @@ def save_method_mask(mask, methods, out_base_path):
 def process_task(task, task_config, base_dir, use_processed, llm_model, seed=42):
     print(f"\nProcessing {task}...")
 
-    file_name = "processed_train_df.csv" if use_processed else "train_df.csv"
+    file_name = "processed_train.csv" if use_processed else "train.csv"
     possible_paths = [
         os.path.join(base_dir, task, file_name),
         os.path.join(base_dir, "data", task, file_name),

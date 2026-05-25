@@ -12,7 +12,6 @@ class ModelConfig:
     )
 
     # --- Arquitectura del clasificador ---
-    pooling_strategy: str = "cls"  # "cls", "mean", "cls_mean"
     classifier_dropout: float = 0.1  # Dropout en la capa de clasificación final
     attention_probs_dropout_prob: float = 0.1  # Dropout en atención (BERT/RoBERTa)
     hidden_dropout_prob: float = 0.1  # Dropout en capas ocultas (BERT/RoBERTa)
@@ -34,7 +33,7 @@ class ModelConfig:
     optim: str = "adamw_torch_fused"  # "adamw_torch" o "adamw_hf"
 
     # --- Focal Loss ---
-    loss_type: str = "weighted"  # "standard", "weighted" o "focal"
+    loss_type: str = "standard"  # "standard", "weighted" o "focal"
     focal_gamma: float = 2.0
     focal_alpha: Optional[float] = None
 
@@ -93,6 +92,8 @@ MODEL_CONFIGS: dict[str, ModelConfig] = {
         hidden_dropout_prob=0.1,
         max_len=1024,  # Para textos largos (canciones)
         learning_rate=2e-5,
+        per_device_train_batch_size=8,  # Reduce batch size para manejar secuencias largas
+        gradient_accumulation_steps=4,  # Compensa el batch size reducido
     ),
 }
 
@@ -100,5 +101,4 @@ MODEL_CONFIGS: dict[str, ModelConfig] = {
 def apply_baseline_settings():
     """Modifica todas las configuraciones para usar los parámetros del baseline."""
     for config in MODEL_CONFIGS.values():
-        config.pooling_strategy = "cls"
         config.loss_type = "standard"
