@@ -100,6 +100,19 @@ This is a condensed, practical summary of the methodology described in `paper.te
 - **Final training for submissions**
   - Train on full data; use a tiny dummy eval split to satisfy the Trainer API.
 
+## Cross‑edition results (previous year vs 2026)
+
+We ran a historical overlap analysis using `src/check_all_data.py` and the summary in `prev_data/stats.txt`. Lyrics are normalized (unicode NFKD, punctuation removed, lower‑cased) and matched with a Jaccard similarity threshold of **≥ 0.60**.
+
+Key findings:
+
+- Previous dataset size: **2631** songs; new dataset size: **2303** songs.
+- **1037** overlaps kept the same label.
+- **207** overlaps flipped labels (≈ **16.6%** of the overlapping subset).
+- **1387** previous‑year songs are unmatched in the new release.
+
+This confirms a non‑trivial label shift across editions. For modeling, we follow the 2026 labels only and treat unmatched legacy songs as out‑of‑distribution candidates for optional augmentation, while avoiding legacy labels for the flipped instances.
+
 ## Recommended pipeline (end‑to‑end)
 
 1) **Split by task**
