@@ -1,3 +1,4 @@
+import json
 import os
 import sys
 
@@ -11,6 +12,23 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from bert_model_configs import MODEL_CONFIGS
 
 from bert_pooling import load_bert_like_classifier, predict_with_chunks
+
+
+def load_threshold(model_path: str) -> float:
+    results_path = os.path.join(model_path, "results.json")
+    if not os.path.exists(results_path):
+        return 0.5
+
+    try:
+        with open(results_path, "r") as f:
+            data = json.load(f)
+        for key in ["Best_Threshold", "Best-Threshold", "best_threshold"]:
+            if key in data:
+                return float(data[key])
+    except Exception:
+        return 0.5
+
+    return 0.5
 
 
 def get_model_probs(model_name, test_ds, device, augment=False):
@@ -30,7 +48,7 @@ def get_model_probs(model_name, test_ds, device, augment=False):
         device=device,
         max_len=cfg.max_len,
         batch_size=8,
-        aggregation="max",  # As discussed, MAX is correct for presence of misogyny
+        aggregation="max",  # Max aggregation per chunk
     )
 
     logits = pred_output.predictions
@@ -41,7 +59,7 @@ def get_model_probs(model_name, test_ds, device, augment=False):
     del tokenizer
     torch.cuda.empty_cache()
 
-    return probs
+    return probs, load_threshold(model_path)
 
 
 def main(augment=False, voting_type="soft"):
@@ -62,28 +80,29 @@ def main(augment=False, voting_type="soft"):
         else "cpu"
     )
 
-    # 1. Get probabilities from top 3 models
-    probs_distil = get_model_probs("DistilBETO", test_ds, device, augment=augment)
-    probs_robert = get_model_probs("Robertuito", test_ds, device, augment=augment)
-    probs_beto = get_model_probs("BETO", test_ds, device, augment=augment)
+    # Top-3 ensemble: DistilBETO + BETO + Robertuito
+    probs_distil, thr_distil = get_model_probs(
+        "DistilBETO", test_ds, device, augment=augment
+    )
+    probs_beto, thr_beto = get_model_probs("BETO", test_ds, device, augment=augment)
+    probs_robert, thr_robert = get_model_probs(
+        "Robertuito", test_ds, device, augment=augment
+    )
 
     if voting_type == "soft":
-        # 2. Average the probabilities (Soft Voting Ensemble)
-        final_probs = (probs_distil + probs_robert + probs_beto) / 3.0
+        # Average probabilities (Soft Voting Ensemble)
+        final_probs = (probs_distil + probs_beto + probs_robert) / 3.0
 
-        # 3. Apply Threshold
-        # Average of your best thresholds: (0.41 + 0.51 + 0.59) / 3 ≈ 0.50
-        blended_threshold = 0.50
+        # Average optimized validation thresholds
+        blended_threshold = float(np.mean([thr_distil, thr_beto, thr_robert]))
         preds = (final_probs >= blended_threshold).astype(int)
-        print(f"\nUsing Soft Voting with threshold {blended_threshold}")
+        print(f"\nUsing Soft Voting with threshold {blended_threshold:.3f}")
     else:  # hard voting
-        # 2. Apply individual thresholds to get binary votes
-        votes_distil = (probs_distil >= 0.41).astype(int)
-        votes_robert = (probs_robert >= 0.51).astype(int)
-        votes_beto = (probs_beto >= 0.59).astype(int)
+        votes_distil = (probs_distil >= thr_distil).astype(int)
+        votes_beto = (probs_beto >= thr_beto).astype(int)
+        votes_robert = (probs_robert >= thr_robert).astype(int)
 
-        # 3. Hard Voting (Majority voting)
-        sum_votes = votes_distil + votes_robert + votes_beto
+        sum_votes = votes_distil + votes_beto + votes_robert
         preds = (sum_votes >= 2).astype(int)
         print(f"\nUsing Hard Voting with majority threshold (>= 2 out of 3)")
 

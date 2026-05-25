@@ -37,7 +37,7 @@ def get_ovr_probs(model_name, label, test_ds, device, augment=False):
 
 
 def main(augment=False):
-    models_to_ensemble = ["Robertuito", "BETO", "XLM-R"]
+    models_to_ensemble = ["DistilBETO", "LongFormer", "Robertuito"]
 
     # Cargar los thresholds descubiertos para cada modelo
     model_thresholds = {}

@@ -1,3 +1,4 @@
+import json
 import os
 import sys
 
@@ -11,6 +12,23 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from bert_model_configs import MODEL_CONFIGS
 
 from bert_pooling import load_bert_like_classifier, predict_with_chunks
+
+
+def load_threshold(model_path: str) -> float:
+    results_path = os.path.join(model_path, "results.json")
+    if not os.path.exists(results_path):
+        return 0.5
+
+    try:
+        with open(results_path, "r") as f:
+            data = json.load(f)
+        for key in ["Best_Threshold", "Best-Threshold", "best_threshold"]:
+            if key in data:
+                return float(data[key])
+    except Exception:
+        return 0.5
+
+    return 0.5
 
 
 def get_model_probs(model_name, test_ds, device, augment=False):
@@ -37,7 +55,7 @@ def get_model_probs(model_name, test_ds, device, augment=False):
 
     del model, tokenizer
     torch.cuda.empty_cache()
-    return probs
+    return probs, load_threshold(model_path)
 
 
 def main(augment=False, voting_type="hard"):
@@ -57,27 +75,29 @@ def main(augment=False, voting_type="hard"):
         else "cpu"
     )
 
-    # 1. Get probabilities from top 3 models
-    probs_robertuito = get_model_probs("Robertuito", test_ds, device, augment=augment)
-    probs_xlmr = get_model_probs("DistilBETO", test_ds, device, augment=augment)
-    probs_longformer = get_model_probs("BETO", test_ds, device, augment=augment)
+    # Top-3 ensemble: Robertuito + XLM-R + LongFormer
+    probs_robertuito, thr_robertuito = get_model_probs(
+        "Robertuito", test_ds, device, augment=augment
+    )
+    probs_xlmr, thr_xlmr = get_model_probs("XLM-R", test_ds, device, augment=augment)
+    probs_longformer, thr_longformer = get_model_probs(
+        "LongFormer", test_ds, device, augment=augment
+    )
 
     if voting_type == "soft":
-        # 2. Average the probabilities (Soft Voting Ensemble)
+        # Average the probabilities (Soft Voting Ensemble)
         final_probs = (probs_robertuito + probs_xlmr + probs_longformer) / 3.0
 
-        # 3. Apply Threshold
-        # Average of your best thresholds: (0.49 + 0.42 + 0.51) / 3 ≈ 0.47
-        blended_threshold = 0.5
+        # Average optimized validation thresholds
+        blended_threshold = float(np.mean([thr_robertuito, thr_xlmr, thr_longformer]))
         preds = (final_probs >= blended_threshold).astype(int)
-        print(f"\nUsing Soft Voting with threshold {blended_threshold}")
+        print(f"\nUsing Soft Voting with threshold {blended_threshold:.3f}")
     else:  # hard voting
-        # 2. Apply individual thresholds to get binary votes
-        votes_robertuito = (probs_robertuito >= 0.5).astype(int)
-        votes_xlmr = (probs_xlmr >= 0.5).astype(int)
-        votes_longformer = (probs_longformer >= 0.5).astype(int)
+        votes_robertuito = (probs_robertuito >= thr_robertuito).astype(int)
+        votes_xlmr = (probs_xlmr >= thr_xlmr).astype(int)
+        votes_longformer = (probs_longformer >= thr_longformer).astype(int)
 
-        # 3. Hard Voting (Majority voting)
+        # Hard Voting (Majority voting)
         sum_votes = votes_robertuito + votes_xlmr + votes_longformer
         preds = (sum_votes >= 2).astype(int)
         print(f"\nUsing Hard Voting with majority threshold (>= 2 out of 3)")
